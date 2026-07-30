@@ -1,0 +1,7 @@
+{
+    "python.defaultInterpreterPath": "C:\\Users\\haroon traders\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "python.pythonPath": "C:\\Users\\haroon traders\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "python.analysis.extraPaths": [
+        "C:\\Users\\haroon traders\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages"
+    ]
+}

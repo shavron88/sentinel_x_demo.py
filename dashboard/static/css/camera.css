@@ -1,0 +1,120 @@
+.camera-section{
+    margin-top:25px;
+}
+
+.camera-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
+}
+
+.camera-header h3{
+    color:#fff;
+    font-size:22px;
+    font-weight:600;
+}
+
+.recording{
+    background:#ff3b3b;
+    color:white;
+    padding:8px 18px;
+    border-radius:30px;
+    font-size:14px;
+    font-weight:600;
+    animation:pulse 1s infinite;
+    box-shadow:0 0 20px rgba(255,0,0,.5);
+}
+
+@keyframes pulse{
+
+0%{
+transform:scale(1);
+opacity:1;
+}
+
+50%{
+transform:scale(1.08);
+opacity:.8;
+}
+
+100%{
+transform:scale(1);
+opacity:1;
+}
+
+}
+
+.camera-box{
+
+width:100%;
+height:550px;
+
+background:#111827;
+
+border-radius:18px;
+
+overflow:hidden;
+
+border:2px solid #00e5ff;
+
+box-shadow:
+0 0 25px rgba(0,229,255,.25);
+
+position:relative;
+
+}
+
+.camera-box img{
+
+width:100%;
+height:100%;
+
+object-fit:cover;
+
+display:block;
+
+}
+
+.camera-box::after{
+
+content:"LIVE";
+
+position:absolute;
+
+top:15px;
+left:15px;
+
+background:red;
+
+color:white;
+
+padding:6px 14px;
+
+border-radius:25px;
+
+font-size:12px;
+
+font-weight:bold;
+
+letter-spacing:1px;
+
+}
+
+.camera-box{
+
+    position:relative;
+
+    overflow:hidden;
+
+    border-radius:15px;
+
+}
+
+.camera-box img{
+
+    width:100%;
+
+    border-radius:15px;
+
+}
