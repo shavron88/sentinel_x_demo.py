@@ -5,7 +5,7 @@ class Detector:
 
     def __init__(self):
         print("[AI] Loading model...")
-        self.model = YOLO("yolov8n.pt")
+        self.model = YOLO("models/yolov8m.pt")
         print("[AI] Model loaded!")
 
     def detect(self, frame):
