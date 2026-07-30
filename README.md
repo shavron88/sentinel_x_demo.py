@@ -2300,3 +2300,1089 @@ The dashboard roadmap includes
 - Cloud Dashboard
 
 ---
+
+
+
+---
+
+# 💻 Development Environment
+
+SentinelX is currently developed and tested on Windows using Python.
+
+Recommended Environment
+
+| Component | Recommendation |
+|-----------|---------------|
+| OS | Windows 10 / Windows 11 |
+| Python | 3.11+ |
+| RAM | 8 GB Minimum |
+| Recommended RAM | 16 GB |
+| GPU | Optional (NVIDIA Recommended) |
+| IDE | Visual Studio Code |
+| Git | Latest Version |
+
+---
+
+# 📦 Required Software
+
+Install the following before running SentinelX.
+
+## Python
+
+Download
+
+https://www.python.org/downloads/
+
+Verify installation
+
+```bash
+python --version
+```
+
+---
+
+## Git
+
+Download
+
+https://git-scm.com/downloads
+
+Verify
+
+```bash
+git --version
+```
+
+---
+
+## Visual Studio Code
+
+Download
+
+https://code.visualstudio.com/
+
+Recommended Extensions
+
+- Python
+- Pylance
+- GitLens
+- Black Formatter
+- Error Lens
+
+---
+
+# 📥 Clone Repository
+
+Clone the project
+
+```bash
+git clone https://github.com/YOUR_USERNAME/SentinelX.git
+```
+
+Move into project
+
+```bash
+cd SentinelX
+```
+
+---
+
+# 📦 Install Dependencies
+
+Create virtual environment
+
+Windows
+
+```bash
+python -m venv venv
+```
+
+Activate
+
+CMD
+
+```bash
+venv\Scripts\activate
+```
+
+PowerShell
+
+```powershell
+venv\Scripts\Activate.ps1
+```
+
+Git Bash
+
+```bash
+source venv/Scripts/activate
+```
+
+Install packages
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+# ▶ Running SentinelX
+
+Start the application
+
+```bash
+python app.py
+```
+
+or
+
+```bash
+python main.py
+```
+
+(depending on the project entry point)
+
+Dashboard
+
+```
+http://127.0.0.1:5000
+```
+
+---
+
+# 📷 Camera Configuration
+
+USB Camera
+
+Inside
+
+```
+config.py
+```
+
+Example
+
+```python
+CAMERA_SOURCE = 0
+```
+
+IP Camera
+
+```python
+CAMERA_SOURCE = "rtsp://username:password@ip-address:554/stream"
+```
+
+Example
+
+```python
+CAMERA_SOURCE = "rtsp://admin:admin123@192.168.1.100:554/stream"
+```
+
+---
+
+# 🧠 AI Models
+
+Current models
+
+```
+models/
+
+yolov8n.pt
+
+yolov8m.pt
+```
+
+Default
+
+```
+YOLOv8n
+```
+
+Developers can switch to
+
+- YOLOv8s
+- YOLOv8m
+- YOLOv8l
+- Custom trained models
+
+---
+
+# 📂 Evidence
+
+Evidence is stored inside
+
+```
+evidence/screenshots/
+```
+
+Every screenshot contains
+
+- Timestamp
+
+- Event Type
+
+- Track ID (where available)
+
+Evidence is generated automatically.
+
+---
+
+# 📝 Logs
+
+Application logs
+
+```
+logs/app.log
+```
+
+Error logs
+
+```
+logs/errors.log
+```
+
+Useful for debugging.
+
+---
+
+# 🧪 Running Tests
+
+Current tests
+
+```
+tests/
+```
+
+Run all tests
+
+```bash
+pytest
+```
+
+Run a single test
+
+```bash
+pytest tests/test_detector.py
+```
+
+---
+
+# 🔄 Development Workflow
+
+Every contributor should follow the same workflow.
+
+---
+
+## Step 1
+
+Clone repository
+
+```bash
+git clone
+```
+
+---
+
+## Step 2
+
+Create a new branch
+
+```bash
+git checkout -b feature/your-feature
+```
+
+Examples
+
+```
+feature/dashboard
+
+feature/weapon-detection
+
+feature/report-generator
+```
+
+---
+
+## Step 3
+
+Write code
+
+---
+
+## Step 4
+
+Test locally
+
+---
+
+## Step 5
+
+Commit
+
+```bash
+git add .
+
+git commit -m "Implemented crowd detection improvements"
+```
+
+---
+
+## Step 6
+
+Push
+
+```bash
+git push origin feature/your-feature
+```
+
+---
+
+## Step 7
+
+Open Pull Request
+
+Repository Owner reviews
+
+↓
+
+Merge into main
+
+---
+
+# 📌 Coding Guidelines
+
+Follow these rules.
+
+✔ Keep modules independent.
+
+✔ Write descriptive variable names.
+
+✔ Avoid hardcoded values.
+
+✔ Reuse utility functions.
+
+✔ Add comments for complex logic.
+
+✔ Test before committing.
+
+✔ Keep functions small.
+
+---
+
+# 📋 Team Roles
+
+Current recommended team structure
+
+## Project Lead
+
+Responsibilities
+
+- Architecture
+- AI Pipeline
+- Code Review
+- Final Integration
+
+---
+
+## Computer Vision Developer
+
+Responsible for
+
+- YOLO
+
+- Tracking
+
+- Detection
+
+- Model Training
+
+---
+
+## Backend Developer
+
+Responsible for
+
+- Flask
+
+- APIs
+
+- Database
+
+- Services
+
+---
+
+## Frontend Developer
+
+Responsible for
+
+- Dashboard
+
+- HTML
+
+- CSS
+
+- JavaScript
+
+- User Experience
+
+---
+
+## Database Developer
+
+Responsible for
+
+- SQLite
+
+- Models
+
+- Reports
+
+- Analytics
+
+---
+
+## QA / Testing
+
+Responsible for
+
+- Bug Testing
+
+- Performance Testing
+
+- Unit Tests
+
+- Integration Tests
+
+---
+
+# 🛣 MVP Roadmap
+
+## ✅ Completed
+
+✔ Live Camera Streaming
+
+✔ Person Detection
+
+✔ Vehicle Detection
+
+✔ Object Tracking
+
+✔ Zone Detection
+
+✔ Threat Engine
+
+✔ Alert Manager
+
+✔ Evidence Capture
+
+✔ Dashboard
+
+✔ Timeline
+
+✔ Evidence Gallery
+
+✔ Camera Status
+
+✔ System Health
+
+✔ FPS Counter
+
+✔ Crowd Detection
+
+✔ Loitering Detection
+
+✔ Running Detection
+
+✔ Fall Detection
+
+✔ Abandoned Object Detection
+
+---
+
+## 🚧 In Progress
+
+- Weapon Detection
+
+- Reports
+
+- Analytics
+
+- Better Dashboard UI
+
+- Sidebar Navigation
+
+- Database Improvements
+
+---
+
+## 📅 Planned
+
+- Face Recognition
+
+- Fire Detection
+
+- Smoke Detection
+
+- Multiple Cameras
+
+- Mobile Dashboard
+
+- Cloud Dashboard
+
+- User Authentication
+
+- Notification System
+
+- Role Based Access
+
+- Report Generator
+
+---
+
+# 🎯 Hackathon Goal
+
+Deliver a fully functional MVP capable of
+
+- Connecting to a CCTV/IP Camera
+- Detecting people and vehicles
+- Detecting suspicious events
+- Calculating threat level
+- Capturing evidence
+- Displaying live information through the dashboard
+
+The focus is demonstrating an end-to-end intelligent surveillance workflow rather than building production-grade hardware.
+
+---
+
+# 🤝 Contribution Rules
+
+Every contribution should
+
+✔ Compile successfully
+
+✔ Pass existing tests
+
+✔ Follow folder structure
+
+✔ Include meaningful commit messages
+
+✔ Avoid breaking existing functionality
+
+---
+
+# ⭐ Acknowledgements
+
+SentinelX is built using open-source technologies including
+
+- Python
+- Flask
+- OpenCV
+- Ultralytics YOLOv8
+- NumPy
+
+Special thanks to the open-source community for providing the tools that make this project possible.
+
+---
+
+
+
+---
+
+# 🔌 API Reference
+
+SentinelX exposes REST endpoints used by the dashboard and future integrations.
+
+---
+
+## GET /video_feed
+
+Returns the live MJPEG stream from the active camera.
+
+Response
+
+```
+multipart/x-mixed-replace
+```
+
+Used by
+
+- Dashboard
+- Camera Page
+
+---
+
+## GET /stats
+
+Returns current AI statistics.
+
+Example Response
+
+```json
+{
+    "persons":4,
+    "vehicles":2,
+    "alerts":1,
+    "threat":"MEDIUM",
+    "fps":27
+}
+```
+
+---
+
+## GET /timeline
+
+Returns recent incidents.
+
+Example
+
+```json
+{
+    "timeline":[
+        {
+            "time":"10:42",
+            "event":"LOITERING",
+            "zone":"RESTRICTED",
+            "severity":"HIGH"
+        }
+    ]
+}
+```
+
+---
+
+## Future APIs
+
+```
+GET /api/cameras
+
+POST /api/cameras
+
+DELETE /api/cameras/{id}
+
+GET /api/events
+
+GET /api/evidence
+
+POST /api/login
+
+POST /api/logout
+
+GET /api/reports
+
+GET /api/analytics
+```
+
+---
+
+# 🗄 Database Design
+
+Current database
+
+SQLite
+
+Future database
+
+PostgreSQL
+
+---
+
+## Main Tables
+
+Users
+
+Cameras
+
+Events
+
+Evidence
+
+Alerts
+
+Reports
+
+Analytics
+
+---
+
+## Event Record
+
+Every detected event should contain
+
+- Event ID
+- Timestamp
+- Camera ID
+- Track ID
+- Event Type
+- Zone
+- Severity
+- Screenshot
+- Status
+
+---
+
+# 🔐 Security Considerations
+
+SentinelX is designed with security in mind.
+
+Current goals
+
+✔ Local Processing
+
+✔ No cloud dependency
+
+✔ Private evidence storage
+
+✔ Controlled access
+
+Future security
+
+- User authentication
+- Role Based Access Control
+- Encrypted evidence
+- Secure API tokens
+- HTTPS deployment
+- Audit logs
+- Digital evidence signing
+
+---
+
+# ⚡ Performance Optimisation
+
+Current optimisations
+
+✔ Frame resizing
+
+✔ YOLO Nano model
+
+✔ Event cooldown
+
+✔ Memory cleanup
+
+✔ Modular processing
+
+Future improvements
+
+- GPU acceleration
+
+- TensorRT
+
+- ONNX Runtime
+
+- Multithreading
+
+- Async processing
+
+- Edge TPU
+
+- NVIDIA Jetson support
+
+---
+
+# 🖥 Deployment Options
+
+SentinelX is designed to run in multiple environments.
+
+---
+
+## Development
+
+Windows
+
+Python
+
+VS Code
+
+---
+
+## Edge Computer
+
+Mini PC
+
+Intel NUC
+
+Jetson Nano
+
+Jetson Orin
+
+Raspberry Pi (light workloads)
+
+---
+
+## Server
+
+Ubuntu
+
+Docker
+
+NGINX
+
+Gunicorn
+
+---
+
+## Cloud
+
+Azure
+
+AWS
+
+Google Cloud
+
+DigitalOcean
+
+Future
+
+Hybrid Edge + Cloud
+
+---
+
+# 📦 SentinelX Edge Box
+
+The long-term vision is a dedicated hardware appliance.
+
+Architecture
+
+```
+CCTV Camera
+
+↓
+
+SentinelX Edge Box
+
+↓
+
+AI Processing
+
+↓
+
+Dashboard
+
+↓
+
+Operator
+```
+
+The Edge Box will connect to existing CCTV cameras without replacing them.
+
+Planned hardware
+
+- NVIDIA Jetson
+- Intel NUC
+- Coral TPU
+- Industrial Mini PC
+
+---
+
+# 📱 Future Mobile Application
+
+Planned features
+
+- Live camera view
+
+- Push notifications
+
+- Incident timeline
+
+- Evidence review
+
+- Camera health
+
+- Threat monitoring
+
+- Remote acknowledgement
+
+---
+
+# ☁ Cloud Platform
+
+Future enterprise architecture
+
+```
+Edge Device
+
+↓
+
+Secure Gateway
+
+↓
+
+Cloud Server
+
+↓
+
+Web Dashboard
+
+↓
+
+Mobile App
+```
+
+This enables
+
+- Multi-site monitoring
+- Centralised reporting
+- Remote administration
+- Long-term analytics
+
+---
+
+# 💼 Business Model
+
+SentinelX is intended to become a commercial AI surveillance platform.
+
+Possible customers
+
+- Shopping Malls
+- Schools
+- Universities
+- Hospitals
+- Factories
+- Warehouses
+- Banks
+- Airports
+- Railway Stations
+- Government Buildings
+- Residential Communities
+
+Revenue opportunities
+
+- Hardware sales
+- Annual software licences
+- Cloud subscriptions
+- Premium AI modules
+- Enterprise support
+- Custom integrations
+
+---
+
+# 🏆 Hackathon Scope
+
+The hackathon version focuses on demonstrating the complete AI workflow.
+
+Objectives
+
+✔ Detect people and vehicles
+
+✔ Analyse behaviour
+
+✔ Generate alerts
+
+✔ Capture evidence
+
+✔ Display information on a modern dashboard
+
+✔ Support USB and IP cameras
+
+The MVP intentionally excludes large-scale enterprise features such as cloud infrastructure and dedicated hardware.
+
+---
+
+# 📈 Product Roadmap
+
+## Version 0.1 (Current MVP)
+
+- Live dashboard
+- AI detection
+- Tracking
+- Event engine
+- Evidence capture
+- Timeline
+- Statistics
+- Threat analysis
+
+---
+
+## Version 0.5
+
+- Better dashboard UI
+- Multiple cameras
+- Analytics charts
+- Improved reporting
+- Camera management
+- Better database integration
+
+---
+
+## Version 1.0
+
+- Face recognition
+- Fire detection
+- Smoke detection
+- Weapon detection
+- License plate recognition
+- Mobile application
+- User authentication
+
+---
+
+## Version 2.0
+
+- Edge AI hardware
+- Cloud dashboard
+- Distributed camera management
+- Multi-site monitoring
+- Enterprise reporting
+- AI model updates
+- Central management console
+
+---
+
+# 📚 Development Principles
+
+Every new feature should follow these rules.
+
+- Keep modules independent.
+- Reuse existing services.
+- Write maintainable code.
+- Document new APIs.
+- Add tests when possible.
+- Preserve backwards compatibility.
+- Keep the dashboard responsive.
+
+---
+
+# 🤝 Contributors
+
+Project Lead
+
+Responsible for
+
+- System architecture
+- AI pipeline
+- Integration
+- Final review
+
+Contributors
+
+- Computer Vision
+- Backend
+- Frontend
+- Database
+- QA & Testing
+- Documentation
+
+Every contributor is encouraged to document their work and submit pull requests for review.
+
+---
+
+# 📄 Licence
+
+This project is released under the MIT License.
+
+See the LICENSE file for details.
+
+---
+
+# 🙌 Final Notes
+
+SentinelX began as a hackathon MVP but is designed with a modular architecture that can evolve into a commercial AI Edge Surveillance Platform.
+
+The objective is not only to detect events, but to help security teams understand what is happening in real time, prioritise incidents, preserve evidence, and respond faster.
+
+Every module has been designed to be replaceable and extensible, allowing future contributors to add new AI capabilities without rewriting the existing system.
+
+Thank you for contributing to SentinelX.
+
+Together, we are building a smarter and more proactive approach to video surveillance.
+
+---
