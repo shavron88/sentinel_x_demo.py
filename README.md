@@ -16,7 +16,7 @@ SentinelX is an AI-powered Edge Surveillance Platform that transforms ordinary C
 
 Unlike traditional CCTV systems that only record footage, SentinelX continuously analyses live video streams, understands events in real time, detects security incidents, evaluates threat levels, stores evidence, and presents everything through a modern command dashboard.
 
-The system is designed as an MVP (Minimum Viable Product) for hackathons and future commercial deployment.
+The system is designed as an MVP (Minimum Viable Product) for hackathon and future commercial deployment.
 
 ---
 
@@ -2376,7 +2376,7 @@ Recommended Extensions
 Clone the project
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/SentinelX.git
+git clone https://github.com/shavron88/sentinel_x_demo.py.git
 ```
 
 Move into project
