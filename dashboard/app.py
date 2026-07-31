@@ -1,9 +1,20 @@
+<<<<<<< HEAD
 from flask import Flask, render_template, jsonify, Response, send_from_directory
 
 from dashboard.store import get_events, get_stats
 from dashboard.stream import generate
 from dashboard.timeline import get_timeline
 from evidence.evidence_manager import get_gallery
+=======
+from flask import Flask, render_template, jsonify, Response
+
+from dashboard.store import get_events, get_stats
+from dashboard.stream import generate
+from dashboard.store import get_stats
+from dashboard.timeline import get_timeline
+from evidence.evidence_manager import get_gallery
+from flask import send_from_directory
+>>>>>>> 2ad808518949971ad8ab73951416556e7319fb7e
 
 app = Flask(__name__)
 
@@ -22,6 +33,10 @@ def home():
 @app.route("/video_feed")
 def video_feed():
     print("Browser connected to video stream")
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2ad808518949971ad8ab73951416556e7319fb7e
     return Response(
         generate(),
         mimetype="multipart/x-mixed-replace; boundary=frame"
@@ -36,6 +51,12 @@ def events():
     return jsonify(get_events())
 
 
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> 2ad808518949971ad8ab73951416556e7319fb7e
 # ==========================
 # LIVE STATS API
 # ==========================
@@ -44,6 +65,7 @@ def stats():
     return jsonify(get_stats())
 
 
+<<<<<<< HEAD
 # ==========================
 # HEALTH API
 # ==========================
@@ -81,15 +103,44 @@ def gallery():
 # ==========================
 @app.route("/evidence/screenshots/<filename>")
 def evidence(filename):
+=======
+
+@app.route("/timeline")
+def timeline():
+
+    return {
+
+        "timeline": get_timeline()
+
+    }
+    
+
+@app.route("/gallery")
+def gallery():
+
+    return {
+
+        "images": get_gallery()
+
+    }
+
+@app.route("/evidence/screenshots/<filename>")
+def evidence(filename):
+
+>>>>>>> 2ad808518949971ad8ab73951416556e7319fb7e
     return send_from_directory(
         "../evidence/screenshots",
         filename
     )
 
 
+<<<<<<< HEAD
 # ==========================
 # PAGES
 # ==========================
+=======
+
+>>>>>>> 2ad808518949971ad8ab73951416556e7319fb7e
 @app.route("/cameras")
 def cameras():
     return render_template("cameras.html")
@@ -117,8 +168,12 @@ def reports():
 
 @app.route("/settings")
 def settings():
+<<<<<<< HEAD
     return render_template("settings.html")
 
 
 if __name__ == "__main__":
     app.run(debug=True)
+=======
+    return render_template("settings.html")
+>>>>>>> 2ad808518949971ad8ab73951416556e7319fb7e
