@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- ================= HEADER ================= -->
+
+<header class="topbar">
+
+    <div>
+
+        <h2>🛡 Sentinel X Command Center</h2>
+
+        <p>AI Edge Surveillance Platform</p>
+
+    </div>
+
+    <div class="status">
+
+        <span class="online-dot"></span>
+
+        SYSTEM ONLINE
+
+    </div>
+
+</header>
+
+<!-- ================= KPI CARDS ================= -->
+
+<section class="stats-grid">
+
+    <div class="stat-card">
+
+        <div class="stat-icon">👤</div>
+
+        <div>
+
+            <p>Persons</p>
+
+            <h2 id="person-count">0</h2>
+
+        </div>
+
+    </div>
+
+    <div class="stat-card">
+
+        <div class="stat-icon">🚗</div>
+
+        <div>
+
+            <p>Vehicles</p>
+
+            <h2 id="vehicle-count">0</h2>
+
+        </div>
+
+    </div>
+
+    <div class="stat-card">
+
+        <div class="stat-icon">🚨</div>
+
+        <div>
+
+            <p>Alerts</p>
+
+            <h2 id="alert-count">0</h2>
+
+        </div>
+
+    </div>
+
+    <div class="stat-card">
+
+        <div class="stat-icon">⚡</div>
+
+        <div>
+
+            <p>FPS</p>
+
+            <h2 id="fps">0</h2>
+
+        </div>
+
+    </div>
+
+    <div class="stat-card threat-card">
+
+        <p>Threat Level</p>
+
+        <h2 id="threat-level">LOW</h2>
+
+        <div class="threat-bar">
+
+            <div id="threat-fill"></div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= COMMAND CENTER ================= -->
+
+<section class="command-center">
+
+    <!-- ================= LEFT PANEL ================= -->
+
+    <div class="left-panel">
+
+        <!-- CAMERA -->
+
+        <section class="camera-section">
+
+            <div class="camera-header">
+
+                <h3>📹 Live Camera Feed</h3>
+
+                <div class="recording">
+
+                    🔴 LIVE
+
+                </div>
+
+            </div>
+
+            <div class="camera-box">
+
+                <img src="/video_feed" id="live-camera">
+
+                <div class="camera-overlay">
+
+                    <span>🟢 Camera Online</span>
+
+                    <span id="fps-overlay">FPS : 0</span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- CAMERA STATUS -->
+
+        <div class="panel">
+
+            <h3>📷 Camera Status</h3>
+
+            <div class="camera-status">
+
+                <div class="status-item">
+
+                    <span>Camera</span>
+
+                    <strong>Online</strong>
+
+                </div>
+
+                <div class="status-item">
+
+                    <span>Resolution</span>
+
+                    <strong>640 × 360</strong>
+
+                </div>
+
+                <div class="status-item">
+
+                    <span>FPS</span>
+
+                    <strong id="camera-fps">0</strong>
+
+                </div>
+
+                <div class="status-item">
+
+                    <span>Recording</span>
+
+                    <strong>ON</strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= RIGHT PANEL ================= -->
+
+    <div class="right-panel">
+
+        <!-- INCIDENTS -->
+
+        <div class="panel">
+
+            <h3>🚨 Incident Timeline</h3>
+
+            <div id="timeline"></div>
+
+        </div>
+
+        <!-- EVIDENCE -->
+
+        <div class="panel">
+
+            <h3>📸 Evidence Gallery</h3>
+
+            <div id="gallery"></div>
+
+        </div>
+
+        <!-- SYSTEM HEALTH -->
+
+        <div class="panel">
+
+            <h3>🖥 System Health</h3>
+
+            <div class="system-health">
+
+                <div class="health-row">
+
+                    <span>AI Engine</span>
+
+                    <span class="health-good">Running</span>
+
+                </div>
+
+                <div class="health-row">
+
+                    <span>Camera</span>
+
+                    <span class="health-good">Connected</span>
+
+                </div>
+
+                <div class="health-row">
+
+                    <span>Memory</span>
+
+                    <span id="memory-status">Normal</span>
+
+                </div>
+
+                <div class="health-row">
+
+                    <span>Threat</span>
+
+                    <span id="health-threat">LOW</span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= FOOTER ================= -->
+
+<footer>
+
+    Sentinel X Command • Version 1.0 • AI Edge Surveillance Platform
+
+</footer>
+
+{% endblock %}

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>SentinelX AI Surveillance</title>
+
+    <link rel="icon"
+          href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <!-- CSS -->
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/sidebar.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/cards.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/camera.css') }}">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <h1>🛡 SentinelX</h1>
+
+            <span>AI Edge Security</span>
+
+        </div>
+
+        <nav>
+
+            <ul>
+
+                <li>
+                    <a href="/">🏠 Dashboard</a>
+                </li>
+
+                <li>
+                    <a href="/cameras">📹 Cameras</a>
+                </li>
+
+                <li>
+                    <a href="/incidents">🚨 Incidents</a>
+                </li>
+
+                <li>
+                    <a href="/evidence">📸 Evidence</a>
+                </li>
+
+                <li>
+                    <a href="/analytics">📊 Analytics</a>
+                </li>
+
+                <li>
+                    <a href="/reports">📄 Reports</a>
+                </li>
+
+                <li>
+                    <a href="/settings">⚙ Settings</a>
+                </li>
+
+            </ul>
+
+        </nav>
+
+        <div class="sidebar-footer">
+
+            <h3>SentinelX</h3>
+
+            <p>Version 1.0</p>
+
+        </div>
+
+    </aside>
+
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <main class="main-content">
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+</div>
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/alerts.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+
+</body>
+
+</html>
