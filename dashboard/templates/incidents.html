@@ -2,6 +2,47 @@
 
 {% block content %}
 
-<h1>Incidents</h1>
+<header class="topbar">
+
+    <div>
+
+        <h2>🚨 Incident Management</h2>
+
+        <p>View and manage security incidents</p>
+
+    </div>
+
+</header>
+
+<section class="panel">
+
+    <div class="toolbar">
+
+        <input
+            type="text"
+            id="incident-search"
+            placeholder="Search incidents...">
+
+        <div class="filter-buttons">
+
+            <button class="filter-btn active" data-filter="ALL">All</button>
+
+            <button class="filter-btn" data-filter="HIGH">High</button>
+
+            <button class="filter-btn" data-filter="MEDIUM">Medium</button>
+
+            <button class="filter-btn" data-filter="LOW">Low</button>
+
+        </div>
+
+    </div>
+
+</section>
+
+<section
+    id="incident-list"
+    class="incident-list">
+
+</section>
 
 {% endblock %}

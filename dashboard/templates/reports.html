@@ -2,6 +2,232 @@
 
 {% block content %}
 
-<h1>Reports</h1>
+<header class="topbar">
+
+    <div>
+
+        <h2>📄 Security Reports</h2>
+
+        <p>AI Surveillance Operational Report</p>
+
+    </div>
+
+    <button class="download-btn" onclick="downloadPDF()">
+
+        📄 Download PDF
+
+    </button>
+
+</header>
+
+<!-- ================= REPORT FILTER ================= -->
+
+<section class="panel">
+
+    <div class="report-toolbar">
+
+        <label>Report Period</label>
+
+        <select id="report-period">
+
+            <option>Today</option>
+
+            <option>Yesterday</option>
+
+            <option>Last 7 Days</option>
+
+            <option>Last 30 Days</option>
+
+        </select>
+
+        <button onclick="loadReport()">
+
+            Generate Report
+
+        </button>
+
+    </div>
+
+</section>
+
+<!-- ================= SYSTEM SUMMARY ================= -->
+
+<section class="stats-grid">
+
+    <div class="stat-card">
+
+        <h3>📹 Cameras Online</h3>
+
+        <h1 id="camera-online">0</h1>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h3>🚨 Total Events</h3>
+
+        <h1 id="total-events">0</h1>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h3>📸 Evidence</h3>
+
+        <h1 id="total-evidence">0</h1>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h3>⚠ Threat Level</h3>
+
+        <h1 id="report-threat">
+
+            LOW
+
+        </h1>
+
+    </div>
+
+</section>
+
+<!-- ================= EVENT SUMMARY ================= -->
+
+<section class="panel">
+
+<h2>🚨 Event Summary</h2>
+
+<table class="report-table">
+
+<thead>
+
+<tr>
+
+<th>Event</th>
+
+<th>Total</th>
+
+</tr>
+
+</thead>
+
+<tbody id="event-summary">
+
+</tbody>
+
+</table>
+
+</section>
+
+<!-- ================= CAMERA SUMMARY ================= -->
+
+<section class="panel">
+
+<h2>📹 Camera Activity</h2>
+
+<table class="report-table">
+
+<thead>
+
+<tr>
+
+<th>Camera</th>
+
+<th>Status</th>
+
+<th>Events</th>
+
+</tr>
+
+</thead>
+
+<tbody id="camera-summary">
+
+</tbody>
+
+</table>
+
+</section>
+
+<!-- ================= EVIDENCE ================= -->
+
+<section class="panel">
+
+<h2>📸 Evidence Summary</h2>
+
+<table class="report-table">
+
+<tbody>
+
+<tr>
+
+<td>Total Images</td>
+
+<td id="images-total">0</td>
+
+</tr>
+
+<tr>
+
+<td>Today's Images</td>
+
+<td id="images-today">0</td>
+
+</tr>
+
+<tr>
+
+<td>Storage Used</td>
+
+<td id="storage-used">0 MB</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</section>
+
+<!-- ================= RECENT INCIDENTS ================= -->
+
+<section class="panel">
+
+<h2>🔥 High Priority Incidents</h2>
+
+<div id="incident-report-list">
+
+</div>
+
+</section>
+
+<!-- ================= EXPORT ================= -->
+
+<section class="panel">
+
+<div class="export-buttons">
+
+<button onclick="downloadPDF()">
+
+📄 Export PDF
+
+</button>
+
+<button onclick="downloadCSV()">
+
+📊 Export CSV
+
+</button>
+
+<button onclick="window.print()">
+
+🖨 Print
+
+</button>
+
+</div>
+
+</section>
 
 {% endblock %}

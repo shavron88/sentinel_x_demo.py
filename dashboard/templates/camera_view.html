@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<header class="topbar">
+
+    <h2>
+
+        📹 Camera {{camera_id}}
+
+    </h2>
+
+</header>
+
+<section class="camera-page">
+
+    <div class="camera-left">
+
+        <img src="/video_feed"
+
+             id="live-camera">
+
+    </div>
+
+    <div class="camera-right">
+
+        <div class="panel">
+
+            <h3>Status</h3>
+
+            <p>🟢 Online</p>
+
+        </div>
+
+        <div class="panel">
+
+            <h3>Resolution</h3>
+
+            <p>640 × 480</p>
+
+        </div>
+
+        <div class="panel">
+
+            <h3>FPS</h3>
+
+            <p id="camera-fps">30</p>
+
+        </div>
+
+        <div class="panel">
+
+            <h3>Threat</h3>
+
+            <p id="threat-level">
+
+                LOW
+
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+<section class="panel">
+
+    <h3>
+
+        Recent Events
+
+    </h3>
+
+    <div id="timeline"></div>
+
+</section>
+
+{% endblock %}

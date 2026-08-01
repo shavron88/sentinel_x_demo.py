@@ -2,6 +2,49 @@
 
 {% block content %}
 
-<h1>Evidence</h1>
+<header class="topbar">
+
+    <div>
+
+        <h2>📸 Evidence Management</h2>
+
+        <p>Manage AI captured evidence</p>
+
+    </div>
+
+</header>
+
+<section class="panel">
+
+    <div class="toolbar">
+
+        <input
+            type="text"
+            id="searchEvidence"
+            placeholder="Search evidence...">
+
+        <select id="filterType">
+
+            <option value="">All Events</option>
+
+            <option>PERSON_DETECTED</option>
+
+            <option>FALL_DETECTED</option>
+
+            <option>WEAPON_DETECTED</option>
+
+            <option>LOITERING</option>
+
+        </select>
+
+    </div>
+
+</section>
+
+<section
+    id="evidence-grid"
+    class="evidence-grid">
+
+</section>
 
 {% endblock %}

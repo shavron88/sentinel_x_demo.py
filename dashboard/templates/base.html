@@ -112,6 +112,23 @@
 
 <script src="{{ url_for('static', filename='js/camera.js') }}"></script>
 
+{% if request.path == '/incidents' %}
+<script src="{{ url_for('static', filename='js/incidents.js') }}"></script>
+{% endif %}
+
+{% if request.path == '/evidence' %}
+<script src="{{ url_for('static', filename='js/evidence.js') }}"></script>
+
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+
+<!-- ================= TOAST CONTAINER ================= -->
+
+<div id="toast-container"></div>
+
 </body>
 
 </html>

@@ -1,63 +1,100 @@
-from datetime import datetime
-
-
 class IntelligenceEngine:
 
-    def evaluate(self, event, zone, duration, person_count=1):
-        score = 0
+    def evaluate(self, event, zone, duration, person_count):
 
-        if event["type"] == "LINE_CROSSING":
-           score += 2
+        event_type = event.get("type", "UNKNOWN")
 
+        if event_type in ("LOITERING", "FALL_DETECTED", "WEAPON_DETECTED", "ABANDONED_OBJECT"):
 
-        if event["type"] == "FALL_DETECTED":
-            score += 5
-
-        if event["type"] == "CROWD_DETECTED":
-            score += 3
-
-        if event["type"] == "RUNNING":
-            score += 3
-
-        if event["type"] == "WEAPON_DETECTED":
-            score += 8
-
-        hour = datetime.now().hour
-
-        # =========================
-        # Night Time
-        # =========================
-        if hour >= 22 or hour <= 5:
-            score += 2
-
-        # =========================
-        # Zone
-        # =========================
-        if zone == "RESTRICTED":
-            score += 4
-
-        elif zone == "ENTRY":
-            score += 1
-
-        # =========================
-        # Loitering
-        # =========================
-        if duration > 30:
-            score += 2
-
-        # =========================
-        # Crowd Detection
-        # =========================
-        if person_count >= 5:
-            score += 2
-
-        # =========================
-        # Threat Decision
-        # =========================
-        if score >= 6:
             return "HIGH"
 
-        elif score >= 3:
+        if zone == "RESTRICTED":
+
+            return "HIGH"
+
+        if duration > 30:
+
+            return "MEDIUM"
+
+        if person_count > 5:
+
             return "MEDIUM"
 
         return "LOW"
+
+
+def analyze(event):
+
+    event_type = event.get("type", "UNKNOWN")
+
+    zone = event.get("zone", "Unknown")
+
+    severity = event.get("severity", "LOW")
+
+    summaries = {
+
+        "LOITERING": {
+
+            "summary":
+            f"Person remained inside {zone} for an extended period.",
+
+            "recommendation":
+            "Dispatch nearby security personnel."
+
+        },
+
+        "FALL_DETECTED": {
+
+            "summary":
+            f"Possible fall detected inside {zone}.",
+
+            "recommendation":
+            "Medical assistance recommended."
+
+        },
+
+        "WEAPON_DETECTED": {
+
+            "summary":
+            f"Potential weapon detected in {zone}.",
+
+            "recommendation":
+            "Trigger emergency response immediately."
+
+        },
+
+        "ABANDONED_OBJECT": {
+
+            "summary":
+            f"Suspicious unattended object detected in {zone}.",
+
+            "recommendation":
+            "Inspect object and isolate the area."
+
+        }
+
+    }
+
+    default = {
+
+        "summary":
+        "Unknown incident detected.",
+
+        "recommendation":
+        "Continue monitoring."
+
+    }
+
+    data = summaries.get(event_type, default)
+
+    return {
+
+        "event": event_type,
+
+        "severity": severity,
+
+        "summary": data["summary"],
+
+        "recommendation": data["recommendation"]
+
+    }

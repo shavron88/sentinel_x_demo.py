@@ -14,7 +14,9 @@
 
     </div>
 
-    <div class="status">
+    <div class="status-panel">
+
+    <div class="system-status">
 
         <span class="online-dot"></span>
 
@@ -22,6 +24,39 @@
 
     </div>
 
+    <div class="live-clock">
+
+        <div id="current-date"></div>
+
+        <div id="current-time"></div>
+
+    </div>
+
+    <div class="notification-wrapper">
+
+        <button id="notification-btn">
+
+            🔔
+
+            <span id="notification-count">0</span>
+
+        </button>
+
+        <div id="notification-panel">
+
+            <h3>Notifications</h3>
+
+            <div id="notification-list">
+
+                <p>No Notifications</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 </header>
 
 <!-- ================= KPI CARDS ================= -->
@@ -112,33 +147,63 @@
 
         <section class="camera-section">
 
-            <div class="camera-header">
+           <section class="camera-section">
 
-                <h3>📹 Live Camera Feed</h3>
+    <div class="camera-header">
 
-                <div class="recording">
+        <div>
 
-                    🔴 LIVE
+            <h3>📹 Camera 01</h3>
 
-                </div>
+            <small>Main Entrance</small>
 
-            </div>
+        </div>
 
-            <div class="camera-box">
+        <div class="camera-actions">
 
-                <img src="/video_feed" id="live-camera">
+            <span class="recording">
 
-                <div class="camera-overlay">
+                🔴 LIVE
 
-                    <span>🟢 Camera Online</span>
+            </span>
 
-                    <span id="fps-overlay">FPS : 0</span>
+            <button id="snapshot-btn">
 
-                </div>
+                📷 Snapshot
 
-            </div>
+            </button>
 
-        </section>
+            <button id="fullscreen-btn">
+
+                ⛶ Fullscreen
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="camera-box">
+
+        <img src="/video_feed" id="live-camera">
+
+    </div>
+
+    <div class="camera-footer">
+
+        <span>👤 <strong id="person-count-footer">0</strong></span>
+
+        <span>🚗 <strong id="vehicle-count-footer">0</strong></span>
+
+        <span>⚡ <strong id="fps-footer">0</strong> FPS</span>
+
+        <span>🎥 Recording</span>
+
+        <span>🟢 AI Active</span>
+
+    </div>
+
+</section>
 
         <!-- CAMERA STATUS -->
 
@@ -206,51 +271,171 @@
 
             <h3>📸 Evidence Gallery</h3>
 
-            <div id="gallery"></div>
+            <div id="gallery" class="gallery-grid">
+
+</div>
+
+<!-- Image Preview -->
+
+<div id="image-modal" class="image-modal">
+
+    <span id="close-modal">&times;</span>
+
+    <img id="modal-image">
+
+</div>
 
         </div>
 
         <!-- SYSTEM HEALTH -->
 
-        <div class="panel">
+     <section class="system-health">
 
-            <h3>🖥 System Health</h3>
+    <div class="panel">
 
-            <div class="system-health">
+        <h3>🖥 AI System Status</h3>
 
-                <div class="health-row">
+        <div class="health-list">
 
-                    <span>AI Engine</span>
+            <div class="health-item">
 
-                    <span class="health-good">Running</span>
+                <span>AI Engine</span>
 
-                </div>
-
-                <div class="health-row">
-
-                    <span>Camera</span>
-
-                    <span class="health-good">Connected</span>
-
-                </div>
-
-                <div class="health-row">
-
-                    <span>Memory</span>
-
-                    <span id="memory-status">Normal</span>
-
-                </div>
-
-                <div class="health-row">
-
-                    <span>Threat</span>
-
-                    <span id="health-threat">LOW</span>
-
-                </div>
+                <span class="health-online">ONLINE</span>
 
             </div>
+
+            <div class="health-item">
+
+                <span>Camera</span>
+
+                <span id="camera-status" class="health-online">CONNECTED</span>
+
+            </div>
+
+            <div class="health-item">
+
+                <span>YOLO Model</span>
+
+                <span class="health-online">LOADED</span>
+
+            </div>
+
+            <div class="health-item">
+
+                <span>Database</span>
+
+                <span class="health-online">CONNECTED</span>
+
+            </div>
+
+            <div class="health-item">
+
+                <span>Detection</span>
+
+                <span class="health-online">ACTIVE</span>
+
+            </div>
+
+            <div class="health-item">
+
+                <span>Dashboard</span>
+
+                <span class="health-online">RUNNING</span>
+
+            </div>
+
+            <section class="panel">
+
+    <h3>🧠 AI Incident Intelligence</h3>
+
+    <div id="ai-summary">
+
+        Waiting for incident...
+
+    </div>
+
+</section>
+
+        </div>
+
+    </div>
+
+
+    </div>
+
+</section>
+
+<section class="quick-actions">
+
+    <div class="panel">
+
+        <h3>⚡ Quick Actions</h3>
+
+        <div class="action-grid">
+
+            <button class="action-btn snapshot-action">
+                📷
+                <span>Snapshot</span>
+            </button>
+
+            <button class="action-btn record-action">
+                🎥
+                <span>Recording</span>
+            </button>
+
+            <button class="action-btn alarm-action">
+                🚨
+                <span>Alarm</span>
+            </button>
+
+            <button class="action-btn report-action">
+                📄
+                <span>Report</span>
+            </button>
+
+            <button class="action-btn refresh-action">
+                ♻
+                <span>Refresh AI</span>
+            </button>
+
+            <button class="action-btn settings-action">
+                ⚙
+                <span>Settings</span>
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<section class="panel">
+
+    <h3>
+
+        🗺 Security Map
+
+    </h3>
+
+    <div id="security-map">
+
+        <img src="/static/images/floor_map.png">
+
+        <div class="camera-marker"
+
+             style="top:20%;left:25%;">
+
+            📹
+
+        </div>
+
+        <div class="event-marker"
+
+             style="top:52%;left:68%;">
+
+            🚨
 
         </div>
 

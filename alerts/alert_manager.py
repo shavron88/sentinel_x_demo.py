@@ -1,3 +1,7 @@
+from alerts.intelligence_engine import analyze
+
+
+
 class AlertManager:
 
     def process(self, event):
@@ -75,12 +79,10 @@ class AlertManager:
         if event_type == "WEAPON_DETECTED":
 
             return {
-
-               "level": "CRITICAL",
+                "level": "CRITICAL",
                 "message": "Weapon detected"
+            }
 
-           }
-
-        
+        event["analysis"] = analyze(event)
 
         return None
