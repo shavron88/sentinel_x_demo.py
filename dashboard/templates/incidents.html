@@ -2,17 +2,7 @@
 
 {% block content %}
 
-<header class="topbar">
-
-    <div>
-
-        <h2>🚨 Incident Management</h2>
-
-        <p>View and manage security incidents</p>
-
-    </div>
-
-</header>
+<div class="page-content fade-in">
 
 <section class="panel">
 
@@ -44,5 +34,27 @@
     class="incident-list">
 
 </section>
+
+<div id="emptyState" style="display:none;"></div>
+
+<script>
+
+(function() {
+
+    showSkeletonRows("incident-list", 5);
+
+    setTimeout(function() {
+
+        // In production, check if incidents exist
+
+        // If empty: showEmptyState("emptyState", "No Incidents Found", "There are no incidents matching your criteria.", [{label:"Refresh", onclick:"loadIncidents()", class:"btn-primary"}])
+
+    }, 600);
+
+})();
+
+</script>
+
+</div>
 
 {% endblock %}

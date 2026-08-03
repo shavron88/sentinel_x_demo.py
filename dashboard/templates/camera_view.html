@@ -2,22 +2,15 @@
 
 {% block content %}
 
-<header class="topbar">
-
-    <h2>
-
-        📹 Camera {{camera_id}}
-
-    </h2>
-
-</header>
+<div class="page-content fade-in">
 
 <section class="camera-page">
 
-    <div class="camera-left">
+    <div class="camera-left chart-loading">
+
+        <div class="loading-spinner small"></div>
 
         <img src="/video_feed"
-
              id="live-camera">
 
     </div>
@@ -75,5 +68,27 @@
     <div id="timeline"></div>
 
 </section>
+
+<div id="emptyState" style="display:none;"></div>
+
+<script>
+
+(function() {
+
+    showSkeletonRows("timeline", 5);
+
+    setTimeout(function() {
+
+        // In production, check if events exist
+
+        // If empty: showEmptyState("emptyState", "No Recent Events", "No events recorded for this camera.", [{label:"Refresh", onclick:"refreshCamera()", class:"btn-primary"}])
+
+    }, 600);
+
+})();
+
+</script>
+
+</div>
 
 {% endblock %}

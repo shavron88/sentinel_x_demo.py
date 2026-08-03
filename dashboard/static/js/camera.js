@@ -6,6 +6,8 @@ async function loadCameras(){
 
     const grid=document.getElementById("camera-grid");
 
+    if(!grid) return;
+
     grid.innerHTML="";
 
     cameras.forEach(camera=>{

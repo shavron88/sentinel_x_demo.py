@@ -2,28 +2,32 @@
 
 {% block content %}
 
-<header class="topbar">
+<div class="page-content fade-in">
 
-    <div>
-
-        <h2>📹 Camera Management</h2>
-
-        <p>Monitor all connected surveillance cameras</p>
-
-    </div>
-
-    <button class="primary-btn">
-
-        + Add Camera
-
-    </button>
-
-</header>
-
-<section class="camera-grid"
-
-id="camera-grid">
+<section class="camera-grid" id="camera-grid">
 
 </section>
+
+<div id="emptyState" style="display:none;"></div>
+
+<script>
+
+(function() {
+
+    showSkeletonCards("camera-grid", 4);
+
+    setTimeout(function() {
+
+        // In production, check if cameras exist
+
+        // If empty: showEmptyState("emptyState", "No Cameras Found", "There are no cameras configured.", [{label:"Add Camera", onclick:"addCamera()", class:"btn-primary"}])
+
+    }, 600);
+
+})();
+
+</script>
+
+</div>
 
 {% endblock %}

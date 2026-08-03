@@ -2,23 +2,7 @@
 
 {% block content %}
 
-<header class="topbar">
-
-    <div>
-
-        <h2>📄 Security Reports</h2>
-
-        <p>AI Surveillance Operational Report</p>
-
-    </div>
-
-    <button class="download-btn" onclick="downloadPDF()">
-
-        📄 Download PDF
-
-    </button>
-
-</header>
+<div class="page-content fade-in">
 
 <!-- ================= REPORT FILTER ================= -->
 
@@ -114,9 +98,9 @@
 
 <tbody id="event-summary">
 
-</tbody>
+    </tbody>
 
-</table>
+    </table>
 
 </section>
 
@@ -162,25 +146,25 @@
 
 <tr>
 
-<td>Total Images</td>
+<td data-label="Item">Total Images</td>
 
-<td id="images-total">0</td>
-
-</tr>
-
-<tr>
-
-<td>Today's Images</td>
-
-<td id="images-today">0</td>
+<td data-label="Value" id="images-total">0</td>
 
 </tr>
 
 <tr>
 
-<td>Storage Used</td>
+<td data-label="Item">Today's Images</td>
 
-<td id="storage-used">0 MB</td>
+<td data-label="Value" id="images-today">0</td>
+
+</tr>
+
+<tr>
+
+<td data-label="Item">Storage Used</td>
+
+<td data-label="Value" id="storage-used">0 MB</td>
 
 </tr>
 
@@ -229,5 +213,29 @@
 </div>
 
 </section>
+
+<script>
+
+(function() {
+
+    showSkeletonCards("stats-grid", 4);
+
+    showSkeletonTable("event-summary", 4);
+
+    showSkeletonTable("camera-summary", 3);
+
+    showSkeletonRows("incident-report-list", 3);
+
+    setTimeout(function() {
+
+        // In production, populate report data
+
+    }, 700);
+
+})();
+
+</script>
+
+</div>
 
 {% endblock %}

@@ -322,3 +322,154 @@ def analytics_data():
         ]
 
     })
+
+@app.route("/reports_data")
+def reports_data():
+
+    return jsonify({
+
+        "camera_online":4,
+
+        "total_events":58,
+
+        "total_evidence":34,
+
+        "threat_level":"MEDIUM",
+
+        "event_summary":[
+
+            {
+
+                "name":"Person",
+
+                "count":24
+
+            },
+
+            {
+
+                "name":"Vehicle",
+
+                "count":16
+
+            },
+
+            {
+
+                "name":"Fall",
+
+                "count":3
+
+            },
+
+            {
+
+                "name":"Loitering",
+
+                "count":8
+
+            },
+
+            {
+
+                "name":"Weapon",
+
+                "count":1
+
+            }
+
+        ],
+
+        "camera_summary":[
+
+            {
+
+                "name":"Camera 01",
+
+                "status":"ONLINE",
+
+                "events":18
+
+            },
+
+            {
+
+                "name":"Camera 02",
+
+                "status":"ONLINE",
+
+                "events":14
+
+            },
+
+            {
+
+                "name":"Camera 03",
+
+                "status":"OFFLINE",
+
+                "events":"--"
+
+            },
+
+            {
+
+                "name":"Camera 04",
+
+                "status":"ONLINE",
+
+                "events":26
+
+            }
+
+        ],
+
+        "evidence":{
+
+            "images":34,
+
+            "today":11,
+
+            "storage":"428 MB"
+
+        },
+
+        "high_priority":[
+
+            {
+
+                "event":"Fall Detection",
+
+                "camera":"Camera 01",
+
+                "location":"Main Entrance",
+
+                "time":"10:45 PM"
+
+            },
+
+            {
+
+                "event":"Weapon Detection",
+
+                "camera":"Camera 03",
+
+                "location":"Parking",
+
+                "time":"09:52 PM"
+
+            }
+
+        ]
+
+    })
+
+@app.route("/live-wall")
+def live_wall():
+
+    return render_template("live_wall.html")
+
+@app.route("/security-map")
+def security_map():
+
+    return render_template("security_map.html")

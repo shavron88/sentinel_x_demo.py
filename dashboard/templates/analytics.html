@@ -2,17 +2,7 @@
 
 {% block content %}
 
-<header class="topbar">
-
-    <div>
-
-        <h2>📊 Analytics Dashboard</h2>
-
-        <p>AI Surveillance Statistics & Insights</p>
-
-    </div>
-
-</header>
+<div class="page-content fade-in">
 
 <section class="stats-grid">
 
@@ -52,7 +42,9 @@
 
 <section class="chart-grid">
 
-    <div class="panel">
+    <div class="panel chart-loading">
+
+        <div class="loading-spinner small"></div>
 
         <h3>📈 Incident Trend</h3>
 
@@ -60,7 +52,9 @@
 
     </div>
 
-    <div class="panel">
+    <div class="panel chart-loading">
+
+        <div class="loading-spinner small"></div>
 
         <h3>🥧 Incident Types</h3>
 
@@ -77,5 +71,25 @@
     <div id="analytics-table"></div>
 
 </section>
+
+<script>
+
+(function() {
+
+    showSkeletonCards("stats-grid", 4);
+
+    showSkeletonTable("analytics-table", 5);
+
+    setTimeout(function() {
+
+        // In production, populate charts and stats
+
+    }, 700);
+
+})();
+
+</script>
+
+</div>
 
 {% endblock %}
