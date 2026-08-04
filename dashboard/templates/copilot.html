@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-content fade-in">
+
+<div class="copilot-container">
+
+    <div id="chatWindow" class="chat-window">
+
+        <div class="ai-message">
+
+            👋 Hello! I'm Sentinel AI.
+
+            How can I help you today?
+
+        </div>
+
+    </div>
+
+    <div class="chat-input">
+
+        <input
+        id="userQuestion"
+        type="text"
+        placeholder="Ask about incidents, cameras, evidence...">
+
+        <button onclick="sendQuestion()">
+
+            Send
+
+        </button>
+
+    </div>
+
+    <div id="emptyState" style="display:none;"></div>
+
+</div>
+
+<script>
+
+(function() {
+
+    showSkeletonRows("chatWindow", 3);
+
+    setTimeout(function() {
+
+        // In production, load chat history
+
+        // If empty: showEmptyState("emptyState", "No Messages", "Start a conversation with Sentinel AI.", [{label:"Ask AI", onclick:"focusQuestion()", class:"btn-primary"}])
+
+    }, 600);
+
+})();
+
+</script>
+
+</div>
+
+{% endblock %}

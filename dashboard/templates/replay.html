@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-content fade-in">
+
+<div class="replay-page">
+
+<div class="video-panel chart-loading">
+
+    <div class="loading-spinner small"></div>
+
+    <div class="video-header">
+
+        <h2>🎥 Incident Replay</h2>
+
+        <div class="badge badge-danger">
+
+            HIGH PRIORITY
+
+        </div>
+
+    </div>
+
+    <video
+    id="incidentVideo"
+    controls
+    autoplay>
+
+    <source src="/static/demo/fall.mp4">
+
+    </video>
+
+    <div class="timeline-controls" id="timelineControls">
+
+        <button class="btn btn-outline">
+
+            ⏪ -10s
+
+        </button>
+
+        <button class="btn btn-primary">
+
+            ▶ Play
+
+        </button>
+
+        <button class="btn btn-outline">
+
+            +10s ⏩
+
+        </button>
+
+    </div>
+
+</div>
+
+<div class="incident-info">
+
+    <h2>Incident Summary</h2>
+
+    <div class="info-card">
+
+        <p>
+
+        <strong>Camera</strong>
+
+        Camera 01
+
+        </p>
+
+        <p>
+
+        <strong>Event</strong>
+
+        Fall Detection
+
+        </p>
+
+        <p>
+
+        <strong>Confidence</strong>
+
+        97.6%
+
+        </p>
+
+        <p>
+
+        <strong>Duration</strong>
+
+        18 Seconds
+
+        </p>
+
+        <p>
+
+        <strong>Time</strong>
+
+        10:42 PM
+
+        </p>
+
+        <p>
+
+        <strong>Status</strong>
+
+        Resolved
+
+        </p>
+
+    </div>
+
+</div>
+
+</div>
+
+<div id="emptyState" style="display:none;"></div>
+
+<script>
+
+(function() {
+
+    showSkeletonCards("timelineControls", 3);
+
+    setTimeout(function() {
+
+        // In production, load replay data
+
+        // If empty: showEmptyState("emptyState", "No Replay Available", "This incident has no recorded replay.", [{label:"Back", onclick:"goBack()", class:"btn-secondary"}])
+
+    }, 600);
+
+})();
+
+</script>
+
+</div>
+
+{% endblock %}

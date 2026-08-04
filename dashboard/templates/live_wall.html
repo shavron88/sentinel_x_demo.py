@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-content fade-in">
+
+<div id="cameraWall" class="camera-wall layout-4">
+
+{% for i in range(1,5) %}
+
+<div class="camera-card">
+
+<div class="camera-header">
+
+<span>📹 Camera {{i}}</span>
+
+<span class="camera-status online">
+
+ONLINE
+
+</span>
+
+</div>
+
+<img src="/video_feed">
+
+<div class="camera-footer">
+
+<span>FPS : 30</span>
+
+<span>AI : ACTIVE</span>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+<div id="emptyState" style="display:none;"></div>
+
+<script>
+
+(function() {
+
+    showSkeletonCards("cameraWall", 4);
+
+    setTimeout(function() {
+
+        // In production, check if camera feeds exist
+
+        // If empty: showEmptyState("emptyState", "No Camera Feeds", "No active camera feeds available.", [{label:"Retry", onclick:"loadFeeds()", class:"btn-primary"}])
+
+    }, 600);
+
+})();
+
+</script>
+
+</div>
+
+{% endblock %}

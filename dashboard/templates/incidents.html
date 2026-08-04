@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-content fade-in">
+
+<section class="panel">
+
+    <div class="toolbar">
+
+        <input
+            type="text"
+            id="incident-search"
+            placeholder="Search incidents...">
+
+        <div class="filter-buttons">
+
+            <button class="filter-btn active" data-filter="ALL">All</button>
+
+            <button class="filter-btn" data-filter="HIGH">High</button>
+
+            <button class="filter-btn" data-filter="MEDIUM">Medium</button>
+
+            <button class="filter-btn" data-filter="LOW">Low</button>
+
+        </div>
+
+    </div>
+
+</section>
+
+<section
+    id="incident-list"
+    class="incident-list">
+
+</section>
+
+<div id="emptyState" style="display:none;"></div>
+
+<script>
+
+(function() {
+
+    showSkeletonRows("incident-list", 5);
+
+    setTimeout(function() {
+
+        // In production, check if incidents exist
+
+        // If empty: showEmptyState("emptyState", "No Incidents Found", "There are no incidents matching your criteria.", [{label:"Refresh", onclick:"loadIncidents()", class:"btn-primary"}])
+
+    }, 600);
+
+})();
+
+</script>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,884 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-content fade-in">
+
+<div class="dashboard-page">
+
+<!-- ================= KPI ================= -->
+
+<section class="kpi-bar">
+
+    <div class="kpi-card threat">
+
+        <div class="kpi-label">Threat Level</div>
+
+        <div class="kpi-value" id="kpi-threat">LOW</div>
+
+        <div class="kpi-indicator">
+
+            <span class="kpi-dot"></span>
+
+            <span class="kpi-text">Secure</span>
+
+        </div>
+
+    </div>
+
+    <div class="kpi-card cameras">
+
+        <div class="kpi-label">Active Cameras</div>
+
+        <div class="kpi-value">
+
+            <span id="kpi-cameras">4</span>
+
+            <span class="kpi-total">/4</span>
+
+        </div>
+
+        <div class="kpi-indicator">
+
+            <span class="kpi-dot online"></span>
+
+            <span class="kpi-text">All Online</span>
+
+        </div>
+
+    </div>
+
+    <div class="kpi-card accuracy">
+
+        <div class="kpi-label">AI Accuracy</div>
+
+        <div class="kpi-value">
+
+            <span id="kpi-accuracy">98.7</span>
+
+            <span class="kpi-percent">%</span>
+
+        </div>
+
+        <div class="kpi-indicator">
+
+            <span class="kpi-dot high"></span>
+
+            <span class="kpi-text">Excellent</span>
+
+        </div>
+
+    </div>
+
+    <div class="kpi-card alerts">
+
+        <div class="kpi-label">Alerts</div>
+
+        <div class="kpi-value" id="kpi-alerts">02</div>
+
+        <div class="kpi-indicator">
+
+            <span class="kpi-dot"></span>
+
+            <span class="kpi-text">Today</span>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= MAIN GRID ================= -->
+
+<section class="command-center">
+
+<div class="left-panel">
+
+<!-- ================= LIVE CAMERA ================= -->
+
+<div class="camera-hero">
+
+    <div class="camera-hero-header">
+
+        <div class="camera-hero-title">
+
+            <span class="live-badge">● LIVE</span>
+
+            <h2>LIVE AI MONITOR</h2>
+
+        </div>
+
+        <div class="camera-hero-status">
+
+            <span class="status-chip small">
+
+                <span class="status-dot"></span>
+
+                Recording
+
+            </span>
+
+            <span class="status-chip small">
+
+                🧠 AI Detection
+
+            </span>
+
+            <span class="status-chip small">
+
+                📹 Camera 01
+
+            </span>
+
+        </div>
+
+    </div>
+
+    <div class="camera-hero-body">
+
+        <img
+
+        src="/video_feed"
+
+        id="live-camera"
+
+        alt="Live Camera"
+
+        >
+
+        <!-- AI Detection Overlay -->
+
+        <div class="ai-overlay" id="aiOverlay">
+
+            <div class="ai-bounding-box" id="aiBox">
+
+                <div class="ai-box-header">
+
+                    <div class="ai-box-title" id="aiTitle">
+
+                        Person #1
+
+                    </div>
+
+                    <div class="ai-confidence" id="aiConfidence">
+
+                        98%
+
+                    </div>
+
+                </div>
+
+                <div class="ai-box-row">
+
+                    <span class="ai-box-label">Zone</span>
+
+                    <span class="ai-box-value" id="aiZone">
+
+                        Main Entrance
+
+                    </span>
+
+                </div>
+
+                <div class="ai-box-row">
+
+                    <span class="ai-box-label">Tracking</span>
+
+                    <span class="ai-box-value" id="aiTracking">
+
+                        #TX-1001
+
+                    </span>
+
+                </div>
+
+                <div class="ai-box-row">
+
+                    <span class="ai-box-label">Velocity</span>
+
+                    <span class="ai-box-value" id="aiVelocity">
+
+                        1.2 m/s
+
+                    </span>
+
+                </div>
+
+                <div class="ai-box-row">
+
+                    <span class="ai-box-label">Direction</span>
+
+                    <span class="ai-box-value" id="aiDirection">
+
+                        → South
+
+                    </span>
+
+                </div>
+
+                <div class="ai-track-line"></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="camera-hero-footer">
+
+        <span>
+
+            👤
+
+            <strong id="person-count-footer">
+
+                0
+
+            </strong>
+
+        </span>
+
+        <span>
+
+            🚗
+
+            <strong id="vehicle-count-footer">
+
+                0
+
+            </strong>
+
+        </span>
+
+        <span>
+
+            ⚡
+
+            <strong id="fps-footer">
+
+                0
+
+            </strong>
+
+            FPS
+
+        </span>
+
+        <span>
+
+            🟢 AI ACTIVE
+
+        </span>
+
+    </div>
+
+</div>
+
+<!-- ================= CAMERA STATUS ================= -->
+
+<div class="panel">
+
+<h3>📷 Camera Status</h3>
+
+<div class="camera-status">
+
+<div class="status-item">
+
+<span>Status</span>
+
+<strong id="camera-status">
+
+ONLINE
+
+</strong>
+
+</div>
+
+<div class="status-item">
+
+<span>Resolution</span>
+
+<strong>
+
+640×480
+
+</strong>
+
+</div>
+
+<div class="status-item">
+
+<span>FPS</span>
+
+<strong id="camera-fps">
+
+30
+
+</strong>
+
+</div>
+
+<div class="status-item">
+
+<span>Recording</span>
+
+<strong>
+
+ON
+
+</strong>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ================= RIGHT COLUMN ================= -->
+
+<div class="right-panel">
+
+    <!-- ================= AI LIVE FEED ================= -->
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <h3>🤖 AI Live Feed</h3>
+
+            <span class="feed-badge">LIVE</span>
+
+        </div>
+
+        <div id="timeline" class="ai-feed-list">
+
+            <!-- Populated by JS -->
+
+        </div>
+
+    </div>
+
+    <!-- ================= EVIDENCE ================= -->
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <h3>📸 Latest Evidence</h3>
+
+            <a href="/evidence" class="view-all-link">View All →</a>
+
+        </div>
+
+        <div id="gallery" class="latest-evidence-grid">
+
+            <!-- Populated by dashboard.js -->
+
+        </div>
+
+    </div>
+
+    <!-- ================= AI SYSTEM ================= -->
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <h3>🖥 AI System Health</h3>
+
+        </div>
+
+        <div class="health-list">
+
+            <div class="health-item">
+
+                <span>AI Engine</span>
+
+                <span class="health-online">
+
+                    ONLINE
+
+                </span>
+
+            </div>
+
+            <div class="health-item">
+
+                <span>Camera</span>
+
+                <span id="camera-status" class="health-online">
+
+                    CONNECTED
+
+                </span>
+
+            </div>
+
+            <div class="health-item">
+
+                <span>YOLO Model</span>
+
+                <span class="health-online">
+
+                    LOADED
+
+                </span>
+
+            </div>
+
+            <div class="health-item">
+
+                <span>Database</span>
+
+                <span class="health-online">
+
+                    CONNECTED
+
+                </span>
+
+            </div>
+
+            <div class="health-item">
+
+                <span>Detection Engine</span>
+
+                <span class="health-online">
+
+                    ACTIVE
+
+                </span>
+
+            </div>
+
+            <div class="health-item">
+
+                <span>Dashboard</span>
+
+                <span class="health-online">
+
+                    RUNNING
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= AI INTELLIGENCE ================= -->
+
+    <div class="panel ai-intelligence-panel">
+
+        <div class="panel-header">
+
+            <h3>🧠 AI Incident Intelligence</h3>
+
+            <span class="ai-status-dot"></span>
+
+        </div>
+
+        <div class="ai-intelligence-content">
+
+            <div class="ai-risk-card">
+
+                <div class="ai-risk-header">
+
+                    <span class="ai-risk-label">Current Risk</span>
+
+                    <span class="ai-risk-value" id="ai-risk-level">LOW</span>
+
+                </div>
+
+                <div class="ai-risk-bar">
+
+                    <div class="ai-risk-fill" id="ai-risk-fill"></div>
+
+                </div>
+
+            </div>
+
+            <div class="ai-stats-grid">
+
+                <div class="ai-stat">
+
+                    <span class="ai-stat-label">Active Detections</span>
+
+                    <span class="ai-stat-value" id="ai-active-detections">3 Persons</span>
+
+                </div>
+
+                <div class="ai-stat">
+
+                    <span class="ai-stat-label">Confidence</span>
+
+                    <span class="ai-stat-value" id="ai-confidence">98.4%</span>
+
+                </div>
+
+            </div>
+
+            <div class="ai-recommendation">
+
+                <span class="ai-rec-label">Recommendation</span>
+
+                <p id="ai-recommendation">Continue Monitoring</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</section>
+
+<!-- ================= BOTTOM GRID ================= -->
+
+<section class="bottom-grid">
+
+    <!-- ================= CAMERA CONTROLS ================= -->
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <h3>🎥 Camera Controls</h3>
+
+        </div>
+
+        <div class="camera-controls-grid">
+
+            <button class="camera-control-btn" data-action="snapshot">
+
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+
+                    <circle cx="12" cy="13" r="4"></circle>
+
+                </svg>
+
+                <span>Snapshot</span>
+
+            </button>
+
+            <button class="camera-control-btn" data-action="record">
+
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <circle cx="12" cy="12" r="10"></circle>
+
+                    <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
+
+                </svg>
+
+                <span>Record</span>
+
+            </button>
+
+            <button class="camera-control-btn" data-action="ptz">
+
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <circle cx="12" cy="12" r="3"></circle>
+
+                    <path d="M12 2v4"></path>
+
+                    <path d="M12 18v4"></path>
+
+                    <path d="M2 12h4"></path>
+
+                    <path d="M18 12h4"></path>
+
+                </svg>
+
+                <span>PTZ</span>
+
+            </button>
+
+            <button class="camera-control-btn" data-action="zoom">
+
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <circle cx="11" cy="11" r="8"></circle>
+
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+
+                    <line x1="11" y1="8" x2="11" y2="14"></line>
+
+                    <line x1="8" y1="11" x2="14" y2="11"></line>
+
+                </svg>
+
+                <span>Zoom</span>
+
+            </button>
+
+            <button class="camera-control-btn" data-action="ai-tracking">
+
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <path d="M12 2a10 10 0 1 0 10 10"></path>
+
+                    <path d="M12 12l4-4"></path>
+
+                    <circle cx="12" cy="12" r="2"></circle>
+
+                </svg>
+
+                <span>AI Tracking</span>
+
+            </button>
+
+            <button class="camera-control-btn" data-action="export">
+
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+
+                    <polyline points="7 10 12 15 17 10"></polyline>
+
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+
+                </svg>
+
+                <span>Export</span>
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- ================= SECURITY MAP ================= -->
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <h3>🗺 Security Map</h3>
+
+        </div>
+
+        <div id="security-map">
+
+            <img
+                src="{{ url_for('static', filename='images/floor_map.png') }}"
+                alt="Floor Map"
+            >
+
+
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= SYSTEM PERFORMANCE ================= -->
+
+<section class="performance-grid">
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <h3>📈 AI Performance</h3>
+
+        </div>
+
+        <div class="chart-container chart-loading">
+
+    <div class="loading-spinner small"></div>
+
+    <canvas id="performanceChart"></canvas>
+
+</div>
+
+    </div>
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <h3>🖥 Resource Usage</h3>
+
+        </div>
+
+        <div class="resource-card">
+
+            <div class="resource-item">
+
+                <span>CPU</span>
+
+                <div class="progress">
+
+                    <div class="progress-fill cpu-fill"
+                         style="width:45%;"></div>
+
+                </div>
+
+                <strong>45%</strong>
+
+            </div>
+
+            <div class="resource-item">
+
+                <span>RAM</span>
+
+                <div class="progress">
+
+                    <div class="progress-fill ram-fill"
+                         style="width:61%;"></div>
+
+                </div>
+
+                <strong>61%</strong>
+
+            </div>
+
+            <div class="resource-item">
+
+                <span>GPU</span>
+
+                <div class="progress">
+
+                    <div class="progress-fill gpu-fill"
+                         style="width:38%;"></div>
+
+                </div>
+
+                <strong>38%</strong>
+
+            </div>
+
+            <div class="resource-item">
+
+                <span>Storage</span>
+
+                <div class="progress">
+
+                    <div class="progress-fill storage-fill"
+                         style="width:24%;"></div>
+
+                </div>
+
+                <strong>24%</strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= DETECTION HISTORY ================= -->
+
+<section class="detection-history-section">
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <h3>📈 Detection History</h3>
+
+            <div class="chart-legend">
+
+                <span class="legend-item persons">
+
+                    <span class="legend-dot"></span>
+
+                    Persons
+
+                </span>
+
+                <span class="legend-item vehicles">
+
+                    <span class="legend-dot"></span>
+
+                    Vehicles
+
+                </span>
+
+                <span class="legend-item alerts">
+
+                    <span class="legend-dot"></span>
+
+                    Alerts
+
+                </span>
+
+            </div>
+
+        </div>
+
+        <div class="chart-container chart-loading">
+
+            <div class="loading-spinner small"></div>
+
+            <canvas id="detectionChart"></canvas>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="dashboard-footer">
+
+    <div>
+
+        <strong>Sentinel X AI Edge Platform</strong>
+
+        <p>
+
+            Version 1.0 • Real-Time Surveillance Intelligence
+
+        </p>
+
+    </div>
+
+    <div>
+
+        Powered by
+
+        <strong>
+
+            YOLOv8 • OpenCV • Flask • SQLite
+
+        </strong>
+
+    </div>
+
+</footer>
+
+</div>
+
+</div>
+
+<script>
+
+(function() {
+
+    showSkeletonCards("gallery", 4);
+
+    showSkeletonRows("timeline", 5);
+
+    setTimeout(function() {
+
+        // In production, populate with real data here
+
+    }, 600);
+
+})();
+
+</script>
+
+{% endblock %}

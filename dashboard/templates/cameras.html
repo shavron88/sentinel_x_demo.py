@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-content fade-in">
+
+<section class="camera-grid" id="camera-grid">
+
+</section>
+
+<div id="emptyState" style="display:none;"></div>
+
+<script>
+
+(function() {
+
+    showSkeletonCards("camera-grid", 4);
+
+    setTimeout(function() {
+
+        // In production, check if cameras exist
+
+        // If empty: showEmptyState("emptyState", "No Cameras Found", "There are no cameras configured.", [{label:"Add Camera", onclick:"addCamera()", class:"btn-primary"}])
+
+    }, 600);
+
+})();
+
+</script>
+
+</div>
+
+{% endblock %}

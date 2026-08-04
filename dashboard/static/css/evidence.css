@@ -1,0 +1,1268 @@
+/* ==========================================
+   PREMIUM ENHANCEMENTS
+   Glass, Glow, Buttons, Chips, Timeline, etc.
+========================================== */
+
+/* ==========================================
+   GLOBAL SCOPED TO EVIDENCE PAGE
+========================================== */
+
+.ev-page button {
+
+    border: none;
+
+    border-radius: 14px;
+
+    padding: 14px 22px;
+
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+
+    color: white;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: all .35s cubic-bezier(.4,0,.2,1);
+
+    font-family: inherit;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+}
+
+.ev-page button:hover {
+
+    transform: translateY(-4px);
+
+    box-shadow: 0 15px 35px rgba(37,99,235,.45);
+
+}
+
+.ev-page button:active {
+
+    transform: translateY(-2px) scale(.98);
+
+}
+
+.ev-page * {
+
+    transition: background .3s, color .3s, transform .3s, box-shadow .3s, border-color .3s, opacity .3s;
+
+}
+
+/* ==========================================
+   BODY BACKGROUND
+========================================== */
+
+body {
+
+    background:
+
+        radial-gradient(circle at top right, #2563eb25 0%, transparent 30%),
+
+        radial-gradient(circle at bottom left, #00d4ff15 0%, transparent 40%),
+
+        #08111f;
+
+    min-height: 100vh;
+
+}
+
+/* ==========================================
+   GLASS CARDS
+========================================== */
+
+.ev-card,
+
+.ev-preview-card,
+
+.ev-summary-card,
+
+.ev-timeline-card,
+
+.ev-stat-card {
+
+    background: rgba(255,255,255,.05);
+
+    backdrop-filter: blur(20px);
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    border-radius: 22px;
+
+    box-shadow: 0 12px 35px rgba(0,0,0,.45);
+
+}
+
+/* ==========================================
+   PREMIUM STATS CARDS
+========================================== */
+
+.ev-stat-card {
+
+    position: relative;
+
+    overflow: hidden;
+
+}
+
+.ev-stat-card::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 160px;
+
+    height: 160px;
+
+    background: #2563eb30;
+
+    border-radius: 50%;
+
+    right: -60px;
+
+    top: -60px;
+
+    filter: blur(20px);
+
+    pointer-events: none;
+
+}
+
+.ev-stat-card.ev-stat-critical::before {
+
+    background: #ef444430;
+
+}
+
+/* ==========================================
+   SEARCH BAR
+========================================== */
+
+.ev-search-input {
+
+    background: #111d33 !important;
+
+    border: 1px solid rgba(255,255,255,.08) !important;
+
+    border-radius: 18px !important;
+
+    padding: 18px 22px !important;
+
+    color: white !important;
+
+    font-size: 16px !important;
+
+}
+
+.ev-search-input:focus {
+
+    outline: none !important;
+
+    border-color: rgba(59,130,246,.3) !important;
+
+    box-shadow: 0 0 0 3px rgba(59,130,246,.1) !important;
+
+}
+
+.ev-search-input::placeholder {
+
+    color: #64748b !important;
+
+}
+
+/* ==========================================
+   FILTER CHIPS
+========================================== */
+
+.chip {
+
+    padding: 12px 22px;
+
+    border-radius: 30px;
+
+    background: #13213b;
+
+    color: #dbeafe;
+
+    cursor: pointer;
+
+    transition: all .3s cubic-bezier(.4,0,.2,1);
+
+    font-family: inherit;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    border: 1px solid rgba(255,255,255,.06);
+
+    white-space: nowrap;
+
+}
+
+.chip:hover {
+
+    background: #2563eb;
+
+    color: white;
+
+    transform: translateY(-3px);
+
+    box-shadow: 0 8px 20px rgba(37,99,235,.3);
+
+    border-color: transparent;
+
+}
+
+.chip.active {
+
+    background: #2563eb;
+
+    color: white;
+
+    box-shadow: 0 0 20px rgba(37,99,235,.45);
+
+    border-color: transparent;
+
+}
+
+/* Chip color variants */
+.chip-today.active {
+
+    background: #22c55e;
+
+    box-shadow: 0 0 20px rgba(34,197,94,.4);
+
+}
+
+.chip-yesterday.active {
+
+    background: #f59e0b;
+
+    box-shadow: 0 0 20px rgba(245,158,11,.4);
+
+}
+
+.chip-week.active {
+
+    background: #3b82f6;
+
+    box-shadow: 0 0 20px rgba(59,130,246,.4);
+
+}
+
+.chip-high.active {
+
+    background: #f97316;
+
+    box-shadow: 0 0 20px rgba(249,115,22,.4);
+
+}
+
+.chip-critical.active {
+
+    background: #ef4444;
+
+    box-shadow: 0 0 20px rgba(239,68,68,.4);
+
+}
+
+.chip-person.active {
+
+    background: #3b82f6;
+
+    box-shadow: 0 0 20px rgba(59,130,246,.4);
+
+}
+
+.chip-vehicle.active {
+
+    background: #22c55e;
+
+    box-shadow: 0 0 20px rgba(34,197,94,.4);
+
+}
+
+.chip-weapon.active {
+
+    background: #a855f7;
+
+    box-shadow: 0 0 20px rgba(168,85,247,.4);
+
+}
+
+.chip-crowd.active {
+
+    background: #f59e0b;
+
+    box-shadow: 0 0 20px rgba(245,158,11,.4);
+
+}
+
+.chip-running.active {
+
+    background: #f97316;
+
+    box-shadow: 0 0 20px rgba(249,115,22,.4);
+
+}
+
+.chip-loitering.active {
+
+    background: #f59e0b;
+
+    box-shadow: 0 0 20px rgba(245,158,11,.4);
+
+}
+
+.chip-fall.active {
+
+    background: #ef4444;
+
+    box-shadow: 0 0 20px rgba(239,68,68,.4);
+
+}
+
+/* ==========================================
+   EVIDENCE THUMBNAIL
+========================================== */
+
+.ev-card-image {
+
+    position: relative;
+
+    overflow: hidden;
+
+    border-radius: 18px;
+
+}
+
+.ev-card-img {
+
+    transition: all .5s cubic-bezier(.4,0,.2,1);
+
+}
+
+.ev-card:hover .ev-card-img {
+
+    transform: scale(1.08);
+
+}
+
+.ev-card-image::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background: linear-gradient(transparent, rgba(0,0,0,.7));
+
+    opacity: 0;
+
+    transition: opacity .3s;
+
+    pointer-events: none;
+
+}
+
+.ev-card:hover .ev-card-image::after {
+
+    opacity: 1;
+
+}
+
+/* ==========================================
+   HOVER TOOLBAR
+========================================== */
+
+.ev-card-overlay {
+
+    position: absolute;
+
+    inset: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    background: rgba(0,0,0,0);
+
+    opacity: 0;
+
+    transition: all .3s cubic-bezier(.4,0,.2,1);
+
+    z-index: 2;
+
+}
+
+.ev-card:hover .ev-card-overlay {
+
+    opacity: 1;
+
+    background: rgba(0,0,0,.45);
+
+}
+
+.ev-overlay-btn {
+
+    width: 40px;
+
+    height: 40px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border: 1px solid rgba(255,255,255,.2);
+
+    border-radius: 50%;
+
+    background: rgba(255,255,255,.08);
+
+    backdrop-filter: blur(12px);
+
+    color: white;
+
+    cursor: pointer;
+
+    transition: all .25s cubic-bezier(.4,0,.2,1);
+
+    transform: scale(.85);
+
+    opacity: 0;
+
+}
+
+.ev-card:hover .ev-overlay-btn {
+
+    transform: scale(1);
+
+    opacity: 1;
+
+}
+
+.ev-overlay-btn:hover {
+
+    background: var(--ev-accent);
+
+    border-color: transparent;
+
+    transform: scale(1.1) !important;
+
+    box-shadow: 0 4px 15px rgba(59,130,246,.4);
+
+}
+
+/* ==========================================
+   AI SUMMARY
+========================================== */
+
+.ev-summary-card {
+
+    position: relative;
+
+    overflow: hidden;
+
+}
+
+.ev-summary-card::before {
+
+    content: "AI";
+
+    position: absolute;
+
+    right: 20px;
+
+    top: 20px;
+
+    font-size: 80px;
+
+    opacity: .04;
+
+    font-weight: 700;
+
+    color: var(--ev-accent);
+
+    pointer-events: none;
+
+}
+
+/* ==========================================
+   CONFIDENCE RING
+========================================== */
+
+.confidence-ring-wrapper {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    margin: 16px auto;
+
+}
+
+.confidence-ring {
+
+    width: 120px;
+
+    height: 120px;
+
+    border-radius: 50%;
+
+    background: conic-gradient(#22c55e 82%, #1e293b 0);
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    position: relative;
+
+    box-shadow: 0 0 30px rgba(34,197,94,.2);
+
+}
+
+.confidence-ring::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 8px;
+
+    border-radius: 50%;
+
+    background: #0b1322;
+
+}
+
+.confidence-ring span {
+
+    position: relative;
+
+    z-index: 1;
+
+    font-size: 22px;
+
+    color: white;
+
+    font-weight: 700;
+
+}
+
+/* ==========================================
+   TIMELINE
+========================================== */
+
+.ev-timeline {
+
+    position: relative;
+
+    margin-left: 15px;
+
+}
+
+.ev-timeline::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: 10px;
+
+    top: 0;
+
+    bottom: 0;
+
+    width: 2px;
+
+    background: linear-gradient(180deg, #2563eb, #3b82f6);
+
+    opacity: .3;
+
+}
+
+.ev-timeline-item {
+
+    position: relative;
+
+    padding-left: 40px;
+
+    margin-bottom: 28px;
+
+}
+
+.ev-timeline-item::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: 2px;
+
+    top: 5px;
+
+    width: 18px;
+
+    height: 18px;
+
+    border-radius: 50%;
+
+    background: #2563eb;
+
+    box-shadow: 0 0 20px #2563eb;
+
+    border: 2px solid rgba(255,255,255,.2);
+
+}
+
+.ev-timeline-item:last-child {
+
+    margin-bottom: 0;
+
+}
+
+/* ==========================================
+   EMPTY STATE
+========================================== */
+
+.ev-empty {
+
+    text-align: center;
+
+    padding: 90px 20px;
+
+    grid-column: 1 / -1;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border: 2px dashed rgba(255,255,255,.08);
+
+    border-radius: 20px;
+
+    position: relative;
+
+}
+
+.ev-empty::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background: radial-gradient(circle at 50% 50%, rgba(59,130,246,.03), transparent 70%);
+
+    pointer-events: none;
+
+}
+
+.ev-empty-icon {
+
+    margin-bottom: 20px;
+
+    opacity: .7;
+
+    color: var(--ev-text-muted);
+
+    animation: float 4s ease-in-out infinite;
+
+}
+
+@keyframes float {
+
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+
+}
+
+.ev-empty h3 {
+
+    color: var(--ev-text);
+
+    font-size: 20px;
+
+    margin: 0 0 8px 0;
+
+    font-weight: 600;
+
+}
+
+.ev-empty p {
+
+    color: var(--ev-text-muted);
+
+    font-size: 14px;
+
+    margin: 0 0 20px 0;
+
+}
+
+.ev-empty-actions {
+
+    display: flex;
+
+    gap: 10px;
+
+}
+
+/* ==========================================
+   FLOATING GLOW
+========================================== */
+
+.ev-preview-card {
+
+    position: relative;
+
+}
+
+.ev-preview-card::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: -2px;
+
+    border-radius: 22px;
+
+    background: linear-gradient(135deg, #2563eb40, transparent, #00d4ff30);
+
+    z-index: -1;
+
+    filter: blur(15px);
+
+    opacity: 0;
+
+    transition: opacity .5s;
+
+}
+
+.ev-preview-card:hover::after {
+
+    opacity: 1;
+
+}
+
+/* ==========================================
+   SCANNING PULSE
+========================================== */
+
+.scanning-indicator {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 6px 14px;
+
+    border-radius: 20px;
+
+    background: rgba(34,197,94,.1);
+
+    border: 1px solid rgba(34,197,94,.2);
+
+    color: #22c55e;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+}
+
+.scanning-dot {
+
+    width: 8px;
+
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: #22c55e;
+
+    box-shadow: 0 0 10px rgba(34,197,94,.6);
+
+    animation: scanningPulse 1.5s infinite;
+
+}
+
+@keyframes scanningPulse {
+
+    0%, 100% {
+
+        opacity: 1;
+
+        transform: scale(1);
+
+    }
+
+    50% {
+
+        opacity: .4;
+
+        transform: scale(1.5);
+
+    }
+
+}
+
+/* ==========================================
+   MINI CAMERA MAP
+========================================== */
+
+.ev-camera-map {
+
+    background: rgba(15,23,42,.5);
+
+    border: 1px solid var(--ev-border);
+
+    border-radius: var(--ev-radius);
+
+    padding: 14px;
+
+    margin-top: 12px;
+
+}
+
+.ev-camera-map-title {
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    color: var(--ev-text-muted);
+
+    text-transform: uppercase;
+
+    letter-spacing: .5px;
+
+    margin-bottom: 10px;
+
+}
+
+.ev-camera-list {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+
+}
+
+.ev-camera-item {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 8px 10px;
+
+    border-radius: var(--ev-radius-sm);
+
+    background: rgba(15,23,42,.4);
+
+    border: 1px solid transparent;
+
+    transition: var(--ev-transition);
+
+    cursor: pointer;
+
+}
+
+.ev-camera-item:hover {
+
+    background: rgba(59,130,246,.08);
+
+    border-color: rgba(59,130,246,.15);
+
+}
+
+.ev-camera-dot {
+
+    width: 8px;
+
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: #22c55e;
+
+    box-shadow: 0 0 8px rgba(34,197,94,.5);
+
+    flex-shrink: 0;
+
+}
+
+.ev-camera-info {
+
+    flex: 1;
+
+    min-width: 0;
+
+}
+
+.ev-camera-name {
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    color: var(--ev-text);
+
+}
+
+.ev-camera-location {
+
+    font-size: 10px;
+
+    color: var(--ev-text-muted);
+
+}
+
+.ev-camera-status {
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    color: #22c55e;
+
+    text-transform: uppercase;
+
+    letter-spacing: .3px;
+
+}
+
+/* ==========================================
+   METADATA CARDS
+========================================== */
+
+.ev-meta-grid {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 8px;
+
+    margin-top: 12px;
+
+}
+
+.ev-meta-card {
+
+    background: rgba(15,23,42,.4);
+
+    border: 1px solid var(--ev-border);
+
+    border-radius: var(--ev-radius-sm);
+
+    padding: 10px 12px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+
+}
+
+.ev-meta-label {
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    color: var(--ev-text-muted);
+
+    text-transform: uppercase;
+
+    letter-spacing: .3px;
+
+}
+
+.ev-meta-value {
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    color: var(--ev-text);
+
+    word-break: break-all;
+
+}
+
+/* ==========================================
+   MINI HISTOGRAM
+========================================== */
+
+.ev-histogram {
+
+    display: flex;
+
+    align-items: flex-end;
+
+    gap: 3px;
+
+    height: 60px;
+
+    margin-top: 12px;
+
+    padding: 10px;
+
+    background: rgba(15,23,42,.4);
+
+    border-radius: var(--ev-radius-sm);
+
+    border: 1px solid var(--ev-border);
+
+}
+
+.ev-histogram-bar {
+
+    flex: 1;
+
+    background: linear-gradient(180deg, var(--ev-accent), rgba(59,130,246,.3));
+
+    border-radius: 3px 3px 0 0;
+
+    min-height: 4px;
+
+    transition: all .3s;
+
+    position: relative;
+
+}
+
+.ev-histogram-bar:hover {
+
+    background: linear-gradient(180deg, #60a5fa, rgba(59,130,246,.5));
+
+    transform: scaleY(1.05);
+
+    transform-origin: bottom;
+
+}
+
+.ev-histogram-label {
+
+    position: absolute;
+
+    bottom: -18px;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    font-size: 9px;
+
+    color: var(--ev-text-muted);
+
+    white-space: nowrap;
+
+}
+
+/* ==========================================
+   DETECTION BADGES
+========================================== */
+
+.detection-badge {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    padding: 4px 10px;
+
+    border-radius: 6px;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: .4px;
+
+}
+
+.detection-badge.person {
+
+    background: rgba(59,130,246,.15);
+
+    color: #3b82f6;
+
+    border: 1px solid rgba(59,130,246,.2);
+
+}
+
+.detection-badge.vehicle {
+
+    background: rgba(34,197,94,.15);
+
+    color: #22c55e;
+
+    border: 1px solid rgba(34,197,94,.2);
+
+}
+
+.detection-badge.weapon {
+
+    background: rgba(168,85,247,.15);
+
+    color: #a855f7;
+
+    border: 1px solid rgba(168,85,247,.2);
+
+}
+
+.detection-badge.fall {
+
+    background: rgba(239,68,68,.15);
+
+    color: #ef4444;
+
+    border: 1px solid rgba(239,68,68,.2);
+
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media(max-width:1200px){
+
+    .ev-content {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .ev-sidebar {
+
+        position: static;
+
+        display: grid;
+
+        grid-template-columns: 1fr 1fr;
+
+        gap: 16px;
+
+    }
+
+}
+
+@media(max-width:768px){
+
+    .ev-header {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 12px;
+
+    }
+
+    .ev-stats {
+
+        grid-template-columns: repeat(2, 1fr);
+
+    }
+
+    .ev-toolbar {
+
+        flex-direction: column;
+
+        align-items: stretch;
+
+    }
+
+    .ev-toolbar-left {
+
+        flex-direction: column;
+
+    }
+
+    .ev-search {
+
+        max-width: none;
+
+    }
+
+    .ev-toolbar-right {
+
+        justify-content: flex-end;
+
+    }
+
+    .ev-sidebar {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .ev-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .ev-grid.list-view .ev-card {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .ev-bulk-bar {
+
+        flex-direction: column;
+
+        gap: 12px;
+
+        align-items: stretch;
+
+    }
+
+    .ev-bulk-actions {
+
+        justify-content: flex-end;
+
+    }
+
+}

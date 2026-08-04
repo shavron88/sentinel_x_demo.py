@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SentinelX</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <!-- CSS -->
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading.css') }}">
+
+</head>
+
+<body>
+
+<div class="page-loading-overlay" id="pageLoadingOverlay">
+
+    <div class="loading-spinner large"></div>
+
+    <p style="color:#94a3b8;font-size:14px;font-weight:500;">Loading Sentinel X...</p>
+
+</div>
+
+<div class="container">
+
+    <!-- ================= SIDEBAR OVERLAY ================= -->
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="logo">
+
+            <div class="logo-icon">
+                🛡
+            </div>
+
+            <div class="logo-text">
+
+                <h2>SentinelX</h2>
+
+                <p>AI Edge Security</p>
+
+            </div>
+
+        </div>
+
+        <nav>
+
+            <a href="/" class="{% if request.path=='/' %}active{% endif %}">
+                
+                <span>Dashboard</span>
+            </a>
+
+            <a href="/cameras" class="{% if request.path=='/cameras' %}active{% endif %}">
+                
+                <span>Cameras</span>
+            </a>
+
+            <a href="/incidents" class="{% if request.path=='/incidents' %}active{% endif %}">
+                
+                <span>Incidents</span>
+            </a>
+
+            <a href="/evidence" class="{% if request.path=='/evidence' %}active{% endif %}">
+                
+                <span>Evidence</span>
+            </a>
+
+            <a href="/analytics" class="{% if request.path=='/analytics' %}active{% endif %}">
+               
+                <span>Analytics</span>
+            </a>
+
+            <a href="/reports" class="{% if request.path=='/reports' %}active{% endif %}">
+                
+                <span>Reports</span>
+            </a>
+
+            <a href="/settings" class="{% if request.path=='/settings' %}active{% endif %}">
+                ⚙
+                <span>Settings</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+
+            <div class="system-status">
+
+                <span class="status-dot"></span>
+
+                System Online
+
+            </div>
+
+            <small>SentinelX v1.0</small>
+
+        </div>
+
+    </aside>
+
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <main class="main-content">
+
+        <!-- ===== MOBILE TOGGLE ===== -->
+
+        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" aria-label="Toggle Menu">
+
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+
+            </svg>
+
+        </button>
+
+        <!-- ===== TOPBAR ===== -->
+
+        <header class="topbar">
+
+            <div class="top-left">
+
+                <div class="page-title">
+
+                    <h2 id="pageName">Sentinel X AI Command Center</h2>
+
+                    <span class="breadcrumb">
+
+                        AI Edge Surveillance Platform
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="top-right">
+
+                <div class="status-chip">
+
+                    <span class="status-dot"></span>
+
+                    AI ONLINE
+
+                </div>
+
+                <div class="status-chip">
+
+                    📹 4 Cameras
+
+                </div>
+
+                <div class="status-chip">
+
+                    ⚡ 30 FPS
+
+                </div>
+
+                <div class="status-chip">
+
+                    💚 System Healthy
+
+                </div>
+
+                <div class="notification-wrapper">
+
+                    <button class="notification-btn" id="notification-btn">🔔</button>
+
+                    <span id="notification-count"></span>
+
+                    <div id="notification-panel">
+
+                        <div class="notification-panel-header">
+
+                            <h4>Notifications</h4>
+
+                            <div class="notification-panel-actions">
+
+                                <button onclick="markAllAsRead()">Mark all read</button>
+
+                                <button onclick="clearNotificationHistory()">Clear all</button>
+
+                            </div>
+
+                        </div>
+
+                        <div id="notification-list">
+
+                            <div class="notification-empty">
+
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4">
+
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+
+                                </svg>
+
+                                <p>No notifications yet</p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <button class="sound-toggle active" id="soundToggle" title="Toggle Sound">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+
+                    </svg>
+
+                </button>
+
+            <div class="profile">
+
+                <div class="avatar">
+
+                    SX
+
+                </div>
+
+            </div>
+
+            </div>
+
+        </header>
+
+        <!-- PAGE CONTENT -->
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+</div>
+
+<!-- ================= ALERT POPUP ================= -->
+
+<div id="alertPopup">
+
+    <div class="alert-popup">
+
+        <div class="alert-popup-header">
+
+            <div class="alert-popup-icon">🚨</div>
+
+            <div class="alert-popup-header-text">
+
+                <h3 id="alertPopupTitle">Critical Alert</h3>
+
+                <p>Immediate attention required</p>
+
+            </div>
+
+        </div>
+
+        <div class="alert-popup-body">
+
+            <div class="alert-popup-message" id="alertPopupMessage"></div>
+
+            <div class="alert-popup-time" id="alertPopupTime"></div>
+
+        </div>
+
+        <div class="alert-popup-footer">
+
+            <button class="alert-popup-btn-view" onclick="window.location.href='/incidents'">View Details</button>
+
+            <button class="alert-popup-btn-ack" onclick="closeAlertPopup()">Acknowledge</button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= TOAST ================= -->
+
+<div id="toast-container"></div>
+
+<!-- ================= JS ================= -->
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/alerts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% if request.path == '/incidents' %}
+<script src="{{ url_for('static', filename='js/incidents.js') }}"></script>
+{% endif %}
+
+{% if request.path == '/evidence' %}
+<script src="{{ url_for('static', filename='js/evidence.js') }}"></script>
+{% endif %}
+
+{% if request.path == '/analytics' %}
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+{% endif %}
+
+{% if request.path == '/reports' %}
+<script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+{% endif %}
+
+{% if request.path == '/settings' %}
+<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+{% endif %}
+
+<script src="{{ url_for('static', filename='js/loading.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+
+</body>
+
+</html>

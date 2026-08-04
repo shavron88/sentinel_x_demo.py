@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-content fade-in">
+
+<section class="stats-grid">
+
+    <div class="stat-card">
+
+        <h3>Total Incidents</h3>
+
+        <h1 id="total-incidents">0</h1>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h3>People Detected</h3>
+
+        <h1 id="people-count">0</h1>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h3>Vehicles</h3>
+
+        <h1 id="vehicle-count">0</h1>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h3>Threat Level</h3>
+
+        <h1 id="analytics-threat">LOW</h1>
+
+    </div>
+
+</section>
+
+<section class="chart-grid">
+
+    <div class="panel chart-loading">
+
+        <div class="loading-spinner small"></div>
+
+        <h3>📈 Incident Trend</h3>
+
+        <canvas id="incidentChart"></canvas>
+
+    </div>
+
+    <div class="panel chart-loading">
+
+        <div class="loading-spinner small"></div>
+
+        <h3>🥧 Incident Types</h3>
+
+        <canvas id="pieChart"></canvas>
+
+    </div>
+
+</section>
+
+<section class="panel">
+
+    <h3>🔥 Recent Activity</h3>
+
+    <div id="analytics-table"></div>
+
+</section>
+
+<script>
+
+(function() {
+
+    showSkeletonCards("stats-grid", 4);
+
+    showSkeletonTable("analytics-table", 5);
+
+    setTimeout(function() {
+
+        // In production, populate charts and stats
+
+    }, 700);
+
+})();
+
+</script>
+
+</div>
+
+{% endblock %}
