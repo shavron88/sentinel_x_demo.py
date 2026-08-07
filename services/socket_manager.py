@@ -1,7 +1,14 @@
-import cv2
 import time
 import logging
 from flask_socketio import SocketIO, emit
+
+# Safe OpenCV Import
+try:
+    import cv2
+    CV2_AVAILABLE = True
+except ImportError:
+    cv2 = None
+    CV2_AVAILABLE = False
 
 logger = logging.getLogger("SentinelX.SocketIO")
 
@@ -43,18 +50,23 @@ def handle_disconnect():
 # --- LIVE VIDEO STREAM GENERATOR ---
 def generate_camera_frames():
     """Captures frames from webcam (Index 0) and yields JPEG stream."""
-    camera = cv2.VideoCapture(0)  # Change 0 to 1 if using external camera
-    
-    if not camera.isOpened():
-        print("❌ Error: Camera could not be opened.")
+    if not CV2_AVAILABLE:
+        logger.warning("OpenCV (cv2) is missing. Camera streaming disabled.")
         return
 
-    while True:
-        success, frame = camera.read()
-        if not success:
-            break
-        else:
-            # (Optional) Overlay Live Status Text on Feed
+    camera = cv2.VideoCapture(0)  # Change 0 to 1 if using external camera
+
+    if not camera.isOpened():
+        logger.error("❌ Error: Camera could not be opened.")
+        return
+
+    try:
+        while True:
+            success, frame = camera.read()
+            if not success:
+                break
+
+            # Overlay Live Status Text on Feed
             cv2.putText(
                 frame, 
                 "SENTINEL-X LIVE FEED", 
@@ -69,11 +81,11 @@ def generate_camera_frames():
             ret, buffer = cv2.imencode('.jpg', frame)
             if not ret:
                 continue
-            
+
             frame_bytes = buffer.tobytes()
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
-        
-        time.sleep(0.03)  # Approx ~30 FPS balance
-    
-    camera.release()
+
+            time.sleep(0.03)  # Approx ~30 FPS balance
+    finally:
+        camera.release()

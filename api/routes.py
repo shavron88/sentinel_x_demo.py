@@ -1,24 +1,15 @@
-import logging
-from flask import Blueprint, jsonify, request
-from database.db import get_all_events, get_evidence_by_id
+from flask import Blueprint, jsonify
+from system.monitor import SystemMonitor
 
-# Blueprint declaration
-api_bp = Blueprint("api_bp", __name__)
-logger = logging.getLogger("SentinelX.API")
+system_bp = Blueprint('system_api', __name__)
+sys_monitor = SystemMonitor()
 
+@system_bp.route('/api/system', methods=['GET'])
+def get_system_metrics():
+    return jsonify({
+        "status": "success",
+        "data": sys_monitor.get_metrics()
+    })
 
-@api_bp.route("/api/events", methods=["GET"])
-def get_events_api():
-    """Returns list of recent events."""
-    limit = request.args.get("limit", 50, type=int)
-    events = get_all_events(limit=limit)
-    return jsonify({"success": True, "count": len(events), "events": events})
-
-
-@api_bp.route("/api/evidence/<int:evidence_id>", methods=["GET"])
-def get_evidence_api(evidence_id):
-    """Returns single evidence record details."""
-    evidence = get_evidence_by_id(evidence_id)
-    if evidence:
-        return jsonify({"success": True, "evidence": evidence})
-    return jsonify({"success": False, "error": "Evidence not found"}), 404
+# Main loader ke liye alias:
+api_bp = system_bp
