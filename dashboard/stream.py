@@ -3,15 +3,18 @@ import time
 
 def generate():
     """
-    Captures live frames from local webcam (Index 0)
-    and yields them as JPEG byte stream for Flask.
+    Captures live frames from local laptop webcam (Index 0 or 1)
+    using DirectShow backend for Windows.
     """
-    # Open default camera (Try 0, or 1 if using an external webcam)
-    cap = cv2.VideoCapture(0)
+    # Windows par laptop camera ke liye DirectShow (CAP_DSHOW) best kaam karta hai
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
-    # Check if camera opened successfully
+    # Agar Index 0 na chale toh Index 1 try karein
     if not cap.isOpened():
-        print("❌ Error: Could not open camera/webcam.")
+        cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+
+    if not cap.isOpened():
+        print("❌ Error: Laptop camera detect nahi hua.")
         return
 
     while True:
@@ -42,7 +45,6 @@ def generate():
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
-        # Limit frame rate to save CPU (~30 FPS)
         time.sleep(0.03)
 
     cap.release()

@@ -136,13 +136,16 @@
 
     <div class="camera-hero-body">
 
+        <!-- Updated Video Feed Tag -->
         <img
 
-        src="/video_feed"
+        src="{{ url_for('video_feed') }}"
 
         id="live-camera"
 
         alt="Live Camera"
+
+        style="width: 100%; height: 100%; object-fit: contain;"
 
         >
 
@@ -671,8 +674,6 @@ ON
                 alt="Floor Map"
             >
 
-
-
         </div>
 
     </div>
@@ -693,11 +694,11 @@ ON
 
         <div class="chart-container chart-loading">
 
-    <div class="loading-spinner small"></div>
+            <div class="loading-spinner small"></div>
 
-    <canvas id="performanceChart"></canvas>
+            <canvas id="performanceChart"></canvas>
 
-</div>
+        </div>
 
     </div>
 
@@ -717,8 +718,7 @@ ON
 
                 <div class="progress">
 
-                    <div class="progress-fill cpu-fill"
-                         style="width:45%;"></div>
+                    <div class="progress-fill cpu-fill" style="width:45%;"></div>
 
                 </div>
 
@@ -732,8 +732,7 @@ ON
 
                 <div class="progress">
 
-                    <div class="progress-fill ram-fill"
-                         style="width:61%;"></div>
+                    <div class="progress-fill ram-fill" style="width:61%;"></div>
 
                 </div>
 
@@ -747,8 +746,7 @@ ON
 
                 <div class="progress">
 
-                    <div class="progress-fill gpu-fill"
-                         style="width:38%;"></div>
+                    <div class="progress-fill gpu-fill" style="width:38%;"></div>
 
                 </div>
 
@@ -762,8 +760,7 @@ ON
 
                 <div class="progress">
 
-                    <div class="progress-fill storage-fill"
-                         style="width:24%;"></div>
+                    <div class="progress-fill storage-fill" style="width:24%;"></div>
 
                 </div>
 
@@ -867,9 +864,12 @@ ON
 
 (function() {
 
-    showSkeletonCards("gallery", 4);
-
-    showSkeletonRows("timeline", 5);
+    if (typeof showSkeletonCards === "function") {
+        showSkeletonCards("gallery", 4);
+    }
+    if (typeof showSkeletonRows === "function") {
+        showSkeletonRows("timeline", 5);
+    }
 
     setTimeout(function() {
 

@@ -94,10 +94,10 @@ def get_evidence_by_id(evidence_id):
 
 
 # ==========================================
-# CAMERA CRUD FUNCTIONS (FIX FOR CAMERA MANAGER)
+# CAMERA CRUD FUNCTIONS
 # ==========================================
 
-def save_camera(name, stream_url, location="Unspecified", status="OFFLINE", fps=0.0, latency=0.0, resolution="640x480"):
+def save_camera(name, stream_url, location="Unspecified", status="OFFLINE", fps=0.0, latency=0.0, resolution="640x480", **kwargs):
     """Saves or updates camera config in DB."""
     try:
         with get_connection() as conn:
@@ -120,8 +120,11 @@ def save_camera(name, stream_url, location="Unspecified", status="OFFLINE", fps=
         return False
 
 
-def update_camera_status(name, status, fps=0.0, latency=0.0):
-    """Updates camera online status, fps, and latency."""
+def update_camera_status(name, status, fps=0.0, latency=0.0, **kwargs):
+    """
+    Updates camera online status, fps, and latency.
+    **kwargs suppresses any unexpected keyword arguments (e.g. health, uptime, reconnects).
+    """
     try:
         with get_connection() as conn:
             cursor = conn.cursor()
