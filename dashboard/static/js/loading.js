@@ -197,9 +197,9 @@ function showEmptyState(containerId, title, description, actions = []) {
 
             </div>
 
-            <h3 class="empty-state-title">${title}</h3>
+            <h3 class="empty-state-title">${escapeHtml(title)}</h3>
 
-            <p class="empty-state-description">${description}</p>
+            <p class="empty-state-description">${escapeHtml(description)}</p>
 
             <div class="empty-state-actions">
 

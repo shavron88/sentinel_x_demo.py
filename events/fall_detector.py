@@ -1,42 +1,44 @@
+import time
+
+
 class FallDetector:
 
-    def detect(self, results):
+    def __init__(self, cooldown_seconds: float = 30.0):
+        self.last_fall_time = {}
+        self.cooldown_seconds = cooldown_seconds
+
+    def detect(self, detections):
 
         events = []
+        current_time = time.time()
 
-        for result in results:
+        for det in detections:
 
-            if result.boxes is None:
+            if det["class_id"] != 0:
                 continue
 
-            for box in result.boxes:
+            track_id = det.get("track_id")
+            if track_id is None:
+                continue
 
-                if int(box.cls[0]) != 0:
+            x1, y1, x2, y2 = det["bbox"]
+
+            width = x2 - x1
+            height = y2 - y1
+
+            # Person appears wider than tall
+            if width > height:
+                last_time = self.last_fall_time.get(track_id, 0.0)
+                if current_time - last_time < self.cooldown_seconds:
                     continue
 
-                if box.id is None:
-                    continue
+                self.last_fall_time[track_id] = current_time
 
-                track_id = int(box.id[0])
+                events.append({
 
-                coords = box.xyxy[0]
+                    "type": "FALL_DETECTED",
+                    "track_id": track_id
 
-                if hasattr(coords, "tolist"):
-                    x1, y1, x2, y2 = map(float, coords.tolist())
-                else:
-                    x1, y1, x2, y2 = map(float, coords)
-
-                width = x2 - x1
-                height = y2 - y1
-
-                # Person appears wider than tall
-                if width > height:
-
-                    events.append({
-
-                        "type": "FALL_DETECTED",
-                        "track_id": track_id
-
-                    })
+                })
 
         return events

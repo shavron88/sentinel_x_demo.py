@@ -159,3 +159,49 @@ left:74%;
     }
 
 }
+
+/* ==========================================
+   MAP TOOLTIP
+========================================== */
+
+.map-tooltip{
+
+    position:absolute;
+
+    background:rgba(15,23,42,.95);
+
+    border:1px solid rgba(59,130,246,.3);
+
+    border-radius:10px;
+
+    padding:10px 12px;
+
+    font-size:12px;
+
+    color:#e2e8f0;
+
+    line-height:1.5;
+
+    z-index:50;
+
+    pointer-events:none;
+
+    min-width:140px;
+
+    box-shadow:0 8px 24px rgba(0,0,0,.4);
+
+    backdrop-filter:blur(8px);
+
+}
+
+.map-tooltip strong{
+
+    display:block;
+
+    margin-bottom:4px;
+
+    font-size:13px;
+
+    color:#fff;
+
+}

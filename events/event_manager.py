@@ -8,48 +8,40 @@ class EventManager:
         self.last_event_time = {}
         self.fallback_id = 0
 
-    def process(self, results):
+    def process(self, detections):
 
         events = []
         current_time = time.time()
 
-        for result in results:
+        for det in detections:
 
-            boxes = result.boxes
+            class_id = det["class_id"]
+            class_name = det["label"]
+            confidence = det["confidence"]
 
-            if boxes is None:
+            if class_name != "person":
                 continue
 
-            for box in boxes:
+            # =========================
+            # FIX: SAFE TRACK ID
+            # =========================
+            track_id = det.get("track_id")
+            if track_id is None:
+                self.fallback_id += 1
+                track_id = self.fallback_id
 
-                class_id = int(box.cls[0])
-                class_name = result.names[class_id]
-                confidence = float(box.conf[0])
+            event_type = "PERSON_DETECTED"
 
-                if class_name != "person":
-                    continue
+            last_time = self.last_event_time.get(track_id, 0)
 
-                # =========================
-                # FIX: SAFE TRACK ID
-                # =========================
-                if box.id is None or len(box.id) == 0:
-                    self.fallback_id += 1
-                    track_id = self.fallback_id
-                else:
-                    track_id = int(box.id[0])
+            if current_time - last_time >= EVENT_COOLDOWN:
 
-                event_type = "PERSON_DETECTED"
+                self.last_event_time[track_id] = current_time
 
-                last_time = self.last_event_time.get(track_id, 0)
-
-                if current_time - last_time >= EVENT_COOLDOWN:
-
-                    self.last_event_time[track_id] = current_time
-
-                    events.append({
-                        "type": event_type,
-                        "track_id": track_id,
-                        "confidence": round(confidence, 2)
-                    })
+                events.append({
+                    "type": event_type,
+                    "track_id": track_id,
+                    "confidence": round(confidence, 2)
+                })
 
         return events

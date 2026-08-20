@@ -4,7 +4,7 @@ class IntelligenceEngine:
 
         event_type = event.get("type", "UNKNOWN")
 
-        if event_type in ("LOITERING", "FALL_DETECTED", "WEAPON_DETECTED", "ABANDONED_OBJECT"):
+        if event_type in ("LOITERING", "FALL_DETECTED", "WEAPON_DETECTED", "ABANDONED_OBJECT", "CROWD_DETECTED"):
 
             return "HIGH"
 

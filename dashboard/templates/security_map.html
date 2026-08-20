@@ -12,17 +12,19 @@
     src="{{ url_for('static',filename='images/floorplan.png') }}"
     class="floor-map">
 
-    <div class="camera-marker c1">📹</div>
+    <div class="camera-marker c1" data-marker="camera" data-index="0">📹</div>
 
-    <div class="camera-marker c2">📹</div>
+    <div class="camera-marker c2" data-marker="camera" data-index="1">📹</div>
 
-    <div class="camera-marker c3">📹</div>
+    <div class="camera-marker c3" data-marker="camera" data-index="2">📹</div>
 
-    <div class="event-marker e1">🚨</div>
+    <div class="event-marker e1" data-marker="event" data-index="0">🚨</div>
 
-    <div class="event-marker e2">🚶</div>
+    <div class="event-marker e2" data-marker="event" data-index="1">🚶</div>
 
-    <div class="event-marker e3">🚗</div>
+    <div class="event-marker e3" data-marker="event" data-index="2">🚗</div>
+
+    <div id="mapTooltip" class="map-tooltip" style="display:none;"></div>
 
 </div>
 

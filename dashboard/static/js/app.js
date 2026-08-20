@@ -2,9 +2,27 @@ let notifications = [];
 let soundEnabled = true;
 let alertPopupActive = false;
 
-// =========================
-// AUDIO ENGINE
-// =========================
+/* ==========================================
+   GLOBAL THEME RESTORE
+   Runs on every page to apply saved theme.
+========================================== */
+
+function restoreTheme() {
+    try {
+        const saved = localStorage.getItem('sentinelx-theme');
+        if (saved && ['dark', 'light', 'midnight'].includes(saved)) {
+            document.documentElement.setAttribute('data-theme', saved);
+        } else {
+            document.documentElement.setAttribute('data-theme', 'midnight');
+        }
+    } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'midnight');
+    }
+}
+
+/* ==========================================
+    AUDIO ENGINE
+========================================== */
 
 const AudioEngine = {
     ctx: null,
@@ -75,8 +93,8 @@ function showToast(title, message, type = "info", persistent = false) {
     toast.innerHTML = `
         <div class="toast-icon">${icons[type]}</div>
         <div class="toast-body">
-            <div class="toast-title">${title}</div>
-            <div class="toast-message">${message}</div>
+            <div class="toast-title">${escapeHtml(title)}</div>
+            <div class="toast-message">${escapeHtml(message)}</div>
         </div>
         <div class="toast-progress"></div>
         <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
@@ -295,6 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // =========================
 
 document.addEventListener("DOMContentLoaded", () => {
+    restoreTheme();
     loadNotificationHistory();
     updateNotificationPanel();
 

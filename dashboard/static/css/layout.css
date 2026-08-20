@@ -1,0 +1,156 @@
+/* ==========================================
+   SentinelX Layout
+========================================== */
+
+.container {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.main-content {
+    margin-left: var(--ev-sidebar-width);
+    width: calc(100% - var(--ev-sidebar-width));
+    min-height: 100vh;
+    padding: 25px;
+    background: var(--ev-bg);
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.page-title {
+    display: flex;
+    flex-direction: column;
+}
+
+.page-title h2 {
+    color: var(--ev-text);
+    font-size: 34px;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.breadcrumb {
+    color: var(--ev-text-muted);
+    font-size: 18px;
+    margin-top: 8px;
+}
+
+.panel {
+    background: var(--ev-surface-4);
+    border-radius: var(--ev-radius-md);
+    padding: 20px;
+    border: 1px solid var(--ev-border);
+}
+
+.panel h3 {
+    margin-bottom: 20px;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--ev-border);
+}
+
+.dashboard-page {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding: 24px;
+}
+
+footer {
+    margin-top: 30px;
+    text-align: center;
+    color: var(--ev-text-muted);
+    padding: 15px;
+    font-size: 14px;
+}
+
+.sidebar-toggle {
+    display: none;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    background: var(--ev-surface-2);
+    border: 1px solid var(--ev-border);
+    border-radius: var(--ev-radius-sm);
+    color: var(--ev-text);
+    cursor: pointer;
+    transition: var(--ev-transition);
+    margin-bottom: 16px;
+}
+
+.sidebar-toggle:hover {
+    background: var(--ev-primary);
+    transform: scale(1.05);
+}
+
+@media (max-width: 1024px) {
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px;
+    }
+
+    .sidebar-toggle {
+        display: flex !important;
+    }
+
+    .dashboard-page {
+        padding: 16px;
+        gap: 18px;
+    }
+
+    .command-center { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .team-grid { grid-template-columns: repeat(2, 1fr); }
+    .bottom-grid { grid-template-columns: 1fr; }
+    .chart-grid { grid-template-columns: 1fr; }
+    .camera-controls-grid { grid-template-columns: repeat(2, 1fr); }
+    .camera-page { grid-template-columns: 1fr; }
+    .replay-page { grid-template-columns: 1fr; }
+    .report-toolbar { flex-direction: column; align-items: stretch; }
+    .export-buttons { flex-direction: column; }
+    .export-buttons button { min-width: 100%; }
+}
+
+@media (max-width: 768px) {
+    .main-content { padding: 16px; }
+    .dashboard-page { padding: 12px; gap: 14px; }
+    .chart-grid canvas { height: 260px !important; }
+    .chart-grid { grid-template-columns: 1fr; }
+    .camera-controls-grid { grid-template-columns: 1fr; }
+    .report-table { display: block; overflow-x: auto; }
+    .report-table thead { display: none; }
+    .report-table tbody { display: block; }
+    .report-table tr { display: block; margin-bottom: 16px; border-bottom: 2px solid var(--ev-border); }
+    .report-table td { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--ev-border-weak); }
+    .report-table td::before { content: attr(data-label); font-weight: 600; color: var(--ev-text-muted); margin-right: 12px; }
+    .latest-evidence-grid, .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .team-grid { grid-template-columns: 1fr; }
+    .action-grid { grid-template-columns: 1fr; }
+    #evidence-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+    .main-content { padding: 12px; }
+    .camera-controls-grid { grid-template-columns: 1fr; }
+    .latest-evidence-grid, .gallery-grid { grid-template-columns: 1fr; }
+    #gallery { grid-template-columns: 1fr; }
+    .ai-stats-grid { grid-template-columns: 1fr; }
+    .gallery-grid img, .latest-evidence-grid img { height: 140px; }
+}

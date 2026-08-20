@@ -25,27 +25,28 @@
     <video
     id="incidentVideo"
     controls
-    autoplay>
+    autoplay
+    style="display:none;">
 
-    <source src="/static/demo/fall.mp4">
+    <source src="" type="video/mp4">
 
     </video>
 
-    <div class="timeline-controls" id="timelineControls">
+    <div class="timeline-controls" id="timelineControls" style="display:none;">
 
-        <button class="btn btn-outline">
+        <button class="btn btn-outline" onclick="skipBack()">
 
             ⏪ -10s
 
         </button>
 
-        <button class="btn btn-primary">
+        <button class="btn btn-primary" onclick="togglePlay()">
 
             ▶ Play
 
         </button>
 
-        <button class="btn btn-outline">
+        <button class="btn btn-outline" onclick="skipForward()">
 
             +10s ⏩
 
@@ -65,7 +66,7 @@
 
         <strong>Camera</strong>
 
-        Camera 01
+        <span id="replayCamera">Camera 01</span>
 
         </p>
 
@@ -73,7 +74,7 @@
 
         <strong>Event</strong>
 
-        Fall Detection
+        <span id="replayEvent">Fall Detection</span>
 
         </p>
 
@@ -81,7 +82,7 @@
 
         <strong>Confidence</strong>
 
-        97.6%
+        <span id="replayConfidence">97.6%</span>
 
         </p>
 
@@ -89,7 +90,7 @@
 
         <strong>Duration</strong>
 
-        18 Seconds
+        <span id="replayDuration">18 Seconds</span>
 
         </p>
 
@@ -97,7 +98,7 @@
 
         <strong>Time</strong>
 
-        10:42 PM
+        <span id="replayTime">10:42 PM</span>
 
         </p>
 
@@ -105,7 +106,7 @@
 
         <strong>Status</strong>
 
-        Resolved
+        <span id="replayStatus">Resolved</span>
 
         </p>
 
@@ -123,13 +124,7 @@
 
     showSkeletonCards("timelineControls", 3);
 
-    setTimeout(function() {
-
-        // In production, load replay data
-
-        // If empty: showEmptyState("emptyState", "No Replay Available", "This incident has no recorded replay.", [{label:"Back", onclick:"goBack()", class:"btn-secondary"}])
-
-    }, 600);
+    loadReplay();
 
 })();
 

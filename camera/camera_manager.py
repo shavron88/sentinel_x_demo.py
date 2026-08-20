@@ -8,13 +8,23 @@ from database.db import save_camera, update_camera_status, get_camera, get_all_c
 
 logger = logging.getLogger("SentinelX.CameraManager")
 
+DEFAULT_RTSP_CONFIG = {
+    "timeout_ms": 5000,
+    "buffer_size": 1,
+    "transport": "tcp",
+    "max_reconnect_delay": 30.0,
+    "reconnect_backoff_factor": 1.5,
+}
+
+
 class CameraStream:
     """Individual Camera Monitor Thread handling auto-reconnect, FPS, latency, recording, and snapshots."""
-    def __init__(self, name, ip_url, zone="DEFAULT", reconnect_delay=5):
+    def __init__(self, name, ip_url, zone="DEFAULT", reconnect_delay=5, rtsp_config=None):
         self.name = name
         self.ip_url = ip_url
         self.zone = zone
         self.reconnect_delay = reconnect_delay
+        self.rtsp_config = {**DEFAULT_RTSP_CONFIG, **(rtsp_config or {})}
 
         self.cap = None
         self.is_running = False
@@ -26,6 +36,11 @@ class CameraStream:
         self.reconnects = 0
         self.start_time = None
         self.latest_frame = None
+
+        # Network-specific metrics
+        self.network_errors = 0
+        self.decode_errors = 0
+        self.last_error = None
 
         # Recording & Snapshot State
         self.is_recording = False
@@ -71,73 +86,133 @@ class CameraStream:
                 self.cap = None
         self.status = "RECONNECTING"
 
+    def _is_rtsp(self):
+        url = str(self.ip_url)
+        return url.startswith("rtsp://") or url.startswith("rtsps://")
+
+    def _configure_rtsp(self, cap):
+        """Applies RTSP-specific OpenCV properties to reduce latency and improve stability."""
+        if not self._is_rtsp():
+            return
+
+        try:
+            timeout_ms = int(self.rtsp_config.get("timeout_ms", 5000))
+            buffer_size = int(self.rtsp_config.get("buffer_size", 1))
+            transport = self.rtsp_config.get("transport", "tcp")
+
+            cap.set(cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, timeout_ms)
+            cap.set(cv2.CAP_PROP_READ_TIMEOUT_MSEC, timeout_ms)
+            cap.set(cv2.CAP_PROP_BUFFERSIZE, buffer_size)
+
+            if transport == "tcp":
+                os.environ["OPENCV_FFMPEG_TRANSPORT"] = "tcp"
+            elif transport == "udp":
+                os.environ["OPENCV_FFMPEG_TRANSPORT"] = "udp"
+            elif transport == "auto":
+                os.environ.pop("OPENCV_FFMPEG_TRANSPORT", None)
+
+            logger.info(f"[{self.name}] RTSP configured: timeout={timeout_ms}ms, buffer={buffer_size}, transport={transport}")
+        except Exception as e:
+            logger.warning(f"[{self.name}] Failed to configure RTSP properties: {e}")
+
+    def _calculate_backoff(self):
+        """Calculates exponential backoff delay based on reconnect count."""
+        factor = self.rtsp_config.get("reconnect_backoff_factor", 1.5)
+        max_delay = self.rtsp_config.get("max_reconnect_delay", 30.0)
+        delay = min(self.reconnect_delay * (factor ** self.reconnects), max_delay)
+        return delay
+
     def _capture_loop(self):
         frame_count = 0
         fps_start_time = time.time()
 
         while self.is_running:
-            ping_start = time.time()
-            if self.cap is None or not self.cap.isOpened():
-                self.status = "CONNECTING"
-                self.health = "POOR"
-                self._sync_db()
-
-                target = int(self.ip_url) if str(self.ip_url).isdigit() else self.ip_url
-                self.cap = cv2.VideoCapture(target)
-
-                if not self.cap.isOpened():
-                    self.status = "OFFLINE"
-                    self.health = "CRITICAL"
-                    self.reconnects += 1
+            try:
+                ping_start = time.time()
+                if self.cap is None or not self.cap.isOpened():
+                    self.status = "CONNECTING"
+                    self.health = "POOR"
                     self._sync_db()
-                    time.sleep(self.reconnect_delay)
+
+                    target = int(self.ip_url) if str(self.ip_url).isdigit() else self.ip_url
+                    self.cap = cv2.VideoCapture(target)
+
+                    if self._is_rtsp():
+                        self._configure_rtsp(self.cap)
+
+                    if not self.cap.isOpened():
+                        self.status = "OFFLINE"
+                        self.health = "CRITICAL"
+                        self.network_errors += 1
+                        self.reconnects += 1
+                        self._sync_db()
+                        backoff = self._calculate_backoff()
+                        logger.warning(f"[{self.name}] Connection failed. Retrying in {backoff:.1f}s...")
+                        time.sleep(backoff)
+                        continue
+                    else:
+                        self.status = "ONLINE"
+                        w = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                        h = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                        self.resolution = f"{w}x{h}" if w > 0 else "1920x1080"
+                        logger.info(f"[{self.name}] Connected successfully ({self.resolution})")
+
+                ret, frame = self.cap.read()
+                self.latency = round((time.time() - ping_start) * 1000, 2)  # ms
+
+                if not ret:
+                    self.last_error = "Frame read failed"
+                    logger.warning(f"[{self.name}] Frame drop / network interruption.")
+                    self.status = "DISCONNECTED"
+                    self.health = "POOR"
+                    self.network_errors += 1
+                    self.reconnects += 1
+                    if self.cap:
+                        self.cap.release()
+                        self.cap = None
+                    self._sync_db()
+                    backoff = self._calculate_backoff()
+                    time.sleep(backoff)
                     continue
-                else:
-                    self.status = "ONLINE"
-                    w = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                    h = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                    self.resolution = f"{w}x{h}" if w > 0 else "1920x1080"
 
-            ret, frame = self.cap.read()
-            self.latency = round((time.time() - ping_start) * 1000, 2)  # ms
+                # Update latest frame
+                with self.lock:
+                    self.latest_frame = frame.copy()
 
-            if not ret:
-                logger.warning(f"Camera [{self.name}] frame drop / disconnected.")
-                self.status = "DISCONNECTED"
-                self.health = "POOR"
-                self.reconnects += 1
-                if self.cap:
-                    self.cap.release()
-                    self.cap = None
+                # Handle Video Recording Frame Writing
+                if self.is_recording and self.video_writer is not None:
+                    self.video_writer.write(frame)
+
+                # Calculate FPS
+                frame_count += 1
+                elapsed = time.time() - fps_start_time
+                if elapsed >= 1.0:
+                    self.fps = round(frame_count / elapsed, 1)
+                    frame_count = 0
+                    fps_start_time = time.time()
+
+                    # Evaluate Health Status
+                    if self.fps >= 15 and self.latency < 100 and self.network_errors == 0:
+                        self.health = "EXCELLENT"
+                    elif self.fps >= 8 and self.network_errors < 5:
+                        self.health = "GOOD"
+                    else:
+                        self.health = "POOR"
+
+                    # Reset error counters periodically
+                    if self.network_errors > 0:
+                        self.network_errors = max(0, self.network_errors - 1)
+
+                    self._sync_db()
+
+            except Exception as e:
+                self.last_error = str(e)
+                logger.error(f"[{self.name}] capture loop error: {e}")
+                self.status = "ERROR"
+                self.health = "CRITICAL"
+                self.decode_errors += 1
                 self._sync_db()
                 time.sleep(self.reconnect_delay)
-                continue
-
-            # Update latest frame
-            with self.lock:
-                self.latest_frame = frame.copy()
-
-            # Handle Video Recording Frame Writing
-            if self.is_recording and self.video_writer is not None:
-                self.video_writer.write(frame)
-
-            # Calculate FPS
-            frame_count += 1
-            elapsed = time.time() - fps_start_time
-            if elapsed >= 1.0:
-                self.fps = round(frame_count / elapsed, 1)
-                frame_count = 0
-                fps_start_time = time.time()
-
-                # Evaluate Health Status
-                if self.fps >= 15 and self.latency < 100:
-                    self.health = "EXCELLENT"
-                elif self.fps >= 8:
-                    self.health = "GOOD"
-                else:
-                    self.health = "POOR"
-
-                self._sync_db()
 
     @property
     def lock(self):
@@ -208,7 +283,11 @@ class CameraStream:
             "resolution": self.resolution,
             "reconnects": self.reconnects,
             "is_recording": self.is_recording,
-            "zone": self.zone
+            "zone": self.zone,
+            "network_errors": self.network_errors,
+            "decode_errors": self.decode_errors,
+            "last_error": self.last_error,
+            "is_rtsp": self._is_rtsp()
         }
 
     def _sync_db(self):
@@ -222,46 +301,324 @@ class CameraStream:
                 health=self.health,
                 resolution=self.resolution,
                 reconnects=self.reconnects,
-                uptime=uptime_sec
+                uptime=uptime_sec,
+                network_errors=self.network_errors,
+                decode_errors=self.decode_errors,
+                last_error=self.last_error
             )
         except Exception as e:
             logger.error(f"Error syncing camera {self.name} to DB: {e}")
 
 
+class CameraPipeline:
+    """Per-camera pipeline: CameraStream + Queue + Worker + Event State."""
+    def __init__(self, name, ip_url, zone="DEFAULT", rtsp_config=None, reconnect_delay=5, max_queue_size=30):
+        self.name = name
+        self.zone = zone
+        self.max_queue_size = max_queue_size
+
+        # Camera stream
+        self.stream = CameraStream(name, ip_url, zone, reconnect_delay=reconnect_delay, rtsp_config=rtsp_config)
+
+        # Per-camera queue
+        from ai.queue_manager import DetectionQueueManager
+        self.queue = DetectionQueueManager(maxsize=max_queue_size)
+
+        # Per-camera event state
+        from events.event_manager import EventManager
+        from events.memory_manager import MemoryManager
+        from events.zone_manager import ZoneManager
+        from events.abandoned_object import AbandonedObjectDetector
+        from events.crowd_detector import CrowdDetector
+        from events.fall_detector import FallDetector
+        from events.line_crossing import LineCrossingDetector
+        from events.weapon_detector import WeaponDetector
+        from events.people_counter import PeopleCounter
+        from analytics.heatmap import Heatmap
+
+        self.event_manager = EventManager()
+        self.memory_manager = MemoryManager()
+        self.zone_manager = ZoneManager()
+        self.abandoned_detector = AbandonedObjectDetector()
+        self.fall_detector = FallDetector()
+        self.crowd_detector = CrowdDetector()
+        self.line_detector = LineCrossingDetector()
+        self.weapon_detector = WeaponDetector()
+        self.people_counter = PeopleCounter()
+        self.heatmap = Heatmap()
+
+        # Inference engine and worker (created on start)
+        self.worker = None
+        self.engine = None
+        self.health = None
+        self.is_running = False
+
+    def start(self, model_path="models/yolov8m.pt"):
+        """Starts the camera pipeline."""
+        if self.is_running:
+            return
+
+        from ai.health import AIHealthMonitor
+        from ai.inference import YOLOInferenceEngine
+        from ai.worker import YOLOWorker
+
+        self.health = AIHealthMonitor()
+        self.engine = YOLOInferenceEngine(model_path=model_path, health_monitor=self.health)
+        self.worker = YOLOWorker(self.queue, self.engine, self.health, on_result=self._on_inference_result)
+
+        self.stream.start()
+        self.worker.start()
+        self.is_running = True
+
+    def stop(self):
+        """Stops the camera pipeline."""
+        self.is_running = False
+        if self.worker:
+            self.worker.stop()
+            self.worker.join(timeout=2.0)
+            self.worker = None
+        if self.stream:
+            self.stream.stop()
+        self.queue.clear()
+
+    def _on_inference_result(self, frame_id, detections, frame_data):
+        """Processes inference results: events, alerts, evidence."""
+        h = getattr(frame_data, 'shape', None)
+        w = h[1] if h is not None and len(h) > 1 else 640
+        h = h[0] if h is not None and len(h) > 0 else 360
+
+        person_count = 0
+        person_locations = {}
+        events = []
+
+        for det in detections:
+            cls_id = det["class_id"]
+            track_id = det.get("track_id")
+            x1, y1, x2, y2 = det["bbox"]
+            cx = ((x1 + x2) / 2) / w
+            cy = ((y1 + y2) / 2) / h
+
+            if cls_id == 0:
+                person_count += 1
+                if track_id is None:
+                    continue
+
+                self.people_counter.update(track_id, cy)
+                self.heatmap.update(cx * w, cy * h)
+
+                line_event = self.line_detector.update(track_id, cy)
+                if line_event:
+                    events.append(line_event)
+
+                zone = self.zone_manager.get_zone(cx, cy)
+                person_locations[track_id] = zone
+
+        crowd_event = self.crowd_detector.detect(person_count)
+        if crowd_event:
+            events.append(crowd_event)
+
+        detector_events = self.event_manager.process(detections)
+        if detector_events:
+            events.extend(detector_events)
+
+        abandoned_events = self.abandoned_detector.update(detections)
+        if abandoned_events:
+            events.extend(abandoned_events)
+
+        fall_events = self.fall_detector.detect(detections)
+        if fall_events:
+            events.extend(fall_events)
+
+        weapon_events = self.weapon_detector.detect(detections)
+        if weapon_events:
+            events.extend(weapon_events)
+
+        overall_threat = "LOW"
+        for event in events:
+            track_id = event.get("track_id")
+
+            if track_id is None:
+                zone = "SAFE"
+                duration = 0
+            else:
+                zone = person_locations.get(track_id, "SAFE")
+                self.memory_manager.update(track_id, zone)
+                duration = self.memory_manager.get_duration(track_id)
+
+                if self.memory_manager.check_loitering(track_id):
+                    event["type"] = "LOITERING"
+
+            if event.get("type") == "ABANDONED_OBJECT":
+                severity = "HIGH"
+                zone = "SAFE"
+            else:
+                from alerts.intelligence_engine import IntelligenceEngine
+                engine = IntelligenceEngine()
+                severity = engine.evaluate(event, zone, duration, person_count)
+
+            overall_threat = self._update_threat_level(overall_threat, severity)
+
+            event["zone"] = zone
+            event["severity"] = severity
+            event["duration"] = int(duration)
+            event["camera"] = self.name
+
+            from database.db import save_event
+            event_id = save_event(
+                event_type=event["type"],
+                severity=severity,
+                camera=self.name,
+                zone=zone,
+                confidence=event.get("confidence", 0.0),
+                duration=int(duration),
+                track_id=track_id if track_id is not None else -1,
+                metadata={"duration": int(duration)}
+            )
+
+            from dashboard.store import add_event
+            add_event({
+                "type": event["type"],
+                "zone": zone,
+                "severity": severity,
+                "duration": int(duration)
+            })
+
+            from dashboard.timeline import add_incident
+            add_incident({
+                "time": datetime.now().strftime("%H:%M:%S"),
+                "event": event["type"],
+                "zone": zone,
+                "severity": severity
+            })
+
+            from alerts.alert_manager import AlertManager
+            alert_mgr = AlertManager()
+            alert = alert_mgr.process(event)
+            if alert:
+                print(f"[{self.name}] [ALERT] {alert['level']} : {alert['message']}")
+
+            if (
+                event["type"] in ["LOITERING", "FALL_DETECTED", "ABANDONED_OBJECT", "WEAPON_DETECTED"]
+                or event["zone"] == "RESTRICTED"
+                or event["severity"] == "HIGH"
+            ):
+                from evidence.evidence_manager import EvidenceManager
+                evidence_mgr = EvidenceManager()
+                annotated = getattr(frame_data, 'plot', lambda: frame_data)() if hasattr(frame_data, 'plot') else frame_data
+                evidence_mgr.save(
+                    annotated,
+                    event["type"],
+                    track_id if track_id is not None else -1,
+                    event_id=event_id,
+                    camera=self.name
+                )
+
+    def _update_threat_level(self, current_threat: str, severity: str) -> str:
+        if severity == "HIGH":
+            return "HIGH"
+        if severity == "MEDIUM" and current_threat != "HIGH":
+            return "MEDIUM"
+        return current_threat
+
+    def get_frame(self):
+        """Gets the latest frame from the camera stream."""
+        return self.stream.get_frame()
+
+    def get_queue_size(self):
+        """Gets the current frame queue size."""
+        return self.queue.qsize()
+
+    def get_status(self):
+        """Gets the combined status of the pipeline."""
+        stream_details = self.stream.get_details()
+        if self.health:
+            health_status = self.health.get_health_status()
+            stream_details["pipeline_status"] = health_status.get("pipeline_status", "Unknown")
+            stream_details["worker_status"] = "Running" if (self.worker and self.worker.is_alive()) else "Stopped"
+            stream_details["queue_size"] = self.queue.qsize()
+            stream_details["inference_ms"] = health_status.get("metrics", {}).get("last_inference_ms", 0.0)
+        return stream_details
+
+
 class CameraManager:
     """Singleton Manager controlling multi-camera streams and routing Phase 2 APIs."""
     _instance = None
+    _default_camera_created = False
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(CameraManager, cls).__new__(cls)
-            cls._instance.cameras = {}
-            # Default Camera Init (Webcam 0)
-            cls._instance.add_camera(name="Camera_01", ip_url=0, zone="Main Entrance")
+            cls._instance.pipelines = {}
         return cls._instance
 
-    def add_camera(self, name, ip_url, zone="DEFAULT"):
-        if name in self.cameras:
-            self.cameras[name].stop()
+    def _ensure_default_camera(self):
+        if not self._default_camera_created and "Camera_01" not in self.pipelines:
+            self.add_camera(name="Camera_01", ip_url=0, zone="Main Entrance")
+            self._default_camera_created = True
 
-        cam = CameraStream(name, ip_url, zone)
-        self.cameras[name] = cam
-        cam.start()
-        return cam
+    def add_camera(self, name, ip_url, zone="DEFAULT", rtsp_config=None, reconnect_delay=5, max_queue_size=30):
+        """Adds a new camera with its own independent pipeline."""
+        if name in self.pipelines:
+            self.remove_camera(name)
+
+        pipeline = CameraPipeline(
+            name=name,
+            ip_url=ip_url,
+            zone=zone,
+            rtsp_config=rtsp_config,
+            reconnect_delay=reconnect_delay,
+            max_queue_size=max_queue_size
+        )
+        self.pipelines[name] = pipeline
+
+        # Auto-start for backward compatibility
+        pipeline.start()
+        if name == "Camera_01":
+            self._default_camera_created = True
+        return pipeline
 
     def remove_camera(self, name):
-        if name in self.cameras:
-            self.cameras[name].stop()
-            del self.cameras[name]
+        """Removes a camera and stops its pipeline."""
+        if name in self.pipelines:
+            self.pipelines[name].stop()
+            del self.pipelines[name]
+        if name == "Camera_01":
+            self._default_camera_created = False
 
     def get_camera_stream(self, name="Camera_01"):
-        return self.cameras.get(name)
+        """Gets the camera stream for backward compatibility."""
+        pipeline = self.pipelines.get(name)
+        if pipeline:
+            return pipeline.stream
+        return None
+
+    def get_pipeline(self, name):
+        """Gets the full pipeline for a camera."""
+        return self.pipelines.get(name)
 
     def get_all_status(self):
+        """Gets status of all cameras."""
+        self._ensure_default_camera()
         cameras_status = {}
-        for name, cam in self.cameras.items():
-            cameras_status[name] = cam.get_details()
+        for name, pipeline in self.pipelines.items():
+            cameras_status[name] = pipeline.get_status()
         return cameras_status
+
+    def get_all_streams(self):
+        """Gets all camera streams for iteration."""
+        self._ensure_default_camera()
+        return {name: pipeline.stream for name, pipeline in self.pipelines.items()}
+
+    def stop_all(self):
+        """Stops all cameras and pipelines."""
+        for name in list(self.pipelines.keys()):
+            self.remove_camera(name)
+        self._default_camera_created = False
+
+    def release(self):
+        """Alias for stop_all for backward compatibility."""
+        self.stop_all()
+
 
 # Global Singleton Instance
 camera_manager = CameraManager()

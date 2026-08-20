@@ -7,6 +7,29 @@ function renderNotificationHistory() {
 
     if (!list) return;
 
+    showSkeletonRows("notificationHistoryList", 8);
+
+    if (list.innerHTML.trim() === '' || list.querySelector('.panel-loading')) {
+        list.innerHTML = '<div style="text-align:center;padding:40px;color:#64748b;">Loading notifications...</div>';
+    }
+    
+    if (!notifications.length) {
+        list.innerHTML = "";
+        if (empty) {
+            empty.style.display = "flex";
+            empty.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;opacity:0.4;margin-bottom:12px;">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <h3 style="color:#e2e8f0;margin:0 0 8px 0;">No Notifications Yet</h3>
+                <p style="color:#94a3b8;margin:0;">When alerts are generated, they will appear here.</p>
+            `;
+        }
+        if (stats) stats.innerHTML = 'Showing <strong>0</strong> of <strong>0</strong> notifications';
+        return;
+    }
+
     let filtered = [...notifications];
 
     if (activeFilter !== "all") {
@@ -48,11 +71,11 @@ function renderNotificationHistory() {
                     ${typeIcons[item.type] || "ℹ️"}
                 </div>
                 <div class="notification-history-content">
-                    <div class="notification-history-title">${item.title}</div>
-                    <div class="notification-history-message">${item.message}</div>
+                    <div class="notification-history-title">${escapeHtml(item.title)}</div>
+                    <div class="notification-history-message">${escapeHtml(item.message)}</div>
                     <div class="notification-history-meta">
-                        <span>🕒 ${item.time}</span>
-                        <span>📅 ${item.date}</span>
+                        <span>🕒 ${escapeHtml(item.time)}</span>
+                        <span>📅 ${escapeHtml(item.date)}</span>
                     </div>
                 </div>
                 <span class="notification-history-badge badge-${item.type}">${item.type}</span>
@@ -61,6 +84,13 @@ function renderNotificationHistory() {
     });
 
     list.innerHTML = html;
+}
+
+function escapeHtml(text) {
+    if (text == null) return "";
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 function setFilter(filter) {
@@ -73,3 +103,55 @@ function setFilter(filter) {
 function filterNotifications() {
     renderNotificationHistory();
 }
+
+function clearNotificationHistory() {
+    if (confirm("Clear all notification history?")) {
+        notifications = [];
+        saveNotificationHistory();
+        updateNotificationPanel();
+        renderNotificationHistory();
+    }
+}
+
+function markAllAsRead() {
+    notifications.forEach(n => n.read = true);
+    saveNotificationHistory();
+    updateNotificationPanel();
+    renderNotificationHistory();
+}
+
+function markAsRead(id) {
+    const item = notifications.find(n => String(n.id) === String(id));
+    if (item) {
+        item.read = true;
+        saveNotificationHistory();
+        updateNotificationPanel();
+        renderNotificationHistory();
+    }
+}
+
+function loadNotificationHistory() {
+    try {
+        const stored = localStorage.getItem("sentinelx_notifications");
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) {
+                notifications = parsed;
+            }
+        }
+    } catch (e) {
+        console.error("Failed to load notifications:", e);
+        const empty = document.getElementById("historyEmptyState");
+        if (empty) {
+            empty.style.display = "flex";
+            empty.innerHTML = `
+                <h3 style="color:#e2e8f0;margin:0 0 8px 0;">Unable to Load Notifications</h3>
+                <p style="color:#94a3b8;margin:0 0 20px 0;">The notification service could not be reached.</p>
+                <button class="btn btn-primary" onclick="loadNotificationHistory()">Retry</button>
+            `;
+        }
+    }
+    renderNotificationHistory();
+}
+
+loadNotificationHistory();

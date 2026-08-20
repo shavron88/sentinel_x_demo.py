@@ -68,6 +68,32 @@ font-weight:bold;
 
 color:#22C55E;
 
+transition:color .5s ease;
+
+}
+
+#riskGauge.critical{
+
+color:#DC2626;
+
+}
+
+#riskGauge.high{
+
+color:#F59E0B;
+
+}
+
+#riskGauge.medium{
+
+color:#F59E0B;
+
+}
+
+#riskGauge.low{
+
+color:#22C55E;
+
 }
 
 #aiDecisionLog{

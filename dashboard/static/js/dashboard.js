@@ -37,12 +37,28 @@ function animateValue(id, start, end, duration = 500){
 
 
 
+function escapeHtml(text) {
+    if (text == null) return "";
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 async function updateDashboard() {
+
+    showSkeletonCards("stats-grid", 4);
 
     try {
 
         const response = await fetch("/stats");
         const stats = await response.json();
+
+        hideSkeletons();
+
+        if (!stats || Object.keys(stats).length === 0) {
+            showEmptyState("emptyState", "No Data Available", "Dashboard data is not available.", [{label:"Refresh", onclick:"updateDashboard()", class:"btn-primary"}]);
+            return;
+        }
 
         const cameraFPS = document.getElementById("camera-fps");
 
@@ -117,10 +133,14 @@ async function updateDashboard() {
 
     } catch (err) {
         console.log("Dashboard Error:", err);
+        const errorEl = document.getElementById("dashboardError");
+        if (errorEl) {
+            errorEl.innerHTML = '<div style="color:#ef4444;padding:10px;text-align:center;">Unable to load dashboard data. <button onclick="updateDashboard()" style="background:none;border:none;color:#3b82f6;cursor:pointer;text-decoration:underline;">Retry</button></div>';
+            errorEl.style.display = "block";
+        }
     }
 
 }
-
 
 
 async function loadAIFeed() {
@@ -128,6 +148,7 @@ async function loadAIFeed() {
     try {
 
         const response = await fetch("/timeline");
+
         const data = await response.json();
 
         const feed = document.getElementById("timeline");
@@ -136,42 +157,50 @@ async function loadAIFeed() {
 
         feed.innerHTML = "";
 
-        const sampleEvents = [
-            "Person Entered Restricted Zone",
-            "Fall Detected",
-            "Crowd Density High",
-            "Loitering Warning",
-            "Vehicle Detected in No-Parking",
-            "Perimeter Breach Alert",
-            "Unattended Object Detected",
-            "Crowd Density High",
-            "Person Entered Restricted Zone",
-            "Fall Detected"
-        ];
+        const timelineItems = data.timeline || [];
 
-        const severities = ["HIGH", "MEDIUM", "LOW"];
-        const zones = ["Main Entrance", "Parking A", "Warehouse", "Lobby", "Restricted Zone", "Corridor B"];
+        if(timelineItems.length === 0){
 
-        const now = new Date();
+            feed.innerHTML = '<div style="color:#64748b;font-size:12px;padding:10px;">No recent events</div>';
 
-        sampleEvents.forEach((event, index) => {
+            return;
 
-            const severity = severities[index % 3];
-            const time = new Date(now.getTime() - (sampleEvents.length - index) * 60000);
-            const timeStr = time.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+        }
+
+        timelineItems.forEach((item, index) => {
+
+            const event = item.event_type || item.event || "Unknown Event";
+
+            const severity = item.severity || "LOW";
+
+            const zone = item.zone || "Unknown";
+
+            const timestamp = item.timestamp || item.time || "";
+
+            const timeStr = timestamp ? new Date(timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }) : "--:--";
 
             const div = document.createElement("div");
+
             div.className = `ai-feed-item feed-${severity.toLowerCase()}`;
 
             div.innerHTML = `
+
                 <span class="ai-feed-time">${timeStr}</span>
+
                 <div class="ai-feed-content">
+
                     <div class="ai-feed-title">${event}</div>
+
                     <div class="ai-feed-meta">
-                        <span>📍 ${zones[index % zones.length]}</span>
+
+                        <span>📍 ${zone}</span>
+
                     </div>
+
                 </div>
+
                 <span class="ai-feed-badge ${severity.toLowerCase()}">${severity}</span>
+
             `;
 
             feed.appendChild(div);
@@ -184,14 +213,21 @@ async function loadAIFeed() {
 
         console.log(err);
 
+        if(feed){
+
+            feed.innerHTML = '<div style="color:#ef4444;font-size:12px;padding:10px;">Unable to load timeline. <button onclick="loadAIFeed()" style="background:none;border:none;color:#3b82f6;cursor:pointer;text-decoration:underline;">Retry</button></div>';
+
+        }
+
     }
 
 }
 
 
 // Refresh every second
-setInterval(updateDashboard, 1000);
-setInterval(loadAIFeed, 3000);
+window._dashboardIntervals = window._dashboardIntervals || [];
+window._dashboardIntervals.push(setInterval(updateDashboard, 1000));
+window._dashboardIntervals.push(setInterval(loadAIFeed, 3000));
 
 // Run immediately
 updateDashboard();
@@ -212,23 +248,33 @@ async function loadGallery(){
 
     let html="";
 
-    data.images.forEach(img=>{
+    const items = Array.isArray(data) ? data : [];
+
+    items.forEach(item => {
+
+        const raw = item.image_path || "";
+
+        const filename = raw.split("/").pop();
+
+        if(!filename) return;
+
         html += `
         <a href="/evidence" title="View all evidence">
             <img
-                src="/evidence/screenshots/${img}"
+                src="/evidence/screenshots/${filename}"
                 class="gallery-image"
                 loading="lazy"
             >
         </a>
         `;
+
     });
 
     gallery.innerHTML=html;
 
 }
 
-setInterval(loadGallery,1000);
+window._dashboardIntervals.push(setInterval(loadGallery, 1000));
 loadGallery();
 
 /* ==========================================
@@ -249,13 +295,17 @@ async function updateKPIBar(stats){
     if(alertsEl){
         alertsEl.innerText = String(stats.alerts || 0).padStart(2, "0");
     }
-
     if(camerasEl){
         try {
 
             const res = await fetch("/api/cameras");
-            const cameras = await res.json();
+
+            const camerasData = await res.json();
+
+            const cameras = Array.isArray(camerasData) ? camerasData : Object.values(camerasData);
+
             const active = cameras.filter(c => c.status === "ONLINE").length;
+
             camerasEl.innerText = active;
 
         } catch(e) {
@@ -263,61 +313,21 @@ async function updateKPIBar(stats){
             camerasEl.innerText = "4";
 
         }
+
     }
 
     if(accuracyEl){
-        const accuracy = (97 + Math.random() * 2.5).toFixed(1);
-        accuracyEl.innerText = accuracy;
+        accuracyEl.innerText = "--";
     }
 
 }
 
 /* ==========================================
    AI DETECTION OVERLAY
+   Real data is loaded from /ai_summary
 ========================================== */
 
-const aiDirections = ["→ North", "→ South", "→ East", "→ West", "↗ NE", "↘ SE", "↙ SW", "↖ NW"];
-const aiZones = ["Main Entrance", "Parking A", "Warehouse", "Lobby", "Restricted Zone", "Corridor B"];
-let aiPersonCounter = 1;
-let currentTrackingId = 1001;
-
-function updateAIOverlay(){
-
-    const overlay = document.getElementById("aiOverlay");
-    if(!overlay) return;
-
-    const confidence = (95 + Math.random() * 4.9).toFixed(1);
-    const velocity = (0.5 + Math.random() * 2.5).toFixed(1);
-    const direction = aiDirections[Math.floor(Math.random() * aiDirections.length)];
-    const zone = aiZones[Math.floor(Math.random() * aiZones.length)];
-
-    const titleEl = document.getElementById("aiTitle");
-    const confidenceEl = document.getElementById("aiConfidence");
-    const zoneEl = document.getElementById("aiZone");
-    const trackingEl = document.getElementById("aiTracking");
-    const velocityEl = document.getElementById("aiVelocity");
-    const directionEl = document.getElementById("aiDirection");
-
-    if(titleEl) titleEl.innerText = `Person #${aiPersonCounter}`;
-    if(confidenceEl) confidenceEl.innerText = `${confidence}%`;
-    if(zoneEl) zoneEl.innerText = zone;
-    if(trackingEl) trackingEl.innerText = `#TX-${currentTrackingId}`;
-    if(velocityEl) velocityEl.innerText = `${velocity} m/s`;
-    if(directionEl) directionEl.innerText = direction;
-
-    aiPersonCounter++;
-    if(aiPersonCounter > 20) aiPersonCounter = 1;
-    currentTrackingId++;
-    if(currentTrackingId > 1099) currentTrackingId = 1001;
-
-    overlay.style.animation = "none";
-    overlay.offsetHeight;
-    overlay.style.animation = "aiFadeIn .5s ease";
-
-}
-
-setInterval(updateAIOverlay, 2000);
-updateAIOverlay();
+// AI overlay data is now fetched from backend via loadAISummary()
 
 async function loadAISummary(){
 
@@ -352,7 +362,7 @@ async function loadAISummary(){
 
 }
 
-setInterval(loadAISummary,2000);
+window._dashboardIntervals.push(setInterval(loadAISummary, 2000));
 
 loadAISummary();
 
@@ -445,7 +455,7 @@ function initDetectionChart(){
             datasets: [
                 {
                     label: "Persons",
-                    data: Array.from({length: 12}, () => Math.floor(Math.random() * 8) + 2),
+                    data: Array(12).fill(0),
                     borderColor: "#3b82f6",
                     backgroundColor: "rgba(59,130,246,.1)",
                     borderWidth: 2,
@@ -456,7 +466,7 @@ function initDetectionChart(){
                 },
                 {
                     label: "Vehicles",
-                    data: Array.from({length: 12}, () => Math.floor(Math.random() * 5) + 1),
+                    data: Array(12).fill(0),
                     borderColor: "#22c55e",
                     backgroundColor: "rgba(34,197,94,.05)",
                     borderWidth: 2,
@@ -467,7 +477,7 @@ function initDetectionChart(){
                 },
                 {
                     label: "Alerts",
-                    data: Array.from({length: 12}, () => Math.floor(Math.random() * 4)),
+                    data: Array(12).fill(0),
                     borderColor: "#ef4444",
                     backgroundColor: "rgba(239,68,68,.05)",
                     borderWidth: 2,
@@ -556,19 +566,159 @@ function updateDetectionChart(){
 
     chart.data.datasets.forEach(dataset => {
         const prev = dataset.data[dataset.data.length - 1] || 0;
-        const change = Math.floor(Math.random() * 5) - 2;
-        let next = prev + change;
-        if(next < 0) next = 0;
-        if(next > 15) next = 15;
         dataset.data.shift();
-        dataset.data.push(next);
+        dataset.data.push(prev);
     });
 
     chart.update("none");
 
 }
 
-setInterval(updateDetectionChart, 5000);
+window._dashboardIntervals.push(setInterval(updateDetectionChart, 5000));
+
+/* ==========================================
+   AI PERFORMANCE CHART
+========================================== */
+
+let performanceChart;
+const fpsHistory = [];
+const MAX_FPS_HISTORY = 20;
+
+async function updateAIPerformance() {
+
+    const spinner = document.getElementById('perfSpinner');
+    const chartContainer = document.getElementById('perfChartContainer');
+    const metricsEl = document.getElementById('aiPerfMetrics');
+    const errorEl = document.getElementById('perfError');
+
+    if (!chartContainer) return;
+
+    if (spinner) spinner.style.display = 'flex';
+    if (chartContainer) chartContainer.classList.add('chart-loading');
+    if (metricsEl) metricsEl.style.display = 'none';
+    if (errorEl) errorEl.style.display = 'none';
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    try {
+        const response = await fetch('/api/v1/health', { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+            throw new Error('Invalid API response');
+        }
+
+        const data = await response.json();
+        const aiEngine = data.ai_engine;
+
+        if (!aiEngine) {
+            throw new Error('No AI engine data');
+        }
+
+        const metrics = aiEngine.metrics || {};
+        const fps = metrics.detection_fps || 0;
+
+        if (metricsEl) {
+            const statusEl = document.getElementById('perf-status');
+            const fpsEl = document.getElementById('perf-fps');
+            const inferenceEl = document.getElementById('perf-inference');
+            const queueEl = document.getElementById('perf-queue');
+
+            if (statusEl) {
+                statusEl.innerText = aiEngine.status || '--';
+                statusEl.style.color = aiEngine.status === 'Healthy' ? 'var(--ev-success)' :
+                                       aiEngine.status === 'Degraded' ? '#facc15' : 'var(--ev-text-muted)';
+            }
+            if (fpsEl) fpsEl.innerText = fps.toFixed(1);
+            if (inferenceEl) inferenceEl.innerText = (metrics.avg_inference_ms || 0).toFixed(1) + ' ms';
+            if (queueEl) queueEl.innerText = metrics.queue_size || 0;
+
+            metricsEl.style.display = 'grid';
+        }
+
+        fpsHistory.push(fps);
+        if (fpsHistory.length > MAX_FPS_HISTORY) fpsHistory.shift();
+
+        const ctx = document.getElementById('performanceChart');
+        if (ctx) {
+            const labels = fpsHistory.map((_, i) => '');
+
+            if (!performanceChart) {
+                performanceChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Detection FPS',
+                            data: [...fpsHistory],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59,130,246,.1)',
+                            borderWidth: 2,
+                            tension: .4,
+                            fill: true,
+                            pointRadius: 2,
+                            pointBackgroundColor: '#3b82f6'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(15,23,42,.9)',
+                                borderColor: 'rgba(255,255,255,.1)',
+                                borderWidth: 1,
+                                padding: 10,
+                                cornerRadius: 6,
+                                titleColor: '#e2e8f0',
+                                bodyColor: '#94a3b8',
+                                bodyFont: { size: 11 }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                display: false,
+                                grid: { display: false }
+                            },
+                            y: {
+                                grid: { color: 'rgba(255,255,255,.05)', drawBorder: false },
+                                ticks: { color: '#64748b', font: { size: 10 }, stepSize: 5 },
+                                beginAtZero: true
+                            }
+                        },
+                        animation: { duration: 300 }
+                    }
+                });
+            } else {
+                performanceChart.data.labels = labels;
+                performanceChart.data.datasets[0].data = [...fpsHistory];
+                performanceChart.update('none');
+            }
+        }
+
+        if (spinner) spinner.style.display = 'none';
+        if (chartContainer) chartContainer.classList.remove('chart-loading');
+
+    } catch (err) {
+        clearTimeout(timeoutId);
+        console.log('AI Performance Error:', err);
+
+        if (spinner) spinner.style.display = 'none';
+        if (chartContainer) chartContainer.classList.remove('chart-loading');
+
+        if (errorEl) {
+            errorEl.innerHTML = '<div style="color:#ef4444;font-size:12px;padding:10px;text-align:center;">Unable to load AI performance data. <button onclick="updateAIPerformance()" style="background:none;border:none;color:#3b82f6;cursor:pointer;text-decoration:underline;">Retry</button></div>';
+            errorEl.style.display = 'block';
+        }
+    }
+}
 
 /* ==========================================
    INIT
@@ -577,3 +727,24 @@ setInterval(updateDetectionChart, 5000);
 loadEvidence();
 initDetectionChart();
 updateDetectionChart();
+window._dashboardIntervals.push(setInterval(updateAIPerformance, 2000));
+updateAIPerformance();
+/* ==========================================
+   CLEANUP ON PAGE LEAVE
+========================================== */
+
+function cleanupDashboard() {
+    if (window._dashboardIntervals) {
+        window._dashboardIntervals.forEach(id => clearInterval(id));
+        window._dashboardIntervals = [];
+    }
+    const overlay = document.getElementById("aiOverlay");
+    if (overlay) overlay.style.display = "none";
+    const video = document.getElementById("dashboardVideo");
+    if (video) {
+        video.pause();
+        video.src = "";
+    }
+}
+
+window.addEventListener("beforeunload", cleanupDashboard);

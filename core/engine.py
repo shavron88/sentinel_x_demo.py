@@ -4,7 +4,7 @@ from datetime import datetime
 
 from database.db import save_event
 from camera.camera_manager import CameraManager
-from ai.detector import Detector
+from ai.inference import YOLOInferenceEngine
 
 from events.event_manager import EventManager
 from events.memory_manager import MemoryManager
@@ -17,7 +17,7 @@ from evidence.evidence_manager import EvidenceManager
 from dashboard.timeline import add_incident
 
 from dashboard.store import add_event, update_stats
-from dashboard.stream import set_frame
+from dashboard.stream import set_frame, get_frame_drops, get_stream_fps
 from events.abandoned_object import AbandonedObjectDetector
 from events.crowd_detector import CrowdDetector
 from events.fall_detector import FallDetector
@@ -42,7 +42,7 @@ def run_engine():
     print("========== SENTINELX ENGINE STARTED ==========")
 
     camera = CameraManager()
-    detector = Detector()
+    engine = YOLOInferenceEngine(model_path="models/yolov8m.pt")
 
     event_manager = EventManager()
     memory_manager = MemoryManager()
@@ -60,17 +60,36 @@ def run_engine():
     evidence_manager = EvidenceManager()
 
     previous_time = time.time()
+    camera_stream = None
+    frame_drops = 0
+    last_drop_log = 0
 
     try:
         while True:
-            frame = camera.get_frame()
+            camera_stream = camera.get_camera_stream("Camera_01")
+            frame = None
+            camera_status = "OFFLINE"
+
+            if camera_stream:
+                frame = camera_stream.get_frame()
+                camera_status = camera_stream.status
+
             if frame is None:
+                frame_drops += 1
+                now = time.time()
+                if now - last_drop_log >= 5.0:
+                    print(f"[WARNING] Camera frame unavailable (status={camera_status}). Waiting...")
+                    last_drop_log = now
+                time.sleep(0.05)
                 continue
 
             frame = cv2.resize(frame, (640, 360))
-            results = detector.detect(frame) or []
+            result = engine.infer_frame(frame) or {}
+            detections = result.get("detections", [])
+            annotated_frame = result.get("annotated_frame")
+            if annotated_frame is None:
+                annotated_frame = frame.copy()
 
-            annotated_frame = results[0].plot() if results else frame.copy()
             h, w = frame.shape[:2]
             annotated_frame = zone_manager.draw(annotated_frame)
 
@@ -88,43 +107,30 @@ def run_engine():
             # ----------------------------------------------------
             # 1. AI Detections & Tracking Loop
             # ----------------------------------------------------
-            for result in results:
-                if result.boxes is None:
-                    continue
+            for det in detections:
+                cls_id = det["class_id"]
+                track_id = det.get("track_id")
+                x1, y1, x2, y2 = det["bbox"]
+                cx = ((x1 + x2) / 2) / w
+                cy = ((y1 + y2) / 2) / h
 
-                for box in result.boxes:
-                    cls = int(box.cls[0])
+                if cls_id == 0:
+                    person_count += 1
+                    if track_id is None:
+                        continue
 
-                    if cls == 0:  # Person Class
-                        person_count += 1
-                        if box.id is None:
-                            continue
+                    people_counter.update(track_id, cy)
+                    heatmap.update(cx * w, cy * h)
 
-                        track_id = int(box.id[0])
-                        coords = box.xyxy[0]
+                    line_event = line_detector.update(track_id, cy)
+                    if line_event:
+                        events.append(line_event)
 
-                        if hasattr(coords, "tolist"):
-                            x1, y1, x2, y2 = map(float, coords.tolist())
-                        else:
-                            x1, y1, x2, y2 = map(float, coords)
+                    zone = zone_manager.get_zone(cx, cy)
+                    person_locations[track_id] = zone
 
-                        cx = ((x1 + x2) / 2) / w
-                        cy = ((y1 + y2) / 2) / h
-
-                        # Analytics Update
-                        people_counter.update(track_id, cy)
-                        heatmap.update(cx * w, cy * h)
-
-                        # Line Crossing Detection Fix
-                        line_event = line_detector.update(track_id, cy)
-                        if line_event:
-                            events.append(line_event)
-
-                        zone = zone_manager.get_zone(cx, cy)
-                        person_locations[track_id] = zone
-
-                    elif cls in VEHICLE_CLASSES:
-                        vehicle_count += 1
+                elif cls_id in VEHICLE_CLASSES:
+                    vehicle_count += 1
 
             # ----------------------------------------------------
             # 2. Event Collection from Specialized Detectors
@@ -133,19 +139,19 @@ def run_engine():
             if crowd_event:
                 events.append(crowd_event)
 
-            detector_events = event_manager.process(results)
+            detector_events = event_manager.process(detections)
             if detector_events:
                 events.extend(detector_events)
 
-            abandoned_events = abandoned_detector.update(results)
+            abandoned_events = abandoned_detector.update(detections)
             if abandoned_events:
                 events.extend(abandoned_events)
 
-            fall_events = fall_detector.detect(results)
+            fall_events = fall_detector.detect(detections)
             if fall_events:
                 events.extend(fall_events)
 
-            weapon_events = weapon_detector.detect(results)
+            weapon_events = weapon_detector.detect(detections)
             if weapon_events:
                 events.extend(weapon_events)
 
@@ -187,13 +193,15 @@ def run_engine():
                 event["duration"] = int(duration)
 
                 # Database & Dashboard Updates
-                save_event(
+                event_id = save_event(
                     event_type=event["type"],
                     severity=severity,
-                    camera="Camera-1",
+                    camera="Camera_01",
                     zone=zone,
                     confidence=event.get("confidence", 0.0),
-                    screenshot=""
+                    duration=int(duration),
+                    track_id=track_id if track_id is not None else -1,
+                    metadata={"duration": int(duration)}
                 )
 
                 add_event({
@@ -239,38 +247,30 @@ def run_engine():
                     evidence_manager.save(
                         annotated_frame,
                         event["type"],
-                        track_id if track_id is not None else -1
+                        track_id if track_id is not None else -1,
+                        event_id=event_id,
+                        camera="Camera_01"
                     )
 
             # ----------------------------------------------------
             # 4. Drawing Bounding Boxes & HUD Overlays
             # ----------------------------------------------------
-            for result in results:
-                if result.boxes is None:
+            for det in detections:
+                if det["class_id"] != 0 or det.get("track_id") is None:
                     continue
 
-                for box in result.boxes:
-                    if int(box.cls[0]) != 0 or box.id is None:
-                        continue
+                track_id = det["track_id"]
+                x1, y1, x2, y2 = [int(v) for v in det["bbox"]]
+                zone = person_locations.get(track_id, "SAFE")
+                duration = int(memory_manager.get_duration(track_id))
 
-                    track_id = int(box.id[0])
-                    coords = box.xyxy[0]
+                cv2.putText(annotated_frame, f"ID:{track_id}", (x1, y1 - 35), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                cv2.putText(annotated_frame, zone, (x1, y1 - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+                cv2.putText(annotated_frame, f"{duration}s", (x1, y2 + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
-                    if hasattr(coords, "tolist"):
-                        x1, y1, x2, y2 = map(int, coords.tolist())
-                    else:
-                        x1, y1, x2, y2 = map(int, coords)
-
-                    zone = person_locations.get(track_id, "SAFE")
-                    duration = int(memory_manager.get_duration(track_id))
-
-                    cv2.putText(annotated_frame, f"ID:{track_id}", (x1, y1 - 35), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-                    cv2.putText(annotated_frame, zone, (x1, y1 - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
-                    cv2.putText(annotated_frame, f"{duration}s", (x1, y2 + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-
-                    box_color = (0, 0, 255) if zone == "RESTRICTED" else ((0, 255, 255) if zone == "ENTRY" else (0, 255, 0))
-                    thickness = 3 if zone == "RESTRICTED" else 2
-                    cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), box_color, thickness)
+                box_color = (0, 0, 255) if zone == "RESTRICTED" else ((0, 255, 255) if zone == "ENTRY" else (0, 255, 0))
+                thickness = 3 if zone == "RESTRICTED" else 2
+                cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), box_color, thickness)
 
             # HUD Display Overlays
             threat_color = (0, 0, 255) if overall_threat == "HIGH" else ((0, 255, 255) if overall_threat == "MEDIUM" else (0, 255, 0))
@@ -309,6 +309,63 @@ def run_engine():
 
     finally:
         # Guarantee resource release on normal shutdown or unhandled runtime crashes
-        camera.release()
+        if camera:
+            camera.release()
         cv2.destroyAllWindows()
         print("========== SENTINELX ENGINE STOPPED SAFELY ==========")
+
+
+def run_multi_camera():
+    print("========== SENTINELX MULTI-CAMERA ENGINE STARTED ==========")
+
+    camera = CameraManager()
+    model_path = "models/yolov8m.pt"
+
+    previous_time = time.time()
+
+    try:
+        while True:
+            pipelines = camera.pipelines
+            if not pipelines:
+                time.sleep(0.1)
+                continue
+
+            for name, pipeline in pipelines.items():
+                frame = pipeline.get_frame()
+                if frame is None:
+                    continue
+
+                frame = cv2.resize(frame, (640, 360))
+                result = pipeline.engine.infer_frame(frame) or {}
+                detections = result.get("detections", [])
+                annotated_frame = result.get("annotated_frame")
+                if annotated_frame is None:
+                    annotated_frame = frame.copy()
+
+                h, w = frame.shape[:2]
+                annotated_frame = pipeline.zone_manager.draw(annotated_frame)
+
+                pipeline._on_inference_result(None, detections, annotated_frame)
+
+                # Update stream for this camera
+                from dashboard.stream import set_frame as sf
+                sf(annotated_frame)
+
+                cv2.imshow(f"SentinelX - {name}", annotated_frame)
+
+            current_time = time.time()
+            delta = current_time - previous_time
+            fps = int(1 / delta) if delta > 0 else 0
+            previous_time = current_time
+
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord("q"):
+                print("[INFO] Shutting down SentinelX Multi-Camera Engine...")
+                break
+
+            time.sleep(0.01)
+
+    finally:
+        camera.release()
+        cv2.destroyAllWindows()
+        print("========== SENTINELX MULTI-CAMERA ENGINE STOPPED SAFELY ==========")

@@ -4,6 +4,10 @@
 
 <div class="page-content fade-in">
 
+<div id="dashboardError" style="display:none;"></div>
+
+<div id="emptyState" style="display:none;"></div>
+
 <div class="dashboard-page">
 
 <!-- ================= KPI ================= -->
@@ -692,13 +696,51 @@ ON
 
         </div>
 
-        <div class="chart-container chart-loading">
+        <div class="ai-perf-metrics" id="aiPerfMetrics" style="display:none;">
 
-            <div class="loading-spinner small"></div>
+            <div class="perf-item">
+
+                <span class="perf-label">Status</span>
+
+                <span class="perf-value" id="perf-status">--</span>
+
+            </div>
+
+            <div class="perf-item">
+
+                <span class="perf-label">FPS</span>
+
+                <span class="perf-value" id="perf-fps">--</span>
+
+            </div>
+
+            <div class="perf-item">
+
+                <span class="perf-label">Inference</span>
+
+                <span class="perf-value" id="perf-inference">--</span>
+
+            </div>
+
+            <div class="perf-item">
+
+                <span class="perf-label">Queue</span>
+
+                <span class="perf-value" id="perf-queue">--</span>
+
+            </div>
+
+        </div>
+
+        <div class="chart-container chart-loading" id="perfChartContainer">
+
+            <div class="loading-spinner small" id="perfSpinner"></div>
 
             <canvas id="performanceChart"></canvas>
 
         </div>
+
+        <div id="perfError" style="display:none;"></div>
 
     </div>
 

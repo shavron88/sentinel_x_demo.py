@@ -17,75 +17,69 @@ class AbandonedObjectDetector:
         self.distance_threshold = 35      # pixels
         self.abandon_time = 20            # seconds
 
-    def update(self, results):
+    def update(self, detections):
 
         events = []
 
         current_time = time.time()
 
-        for result in results:
+        for det in detections:
 
-            if result.boxes is None:
+            cls = det["class_id"]
+
+            if cls not in self.allowed_classes:
                 continue
 
-            for box in result.boxes:
+            track_id = det.get("track_id")
+            if track_id is None:
+                continue
 
-                cls = int(box.cls[0])
+            x1, y1, x2, y2 = det["bbox"]
 
-                if cls not in self.allowed_classes:
-                    continue
+            cx = (x1 + x2) / 2
+            cy = (y1 + y2) / 2
 
-                if box.id is None:
-                    continue
+            if track_id not in self.objects:
 
-                track_id = int(box.id[0])
+                self.objects[track_id] = {
+                    "x": cx,
+                    "y": cy,
+                    "start_time": current_time,
+                    "last_move": current_time,
+                    "alerted": False
+                }
 
-                x1, y1, x2, y2 = map(float, box.xyxy[0])
+                continue
 
-                cx = (x1 + x2) / 2
-                cy = (y1 + y2) / 2
+            obj = self.objects[track_id]
 
-                if track_id not in self.objects:
+            distance = math.sqrt(
+                (cx - obj["x"]) ** 2 +
+                (cy - obj["y"]) ** 2
+            )
 
-                    self.objects[track_id] = {
-                        "x": cx,
-                        "y": cy,
-                        "start_time": current_time,
-                        "last_move": current_time,
-                        "alerted": False
-                    }
+            if distance > self.distance_threshold:
 
-                    continue
+                obj["x"] = cx
+                obj["y"] = cy
+                obj["last_move"] = current_time
+                obj["alerted"] = False
 
-                obj = self.objects[track_id]
+            stationary_time = current_time - obj["last_move"]
 
-                distance = math.sqrt(
-                    (cx - obj["x"]) ** 2 +
-                    (cy - obj["y"]) ** 2
-                )
+            if (
+                stationary_time >= self.abandon_time
+                and not obj["alerted"]
+            ):
 
-                if distance > self.distance_threshold:
+                obj["alerted"] = True
 
-                    obj["x"] = cx
-                    obj["y"] = cy
-                    obj["last_move"] = current_time
-                    obj["alerted"] = False
+                events.append({
 
-                stationary_time = current_time - obj["last_move"]
+                    "type": "ABANDONED_OBJECT",
+                    "track_id": track_id,
+                    "duration": int(stationary_time)
 
-                if (
-                    stationary_time >= self.abandon_time
-                    and not obj["alerted"]
-                ):
-
-                    obj["alerted"] = True
-
-                    events.append({
-
-                        "type": "ABANDONED_OBJECT",
-                        "track_id": track_id,
-                        "duration": int(stationary_time)
-
-                    })
+                })
 
         return events

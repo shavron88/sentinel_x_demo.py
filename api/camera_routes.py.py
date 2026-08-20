@@ -1,6 +1,7 @@
 import logging
 from flask import Blueprint, jsonify, request
 from database.db import get_all_cameras, get_camera, save_camera
+from api.auth import require_auth, require_csrf
 
 camera_bp = Blueprint("camera_bp", __name__)
 logger = logging.getLogger("SentinelX.CameraAPI")
@@ -18,6 +19,8 @@ def get_single_camera(name):
     return jsonify({"success": False, "error": "Camera not found"}), 404
 
 @camera_bp.route("/api/cameras", methods=["POST"])
+@require_auth
+@require_csrf
 def add_or_update_camera():
     data = request.json or {}
     name = data.get("name")
