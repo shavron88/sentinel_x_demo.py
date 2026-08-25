@@ -1,6 +1,7 @@
 import cv2
 import time
 import os
+import sys
 import threading
 import logging
 from datetime import datetime
@@ -135,7 +136,8 @@ class CameraStream:
                     self._sync_db()
 
                     target = int(self.ip_url) if str(self.ip_url).isdigit() else self.ip_url
-                    self.cap = cv2.VideoCapture(target)
+                    backend = cv2.CAP_DSHOW if sys.platform.startswith("win") else 0
+                    self.cap = cv2.VideoCapture(target, backend)
 
                     if self._is_rtsp():
                         self._configure_rtsp(self.cap)
@@ -381,7 +383,7 @@ class CameraPipeline:
             self.stream.stop()
         self.queue.clear()
 
-    def _on_inference_result(self, frame_id, detections, frame_data):
+    def _on_inference_result(self, frame_id, detections, frame_data, annotated_frame=None):
         """Processes inference results: events, alerts, evidence."""
         h = getattr(frame_data, 'shape', None)
         w = h[1] if h is not None and len(h) > 1 else 640
@@ -504,14 +506,21 @@ class CameraPipeline:
             ):
                 from evidence.evidence_manager import EvidenceManager
                 evidence_mgr = EvidenceManager()
-                annotated = getattr(frame_data, 'plot', lambda: frame_data)() if hasattr(frame_data, 'plot') else frame_data
+                evidence_frame = annotated_frame if annotated_frame is not None else frame_data
                 evidence_mgr.save(
-                    annotated,
+                    evidence_frame,
                     event["type"],
                     track_id if track_id is not None else -1,
                     event_id=event_id,
                     camera=self.name
                 )
+
+        if annotated_frame is not None:
+            try:
+                from dashboard.stream import set_frame
+                set_frame(annotated_frame)
+            except Exception:
+                pass
 
     def _update_threat_level(self, current_threat: str, severity: str) -> str:
         if severity == "HIGH":
@@ -553,10 +562,12 @@ class CameraManager:
 
     def _ensure_default_camera(self):
         if not self._default_camera_created and "Camera_01" not in self.pipelines:
-            self.add_camera(name="Camera_01", ip_url=0, zone="Main Entrance")
+            pipeline = self.add_camera(name="Camera_01", ip_url=0, zone="Main Entrance", auto_start=True)
             self._default_camera_created = True
+            return pipeline
+        return self.pipelines.get("Camera_01")
 
-    def add_camera(self, name, ip_url, zone="DEFAULT", rtsp_config=None, reconnect_delay=5, max_queue_size=30):
+    def add_camera(self, name, ip_url, zone="DEFAULT", rtsp_config=None, reconnect_delay=5, max_queue_size=30, auto_start=True):
         """Adds a new camera with its own independent pipeline."""
         if name in self.pipelines:
             self.remove_camera(name)
@@ -571,8 +582,8 @@ class CameraManager:
         )
         self.pipelines[name] = pipeline
 
-        # Auto-start for backward compatibility
-        pipeline.start()
+        if auto_start:
+            pipeline.start()
         if name == "Camera_01":
             self._default_camera_created = True
         return pipeline
@@ -590,6 +601,18 @@ class CameraManager:
         pipeline = self.pipelines.get(name)
         if pipeline:
             return pipeline.stream
+
+        if not self.pipelines and name == "Camera_01":
+            self._ensure_default_camera()
+            pipeline = self.pipelines.get(name)
+            if pipeline and getattr(pipeline, "worker", None):
+                try:
+                    pipeline.worker.stop()
+                    pipeline.worker.join(timeout=1.0)
+                except Exception:
+                    pass
+                pipeline.worker = None
+            return pipeline.stream if pipeline else None
         return None
 
     def get_pipeline(self, name):

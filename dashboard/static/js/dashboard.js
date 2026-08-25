@@ -229,6 +229,31 @@ window._dashboardIntervals = window._dashboardIntervals || [];
 window._dashboardIntervals.push(setInterval(updateDashboard, 1000));
 window._dashboardIntervals.push(setInterval(loadAIFeed, 3000));
 
+let lastAlertedEventId = null;
+
+async function updateAlerts() {
+    try {
+        const response = await fetch("/events");
+        const events = await response.json();
+        if (!Array.isArray(events) || events.length === 0) return;
+        const latest = events[0];
+        if (latest.id !== lastAlertedEventId && (latest.severity === "HIGH" || latest.severity === "CRITICAL")) {
+            lastAlertedEventId = latest.id;
+            const type = latest.severity === "CRITICAL" ? "danger" : "warning";
+            showToast(
+                latest.severity === "CRITICAL" ? "Critical Alert" : "High Alert",
+                `${latest.event_type || "Event"} detected at ${latest.zone || "Unknown zone"}`,
+                type
+            );
+        }
+    } catch (e) {
+        // silent
+    }
+}
+
+window._dashboardIntervals.push(setInterval(updateAlerts, 3000));
+updateAlerts();
+
 // Run immediately
 updateDashboard();
 loadAIFeed();
@@ -297,23 +322,14 @@ async function updateKPIBar(stats){
     }
     if(camerasEl){
         try {
-
             const res = await fetch("/api/cameras");
-
-            const camerasData = await res.json();
-
-            const cameras = Array.isArray(camerasData) ? camerasData : Object.values(camerasData);
-
+            const data = await res.json();
+            const cameras = (data && data.cameras) ? data.cameras : (Array.isArray(data) ? data : []);
             const active = cameras.filter(c => c.status === "ONLINE").length;
-
             camerasEl.innerText = active;
-
         } catch(e) {
-
             camerasEl.innerText = "4";
-
         }
-
     }
 
     if(accuracyEl){

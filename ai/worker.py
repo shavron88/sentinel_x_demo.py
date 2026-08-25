@@ -37,9 +37,10 @@ class YOLOWorker(threading.Thread):
 
             result = self.engine.infer_frame(frame_data, frame_id=frame_id)
             detections = result.get("detections", [])
+            annotated_frame = result.get("annotated_frame")
 
             if self.on_result:
-                self.on_result(frame_id, detections, frame_data)
+                self.on_result(frame_id, detections, frame_data, annotated_frame)
 
             self.queue_manager.push_result(frame_id, detections)
 

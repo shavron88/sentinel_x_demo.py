@@ -543,6 +543,120 @@ ON
 
 </section>
 
+<!-- ================= DEMO SCENARIOS ================= -->
+
+<section class="demo-section" style="margin-top: 22px;">
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <h3>🎬 Demo Scenarios</h3>
+
+            <span class="feed-badge">SYNTHETIC</span>
+
+        </div>
+
+        <p style="color:#94a3b8;font-size:13px;margin:0 0 16px 0;">Trigger controlled demo events to test the full pipeline: event → alert → evidence → dashboard.</p>
+
+        <div class="demo-grid">
+
+            <button class="demo-btn" onclick="triggerDemo('person')">
+
+                <span class="demo-icon">🧍</span>
+
+                <span class="demo-label">Person Detection</span>
+
+            </button>
+
+            <button class="demo-btn" onclick="triggerDemo('crowd')">
+
+                <span class="demo-icon">👥</span>
+
+                <span class="demo-label">Crowd</span>
+
+            </button>
+
+            <button class="demo-btn demo-btn-critical" onclick="triggerDemo('restricted')">
+
+                <span class="demo-icon">🚨</span>
+
+                <span class="demo-label">Restricted Area</span>
+
+            </button>
+
+            <button class="demo-btn" onclick="triggerDemo('abandoned')">
+
+                <span class="demo-icon">📦</span>
+
+                <span class="demo-label">Abandoned Object</span>
+
+            </button>
+
+            <button class="demo-btn demo-btn-critical" onclick="triggerDemo('fall')">
+
+                <span class="demo-icon">🤕</span>
+
+                <span class="demo-label">Fall</span>
+
+            </button>
+
+            <button class="demo-btn demo-btn-critical" onclick="triggerDemo('weapon')">
+
+                <span class="demo-icon">🔫</span>
+
+                <span class="demo-label">Weapon Detection</span>
+
+            </button>
+
+            <button class="demo-btn" onclick="triggerDemo('line_crossing')">
+
+                <span class="demo-icon">↕️</span>
+
+                <span class="demo-label">Line Crossing</span>
+
+            </button>
+
+        </div>
+
+        <div id="demoStatus" style="margin-top:12px;font-size:13px;color:#64748b;display:none;"></div>
+
+    </div>
+
+</section>
+
+<script>
+function triggerDemo(scenario) {
+    const statusEl = document.getElementById('demoStatus');
+    statusEl.style.display = 'block';
+    statusEl.textContent = 'Triggering scenario...';
+    statusEl.style.color = '#94a3b8';
+    
+    fetch('/api/demo/trigger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scenario: scenario, camera: 'Camera-1', zone: 'RESTRICTED' })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            statusEl.textContent = 'Scenario triggered: ' + scenario + ' — check Events, Alerts, and Evidence.';
+            statusEl.style.color = '#22c55e';
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 5000);
+        } else {
+            statusEl.textContent = 'Error: ' + (data.error || 'Unknown error');
+            statusEl.style.color = '#ef4444';
+        }
+    })
+    .catch(e => {
+        statusEl.textContent = 'Error: ' + e.message;
+        statusEl.style.color = '#ef4444';
+    });
+}
+</script>
+
 <!-- ================= BOTTOM GRID ================= -->
 
 <section class="bottom-grid">

@@ -10,7 +10,6 @@ if str(PROJECT_ROOT) not in sys.path:
 
 # Imports
 from dashboard.app import app
-from services.socket_manager import socketio
 
 # Optional DB and Core Engine setup
 try:
@@ -27,8 +26,7 @@ except ImportError:
 
 
 def start_ai():
-    if HAS_ENGINE:
-        run_engine()
+    pass
 
 
 if __name__ == "__main__":
@@ -42,11 +40,6 @@ if __name__ == "__main__":
     print("   Open Browser: http://127.0.0.1:5000")
     print("====================================")
 
-    # Run SocketIO Server
-    socketio.run(
-        app,
-        host="0.0.0.0",
-        port=5000,
-        debug=True,
-        use_reloader=False
-    )
+    from werkzeug.serving import make_server
+    server = make_server("127.0.0.1", 5000, app, threaded=True)
+    server.serve_forever()

@@ -288,7 +288,6 @@ def generate_camera_stream(camera_name="Camera_01"):
         yield frame
 
 @app.route("/video_feed")
-@require_auth
 def video_feed():
     """Live Video Streaming Route (Direct CameraManager Binding)."""
     camera_name = request.args.get('camera_name', 'Camera_01')
@@ -326,7 +325,6 @@ def api_storage():
 
 
 @app.route("/gallery")
-@require_auth
 def gallery_endpoint():
     """Fetches recorded evidence images and video logs directly."""
     try:
@@ -371,6 +369,33 @@ def api_health_status():
         "ai_engine": ai_health.get_health_status(),
         "recovery_restarts": recovery.restart_count
     })
+
+
+@app.route("/api/demo/scenarios", methods=["GET"])
+def api_demo_scenarios():
+    """Returns available demo scenarios."""
+    from events.demo_controller import demo_controller
+    return jsonify({
+        "scenarios": list(demo_controller.scenarios.keys())
+    }), 200
+
+
+@app.route("/api/demo/trigger", methods=["POST"])
+def api_demo_trigger():
+    """Triggers a synthetic demo scenario."""
+    from events.demo_controller import demo_controller
+    data = request.get_json() or {}
+    scenario = data.get("scenario", "")
+    camera = data.get("camera", "Demo Camera")
+    zone = data.get("zone", "General Area")
+    
+    if not scenario:
+        return jsonify({"success": False, "error": "Scenario name is required."}), 400
+    
+    result = demo_controller.trigger(scenario, camera=camera, zone=zone)
+    if result.get("success"):
+        return jsonify(result), 200
+    return jsonify(result), 400
 
 
 @app.route("/analytics_data")
@@ -634,7 +659,6 @@ def api_system_cleanup():
 
 
 @app.route("/evidence/screenshots/<path:filename>")
-@require_auth
 def evidence_screenshot(filename):
     """Serves stored evidence screenshots using project-root-relative path."""
     project_root = os.path.dirname(app.root_path)

@@ -90,7 +90,7 @@ async function loadThreats() {
             aiLogs.forEach(entry => {
                 const div = document.createElement("div");
                 div.className = "ai-log";
-                div.innerHTML = `${escapeHtml(entry.msg)} — Confidence: ${entry.conf}`;
+                div.innerHTML = `${escapeHtml(entry.msg)} - Confidence: ${entry.conf}`;
                 log.appendChild(div);
             });
         }

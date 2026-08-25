@@ -156,6 +156,7 @@ def _row_to_evidence_dict(row):
     image_path = item.get("image_path", "")
     if image_path and not image_path.startswith("/"):
         image_path = "/" + image_path.lstrip("/")
+    image_path = image_path.replace("\\", "/")
     return {
         "id": item.get("id"),
         "event_id": item.get("event_id"),
