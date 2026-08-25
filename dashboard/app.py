@@ -6,7 +6,7 @@ import logging
 import secrets
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
-from flask import Flask, render_template, jsonify, Response, send_from_directory, send_file, request, session
+from flask import Flask, render_template, jsonify, Response, send_from_directory, send_file, request, session, redirect, url_for
 
 # --- Sentinel-X Core & AI Imports ---
 from core.system_monitor import SystemMonitor
@@ -46,10 +46,12 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY", secrets.token_hex(32))
 # ==========================================
 # SENTINEL-X AI PIPELINE INITIALIZATION
 # ==========================================
+from config import MODEL_PATH as _MODEL_PATH
+
 sys_monitor = SystemMonitor()
 ai_health = AIHealthMonitor()
 queue_mgr = DetectionQueueManager(maxsize=30)
-engine = YOLOInferenceEngine(health_monitor=ai_health)
+engine = YOLOInferenceEngine(model_path=_MODEL_PATH, health_monitor=ai_health)
 
 worker = YOLOWorker(queue_mgr, engine, ai_health)
 recovery = AutoRecoveryManager(ai_health, queue_mgr, engine, check_interval=0.5)
@@ -184,6 +186,64 @@ def api_csrf_token():
         return jsonify({"error": "Authentication required"}), 401
     
     return jsonify({"csrf_token": get_csrf_token()}), 200
+
+
+# ==========================
+# ROUTE PROTECTION
+# ==========================
+
+# Endpoints that do NOT require authentication
+_PUBLIC_ENDPOINTS = frozenset({
+    "login_page", "static", "api_login", "api_auth_status",
+    "api_logout", "api_csrf_token",
+    "not_found_error", "internal_error", "handle_exception",
+    "health_bp.get_system_health",
+})
+
+_PUBLIC_PREFIXES = ("static",)
+
+
+@app.before_request
+def _enforce_auth():
+    """Redirect unauthenticated users to the login page.
+    API endpoints receive a 401 JSON response instead of a redirect."""
+    ep = request.endpoint
+    if ep is None:
+        return  # Let Flask handle 404
+
+    # Allow public endpoints
+    if ep in _PUBLIC_ENDPOINTS:
+        return
+    for prefix in _PUBLIC_PREFIXES:
+        if ep.startswith(prefix + "."):
+            return
+
+    if not is_authenticated():
+        # API / data endpoints get 401 JSON
+        if request.path.startswith("/api/") or \
+           request.path.startswith("/video_feed") or \
+           request.path.startswith("/download_") or \
+           request.path.startswith("/evidence/screenshots") or \
+           request.path in ("/events", "/stats", "/timeline",
+                            "/gallery", "/ai_summary",
+                            "/analytics_data", "/reports_data"):
+            return jsonify({"error": "Authentication required",
+                            "status": "unauthorized"}), 401
+        # Page routes redirect to login
+        return redirect(url_for("login_page"))
+
+
+# ==========================
+# LOGIN PAGE
+# ==========================
+
+@app.route("/login")
+def login_page():
+    """Render the authentication landing page.
+    Already-authenticated users are sent to the dashboard."""
+    if is_authenticated():
+        return redirect(url_for("home"))
+    return render_template("login.html")
 
 
 # ==========================
@@ -564,8 +624,13 @@ def download_csv():
 
 @app.route("/download_pdf")
 def download_pdf():
-    """Placeholder PDF download - returns error if not implemented."""
-    return jsonify({"success": False, "error": "PDF export not yet implemented"}), 501
+    """PDF export is handled client-side via printable HTML report.
+    This endpoint provides a redirect hint for direct URL access."""
+    return jsonify({
+        "success": False,
+        "error": "PDF export is generated from the Reports page. Use the Export PDF button.",
+        "hint": "Navigate to /reports and click the Export PDF button."
+    }), 200
 
 
 @app.route("/api/settings", methods=["GET", "POST"])

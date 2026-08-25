@@ -91,6 +91,22 @@ class CameraStream:
         url = str(self.ip_url)
         return url.startswith("rtsp://") or url.startswith("rtsps://")
 
+    def _pre_configure_rtsp_env(self):
+        """Sets RTSP environment variables BEFORE cv2.VideoCapture is called.
+        Must be called before connection so FFmpeg picks up the transport setting."""
+        if not self._is_rtsp():
+            return
+
+        transport = self.rtsp_config.get("transport", "tcp")
+        if transport == "tcp":
+            os.environ["OPENCV_FFMPEG_TRANSPORT"] = "tcp"
+        elif transport == "udp":
+            os.environ["OPENCV_FFMPEG_TRANSPORT"] = "udp"
+        elif transport == "auto":
+            os.environ.pop("OPENCV_FFMPEG_TRANSPORT", None)
+
+        logger.info(f"[{self.name}] RTSP env set: transport={transport}")
+
     def _configure_rtsp(self, cap):
         """Applies RTSP-specific OpenCV properties to reduce latency and improve stability."""
         if not self._is_rtsp():
@@ -99,20 +115,12 @@ class CameraStream:
         try:
             timeout_ms = int(self.rtsp_config.get("timeout_ms", 5000))
             buffer_size = int(self.rtsp_config.get("buffer_size", 1))
-            transport = self.rtsp_config.get("transport", "tcp")
 
             cap.set(cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, timeout_ms)
             cap.set(cv2.CAP_PROP_READ_TIMEOUT_MSEC, timeout_ms)
             cap.set(cv2.CAP_PROP_BUFFERSIZE, buffer_size)
 
-            if transport == "tcp":
-                os.environ["OPENCV_FFMPEG_TRANSPORT"] = "tcp"
-            elif transport == "udp":
-                os.environ["OPENCV_FFMPEG_TRANSPORT"] = "udp"
-            elif transport == "auto":
-                os.environ.pop("OPENCV_FFMPEG_TRANSPORT", None)
-
-            logger.info(f"[{self.name}] RTSP configured: timeout={timeout_ms}ms, buffer={buffer_size}, transport={transport}")
+            logger.info(f"[{self.name}] RTSP configured: timeout={timeout_ms}ms, buffer={buffer_size}")
         except Exception as e:
             logger.warning(f"[{self.name}] Failed to configure RTSP properties: {e}")
 
@@ -135,8 +143,17 @@ class CameraStream:
                     self.health = "POOR"
                     self._sync_db()
 
+                    # Set RTSP transport env BEFORE connecting
+                    self._pre_configure_rtsp_env()
+
                     target = int(self.ip_url) if str(self.ip_url).isdigit() else self.ip_url
-                    backend = cv2.CAP_DSHOW if sys.platform.startswith("win") else 0
+                    # Use FFMPEG backend for RTSP (CAP_DSHOW doesn't support network streams)
+                    if self._is_rtsp():
+                        backend = cv2.CAP_FFMPEG
+                    elif sys.platform.startswith("win"):
+                        backend = cv2.CAP_DSHOW
+                    else:
+                        backend = 0
                     self.cap = cv2.VideoCapture(target, backend)
 
                     if self._is_rtsp():
@@ -354,8 +371,10 @@ class CameraPipeline:
         self.engine = None
         self.health = None
         self.is_running = False
+        self._frame_thread = None
+        self._frame_id = 0
 
-    def start(self, model_path="models/yolov8m.pt"):
+    def start(self, model_path=None):
         """Starts the camera pipeline."""
         if self.is_running:
             return
@@ -363,6 +382,10 @@ class CameraPipeline:
         from ai.health import AIHealthMonitor
         from ai.inference import YOLOInferenceEngine
         from ai.worker import YOLOWorker
+        from config import MODEL_PATH
+
+        if model_path is None:
+            model_path = MODEL_PATH
 
         self.health = AIHealthMonitor()
         self.engine = YOLOInferenceEngine(model_path=model_path, health_monitor=self.health)
@@ -372,9 +395,16 @@ class CameraPipeline:
         self.worker.start()
         self.is_running = True
 
+        # Start frame-forwarding thread (CameraStream → Detection Queue)
+        self._frame_thread = threading.Thread(target=self._frame_forward_loop, daemon=True)
+        self._frame_thread.start()
+
     def stop(self):
         """Stops the camera pipeline."""
         self.is_running = False
+        if self._frame_thread and self._frame_thread.is_alive():
+            self._frame_thread.join(timeout=2.0)
+            self._frame_thread = None
         if self.worker:
             self.worker.stop()
             self.worker.join(timeout=2.0)
@@ -521,6 +551,33 @@ class CameraPipeline:
                 set_frame(annotated_frame)
             except Exception:
                 pass
+
+    def _frame_forward_loop(self):
+        """Polls CameraStream for new frames and pushes them into the detection queue."""
+        import time as _time
+        from config import FRAME_SKIP, INFERENCE_INTERVAL
+
+        frame_skip = max(1, int(FRAME_SKIP))
+        interval = max(0.005, float(INFERENCE_INTERVAL))
+
+        while self.is_running:
+            try:
+                frame = self.stream.get_frame()
+                if frame is None:
+                    _time.sleep(0.03)
+                    continue
+
+                self._frame_id += 1
+
+                if self._frame_id % frame_skip != 0:
+                    continue
+
+                self.queue.push_frame(self._frame_id, frame)
+                _time.sleep(interval)
+
+            except Exception as e:
+                logger.error(f"[{self.name}] Frame forward error: {e}")
+                _time.sleep(0.05)
 
     def _update_threat_level(self, current_threat: str, severity: str) -> str:
         if severity == "HIGH":

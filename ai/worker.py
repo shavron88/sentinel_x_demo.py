@@ -2,12 +2,15 @@ import sys
 import os
 import threading
 import time
+import logging
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from ai.queue_manager import DetectionQueueManager
 from ai.inference import YOLOInferenceEngine
 from ai.health import AIHealthMonitor
+
+logger = logging.getLogger("SentinelX.YOLOWorker")
 
 
 class YOLOWorker(threading.Thread):
@@ -24,25 +27,38 @@ class YOLOWorker(threading.Thread):
         if self.health_monitor:
             self.health_monitor.update_tracker_status("Active")
 
+        consecutive_errors = 0
+
         while self.is_running:
-            item = self.queue_manager.get_frame(timeout=0.1)
+            try:
+                item = self.queue_manager.get_frame(timeout=0.1)
 
-            if item is None:
-                continue
+                if item is None:
+                    continue
 
-            frame_id, frame_data = item
+                frame_id, frame_data = item
 
-            if self.health_monitor:
-                self.health_monitor.update_queue_size(self.queue_manager.qsize())
+                if self.health_monitor:
+                    self.health_monitor.update_queue_size(self.queue_manager.qsize())
 
-            result = self.engine.infer_frame(frame_data, frame_id=frame_id)
-            detections = result.get("detections", [])
-            annotated_frame = result.get("annotated_frame")
+                result = self.engine.infer_frame(frame_data, frame_id=frame_id)
+                detections = result.get("detections", [])
+                annotated_frame = result.get("annotated_frame")
 
-            if self.on_result:
-                self.on_result(frame_id, detections, frame_data, annotated_frame)
+                if self.on_result:
+                    try:
+                        self.on_result(frame_id, detections, frame_data, annotated_frame)
+                    except Exception as cb_err:
+                        logger.error(f"on_result callback error (frame {frame_id}): {cb_err}", exc_info=True)
 
-            self.queue_manager.push_result(frame_id, detections)
+                self.queue_manager.push_result(frame_id, detections)
+                consecutive_errors = 0
+
+            except Exception as e:
+                logger.error(f"Worker loop error: {e}", exc_info=True)
+                consecutive_errors += 1
+                # Back off on repeated errors to avoid tight error loops
+                time.sleep(min(0.1 * consecutive_errors, 2.0))
 
     def stop(self):
         self.is_running = False

@@ -357,3 +357,78 @@ window.addEventListener("resize", () => {
         document.body.style.overflow = "";
     }
 });
+
+// =========================
+// PROFILE DROPDOWN & LOGOUT
+// =========================
+
+(function() {
+    const avatarBtn = document.getElementById("avatarBtn");
+    const dropdown  = document.getElementById("profileDropdown");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (avatarBtn && dropdown) {
+        avatarBtn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            const isOpen = dropdown.classList.toggle("open");
+            avatarBtn.setAttribute("aria-expanded", isOpen);
+        });
+
+        // Keyboard support
+        avatarBtn.addEventListener("keydown", function(e) {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                avatarBtn.click();
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", function(e) {
+            if (!dropdown.contains(e.target) && e.target !== avatarBtn) {
+                dropdown.classList.remove("open");
+                avatarBtn.setAttribute("aria-expanded", "false");
+            }
+        });
+
+        // Close on Escape
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "Escape" && dropdown.classList.contains("open")) {
+                dropdown.classList.remove("open");
+                avatarBtn.setAttribute("aria-expanded", "false");
+                avatarBtn.focus();
+            }
+        });
+    }
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", function() {
+            logoutBtn.disabled = true;
+            fetch("/api/auth/logout", { method: "POST" })
+                .then(function() {
+                    try { sessionStorage.removeItem("sentinelx_csrf"); } catch(e) {}
+                    window.location.href = "/login";
+                })
+                .catch(function() {
+                    // Force redirect even if logout request fails
+                    window.location.href = "/login";
+                });
+        });
+    }
+})();
+
+// =========================
+// CSRF TOKEN BOOTSTRAP
+// =========================
+
+(function() {
+    // Fetch CSRF token on page load and store for AJAX requests
+    fetch("/api/auth/csrf-token")
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+            if (data && data.csrf_token) {
+                window.__SENTINELX_CSRF__ = data.csrf_token;
+                try { sessionStorage.setItem("sentinelx_csrf", data.csrf_token); } catch(e) {}
+            }
+        })
+        .catch(function() { /* Silent fail — token will be fetched on demand */ });
+})();

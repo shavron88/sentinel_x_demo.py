@@ -12,9 +12,9 @@ from datetime import datetime, timedelta
 from flask import session, request, jsonify
 
 # Demo credentials (in production, use a proper database)
-DEMO_USERNAME = os.getenv("SENTINELX_USER", "admin")
+DEMO_USERNAME = os.getenv("SENTINELX_USER", "sentinelx")
 DEMO_PASSWORD_HASH = hashlib.sha256(
-    os.getenv("SENTINELX_PASSWORD", "sentinelx").encode()
+    os.getenv("SENTINELX_PASSWORD", "auth").encode()
 ).hexdigest()
 
 # Session settings

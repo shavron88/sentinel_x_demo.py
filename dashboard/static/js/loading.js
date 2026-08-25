@@ -338,8 +338,20 @@ function initScrollAnimations(selector = ".fade-in") {
 }
 
 // =========================
-// INIT
+// GLOBAL SKELETON CLEANUP
 // =========================
+
+if (typeof hideSkeletons !== 'function') {
+    function hideSkeletons() {
+        document.querySelectorAll('.skeleton-placeholder, .skeleton-card, .skeleton-row, .skeleton-table-row').forEach(el => {
+            el.remove();
+        });
+    }
+}
+
+// =========================
+// INIT
+// ==========================
 
 document.addEventListener("DOMContentLoaded", () => {
 

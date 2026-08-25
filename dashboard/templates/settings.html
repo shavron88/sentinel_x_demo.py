@@ -428,7 +428,7 @@
 
             </div>
 
-            <div class="notification-card">
+            <div class="notification-card" id="emailAlertsCard">
 
                 <div class="notification-header">
 
@@ -442,11 +442,33 @@
 
                 <label class="toggle-switch">
 
-                    <input type="checkbox">
+                    <input type="checkbox" id="toggleEmailAlerts">
 
                     <span class="toggle-slider"></span>
 
                 </label>
+
+                <div class="email-config" id="emailAlertsConfig">
+
+                    <div class="email-field">
+
+                        <label>Send From</label>
+
+                        <input type="text" class="email-from-display" value="alerts@sentinelx.ai" disabled>
+
+                    </div>
+
+                    <div class="email-field">
+
+                        <label>Recipient Emails</label>
+
+                        <textarea id="emailRecipients" class="email-textarea" rows="3" placeholder="Enter email addresses, separated by commas or new lines&#10;e.g. admin@company.com, ops@company.com"></textarea>
+
+                        <span class="email-hint">Separate multiple addresses with commas or new lines</span>
+
+                    </div>
+
+                </div>
 
             </div>
 
@@ -494,7 +516,7 @@
 
             </div>
 
-            <div class="notification-card">
+            <div class="notification-card" id="dailyReportsCard">
 
                 <div class="notification-header">
 
@@ -508,11 +530,33 @@
 
                 <label class="toggle-switch">
 
-                    <input type="checkbox" checked>
+                    <input type="checkbox" checked id="toggleDailyReports">
 
                     <span class="toggle-slider"></span>
 
                 </label>
+
+                <div class="email-config" id="dailyReportsConfig">
+
+                    <div class="email-field">
+
+                        <label>Send From</label>
+
+                        <input type="text" class="email-from-display" value="reports@sentinelx.ai" disabled>
+
+                    </div>
+
+                    <div class="email-field">
+
+                        <label>Recipient Emails</label>
+
+                        <textarea id="dailyReportRecipients" class="email-textarea" rows="3" placeholder="Enter email addresses, separated by commas or new lines&#10;e.g. manager@company.com, team@company.com"></textarea>
+
+                        <span class="email-hint">Separate multiple addresses with commas or new lines</span>
+
+                    </div>
+
+                </div>
 
             </div>
 

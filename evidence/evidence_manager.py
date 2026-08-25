@@ -31,7 +31,10 @@ def save(frame, event_type, track_id=-1, event_id=None, camera="Unknown"):
         filepath = os.path.join(EVIDENCE_DIR, filename)
         
         cv2.imwrite(filepath, frame)
-        
+
+        # Normalize path separators for consistent cross-platform DB storage
+        db_filepath = filepath.replace("\\", "/")
+
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
@@ -40,7 +43,7 @@ def save(frame, event_type, track_id=-1, event_id=None, camera="Unknown"):
             """, (
                 event_id,
                 camera,
-                filepath,
+                db_filepath,
                 json.dumps({
                     "event_type": event_type,
                     "tracking_id": track_id,

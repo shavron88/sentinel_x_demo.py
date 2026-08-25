@@ -1,6 +1,7 @@
 import sys
 import os
 import time
+import logging
 from typing import Optional, List, Dict, Any
 
 try:
@@ -9,9 +10,14 @@ try:
 except ImportError:
     YOLO_AVAILABLE = False
 
+logger = logging.getLogger("SentinelX.Inference")
+
 
 class YOLOInferenceEngine:
-    def __init__(self, model_path: str = "models/yolov8m.pt", health_monitor=None):
+    def __init__(self, model_path: str = None, health_monitor=None):
+        if model_path is None:
+            from config import MODEL_PATH
+            model_path = MODEL_PATH
         self.model_path = model_path
         self.health_monitor = health_monitor
         self.model = None
@@ -20,15 +26,25 @@ class YOLOInferenceEngine:
     def _init_model(self):
         if YOLO_AVAILABLE:
             try:
+                if not os.path.isfile(self.model_path):
+                    logger.error(f"Model file not found: {self.model_path}")
+                    if self.health_monitor:
+                        self.health_monitor.update_yolo_status(f"Error: Model file not found: {self.model_path}")
+                        self.health_monitor.update_tracker_status("Error")
+                    return
+                logger.info(f"Loading YOLO model from: {self.model_path}")
                 self.model = YOLO(self.model_path)
+                logger.info(f"YOLO model loaded successfully ({os.path.basename(self.model_path)})")
                 if self.health_monitor:
                     self.health_monitor.update_yolo_status("Loaded")
                     self.health_monitor.update_tracker_status("Active")
             except Exception as e:
+                logger.error(f"Failed to load YOLO model: {e}", exc_info=True)
                 if self.health_monitor:
                     self.health_monitor.update_yolo_status(f"Error: {e}")
                     self.health_monitor.update_tracker_status("Error")
         else:
+            logger.error("Ultralytics is not installed — YOLO unavailable")
             if self.health_monitor:
                 self.health_monitor.update_yolo_status("Unavailable (Ultralytics missing)")
                 self.health_monitor.update_tracker_status("Error")

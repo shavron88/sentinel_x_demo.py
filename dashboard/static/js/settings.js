@@ -87,6 +87,19 @@ function applyNotificationSettings(notifications) {
             toggle.checked = notifications[item.key];
         }
     });
+
+    // Restore email recipients
+    const emailRecipientsEl = document.getElementById('emailRecipients');
+    if (emailRecipientsEl && notifications.email_recipients) {
+        emailRecipientsEl.value = notifications.email_recipients;
+    }
+    const dailyRecipientsEl = document.getElementById('dailyReportRecipients');
+    if (dailyRecipientsEl && notifications.daily_recipients) {
+        dailyRecipientsEl.value = notifications.daily_recipients;
+    }
+
+    // Toggle email config visibility based on toggle state
+    updateEmailConfigVisibility();
 }
 
 /* ==========================================
@@ -157,12 +170,37 @@ async function saveAllSettings(){
 
     const notifications = {
         desktop: document.querySelector('.notification-card:nth-child(1) .toggle-switch input')?.checked || false,
-        email: document.querySelector('.notification-card:nth-child(2) .toggle-switch input')?.checked || false,
+        email: document.getElementById('toggleEmailAlerts')?.checked || false,
         sms: document.querySelector('.notification-card:nth-child(3) .toggle-switch input')?.checked || false,
         sound: document.querySelector('.notification-card:nth-child(4) .toggle-switch input')?.checked || false,
-        daily: document.querySelector('.notification-card:nth-child(5) .toggle-switch input')?.checked || false,
+        daily: document.getElementById('toggleDailyReports')?.checked || false,
         security: document.querySelector('.notification-card:nth-child(6) .toggle-switch input')?.checked || false
     };
+
+    // Collect and validate email recipients
+    const emailRecipientsText = document.getElementById('emailRecipients')?.value || '';
+    const dailyRecipientsText = document.getElementById('dailyReportRecipients')?.value || '';
+
+    if (notifications.email && emailRecipientsText.trim() && !isValidEmails(emailRecipientsText)) {
+        showToast('Settings', 'Invalid email address in Email Alerts recipients', 'danger');
+        return;
+    }
+    if (notifications.daily && dailyRecipientsText.trim() && !isValidEmails(dailyRecipientsText)) {
+        showToast('Settings', 'Invalid email address in Daily Reports recipients', 'danger');
+        return;
+    }
+
+    if (notifications.email && !emailRecipientsText.trim()) {
+        showToast('Settings', 'Email Alerts is enabled but no recipients specified', 'danger');
+        return;
+    }
+    if (notifications.daily && !dailyRecipientsText.trim()) {
+        showToast('Settings', 'Daily Reports is enabled but no recipients specified', 'danger');
+        return;
+    }
+
+    notifications.email_recipients = emailRecipientsText.trim();
+    notifications.daily_recipients = dailyRecipientsText.trim();
 
     const settingsPayload = {
         profile: { name: profileName, email: profileEmail },
@@ -212,6 +250,35 @@ async function saveAllSettings(){
 
 function isValidEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function isValidEmails(text) {
+    if (!text || !text.trim()) return true; // Empty is valid (no recipients required)
+    const emails = parseEmailList(text);
+    return emails.length > 0 && emails.every(email => isValidEmail(email));
+}
+
+function parseEmailList(text) {
+    if (!text || !text.trim()) return [];
+    return text.split(/[,\n]+/)
+        .map(e => e.trim())
+        .filter(e => e.length > 0);
+}
+
+function updateEmailConfigVisibility() {
+    // Email Alerts card
+    const emailToggle = document.getElementById('toggleEmailAlerts');
+    const emailConfig = document.getElementById('emailAlertsConfig');
+    if (emailToggle && emailConfig) {
+        emailConfig.style.display = emailToggle.checked ? 'flex' : 'none';
+    }
+
+    // Daily Reports card
+    const dailyToggle = document.getElementById('toggleDailyReports');
+    const dailyConfig = document.getElementById('dailyReportsConfig');
+    if (dailyToggle && dailyConfig) {
+        dailyConfig.style.display = dailyToggle.checked ? 'flex' : 'none';
+    }
 }
 
 /* ==========================================
@@ -275,6 +342,19 @@ document.querySelectorAll('.toggle-switch input').forEach(toggle => {
         console.log(`${label}: ${state}`);
     });
 });
+
+// Email config visibility toggles
+const emailAlertToggle = document.getElementById('toggleEmailAlerts');
+if (emailAlertToggle) {
+    emailAlertToggle.addEventListener('change', updateEmailConfigVisibility);
+}
+const dailyReportToggle = document.getElementById('toggleDailyReports');
+if (dailyReportToggle) {
+    dailyReportToggle.addEventListener('change', updateEmailConfigVisibility);
+}
+
+// Initialize email config visibility on page load
+updateEmailConfigVisibility();
 
 /* ==========================================
    CAMERA SETTINGS

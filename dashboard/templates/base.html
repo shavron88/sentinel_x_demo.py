@@ -24,7 +24,11 @@
         }
     </script>
 
-    <!-- CSS -->
+    <!-- CSS — Design tokens first, then reset, then component styles -->
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reset.css') }}">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
@@ -71,6 +75,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/command_center.css') }}">
 
     {% endif %}
+
+    <!-- Polish layer — visual refinements (loaded last for cascade override) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/polish.css') }}">
 
 </head>
 
@@ -394,12 +401,27 @@
 
                 </button>
 
-            <div class="profile">
+            <div class="profile" id="profileMenu">
 
-                <div class="avatar">
+                <div class="avatar" id="avatarBtn" tabindex="0" role="button" aria-label="User menu" aria-expanded="false">
 
                     SX
 
+                </div>
+
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="profile-dropdown-header">
+                        <span class="profile-dropdown-name" id="profileDisplayName">Admin</span>
+                        <span class="profile-dropdown-role">System Administrator</span>
+                    </div>
+                    <button class="profile-dropdown-item" id="logoutBtn" type="button">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                        Sign Out
+                    </button>
                 </div>
 
             </div>
@@ -484,6 +506,8 @@ window._loadingQueue = [];
 
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 
 <script src="{{ url_for('static', filename='js/alerts.js') }}"></script>
@@ -493,8 +517,6 @@ window._loadingQueue = [];
 <script src="{{ url_for('static', filename='js/camera.js') }}"></script>
 
     {% endif %}
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 {% if request.path == '/incidents' %}
 
@@ -554,6 +576,8 @@ window._loadingQueue = [];
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}">
 
+    <script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+
     {% endif %}
 
     {% if request.path == '/analytics' %}
@@ -562,7 +586,7 @@ window._loadingQueue = [];
 
     {% endif %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <!-- variables.css moved to <head> for correct load order -->
 
     {% if request.path == '/settings' %}
 

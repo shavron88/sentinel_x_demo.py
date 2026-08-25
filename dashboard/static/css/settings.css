@@ -640,6 +640,126 @@
 }
 
 /* ==========================================
+   EMAIL CONFIGURATION FIELDS
+========================================== */
+
+.email-config {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+
+    margin-top: 4px;
+
+    padding-top: 12px;
+
+    border-top: 1px solid var(--st-border);
+
+}
+
+.email-field {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+
+}
+
+.email-field label {
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    color: var(--st-text-muted);
+
+    text-transform: uppercase;
+
+    letter-spacing: .5px;
+
+}
+
+.email-from-display {
+
+    padding: 8px 12px;
+
+    border: 1px solid var(--st-border);
+
+    border-radius: var(--st-radius-sm);
+
+    background: rgba(15,23,42,.4);
+
+    color: var(--st-text-secondary);
+
+    font-size: 13px;
+
+    font-family: inherit;
+
+    cursor: default;
+
+    opacity: .75;
+
+}
+
+.email-textarea {
+
+    padding: 10px 12px;
+
+    border: 1px solid var(--st-border);
+
+    border-radius: var(--st-radius-sm);
+
+    background: rgba(15,23,42,.6);
+
+    color: var(--st-text);
+
+    font-size: 13px;
+
+    font-family: inherit;
+
+    transition: var(--st-transition);
+
+    outline: none;
+
+    resize: vertical;
+
+    min-height: 60px;
+
+    line-height: 1.5;
+
+}
+
+.email-textarea:focus {
+
+    border-color: var(--st-accent);
+
+    box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+
+}
+
+.email-textarea::placeholder {
+
+    color: var(--st-text-muted);
+
+    font-size: 12px;
+
+}
+
+.email-hint {
+
+    font-size: 11px;
+
+    color: var(--st-text-muted);
+
+    font-style: italic;
+
+}
+
+/* ==========================================
    TOGGLE SWITCH
 ========================================== */
 

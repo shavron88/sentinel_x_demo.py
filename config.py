@@ -3,12 +3,24 @@
 # ==========================================
 
 import os
+import sys
 from typing import Optional
+
+
+# Project root directory (where this config.py lives)
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 
 def _get_env(key: str, default=None):
     """Get environment variable with optional default."""
     return os.getenv(key, default)
+
+
+def _resolve_path(relative_path: str) -> str:
+    """Resolve a relative path against the project root to ensure correct loading."""
+    if os.path.isabs(relative_path):
+        return relative_path
+    return os.path.join(PROJECT_ROOT, relative_path)
 
 
 # ==========================================
@@ -22,7 +34,8 @@ SECRET_KEY = _get_env("SECRET_KEY", "sentinelx-dev-key-change-in-production")
 # ==========================================
 # AI Model
 # ==========================================
-MODEL_PATH = _get_env("MODEL_PATH", "models/yolov8m.pt")
+_raw_model_path = _get_env("MODEL_PATH", "models/yolov8m.pt")
+MODEL_PATH = _resolve_path(_raw_model_path)
 CONFIDENCE_THRESHOLD = float(_get_env("CONFIDENCE_THRESHOLD", "0.60"))
 
 # ==========================================
@@ -86,11 +99,11 @@ CROWD_THRESHOLD = int(_get_env("CROWD_THRESHOLD", "5"))
 # ==========================================
 # Paths
 # ==========================================
-EVIDENCE_DIR = _get_env("EVIDENCE_DIR", "evidence/screenshots")
-VIDEO_DIR = _get_env("VIDEO_DIR", "evidence/videos")
-MODELS_DIR = _get_env("MODELS_DIR", "models")
-DB_PATH = _get_env("DB_PATH", "sentinelx.db")
-LOG_DIR = _get_env("LOG_DIR", "logs")
+EVIDENCE_DIR = _resolve_path(_get_env("EVIDENCE_DIR", "evidence/screenshots"))
+VIDEO_DIR = _resolve_path(_get_env("VIDEO_DIR", "evidence/videos"))
+MODELS_DIR = _resolve_path(_get_env("MODELS_DIR", "models"))
+DB_PATH = _resolve_path(_get_env("DB_PATH", "sentinelx.db"))
+LOG_DIR = _resolve_path(_get_env("LOG_DIR", "logs"))
 
 # ==========================================
 # Performance

@@ -46,6 +46,11 @@ function escapeHtml(text) {
 
 async function updateDashboard() {
 
+    // Skip if this page has no dashboard elements
+    if (!document.getElementById("stats-grid") && !document.getElementById("person-count") && !document.getElementById("kpi-threat")) {
+        return;
+    }
+
     showSkeletonCards("stats-grid", 4);
 
     try {
@@ -54,6 +59,13 @@ async function updateDashboard() {
         const stats = await response.json();
 
         hideSkeletons();
+
+        // Clear any previous error message on successful fetch
+        const errorEl = document.getElementById("dashboardError");
+        if (errorEl) {
+            errorEl.innerHTML = "";
+            errorEl.style.display = "none";
+        }
 
         if (!stats || Object.keys(stats).length === 0) {
             showEmptyState("emptyState", "No Data Available", "Dashboard data is not available.", [{label:"Refresh", onclick:"updateDashboard()", class:"btn-primary"}]);
@@ -144,6 +156,9 @@ async function updateDashboard() {
 
 
 async function loadAIFeed() {
+
+    // Skip if this page has no timeline element
+    if (!document.getElementById("timeline")) return;
 
     try {
 
@@ -279,7 +294,8 @@ async function loadGallery(){
 
         const raw = item.image_path || "";
 
-        const filename = raw.split("/").pop();
+        // Handle both forward-slash and backslash paths (cross-platform safety)
+        const filename = raw.split(/[\\/]/).pop();
 
         if(!filename) return;
 
@@ -456,7 +472,6 @@ function initDetectionChart(){
 
     const ctx = document.getElementById("detectionChart");
     if(!ctx) return;
-
     const labels = [];
     const now = new Date();
     for(let i = 11; i >= 0; i--){
@@ -566,6 +581,12 @@ function initDetectionChart(){
         }
     });
 
+    // Hide detection spinner once chart is ready
+    const detSpinner = document.getElementById('detectionSpinner');
+    if (detSpinner) detSpinner.style.display = 'none';
+    const detContainer = document.getElementById('detectionChartContainer');
+    if (detContainer) detContainer.classList.remove('chart-loading');
+
 }
 
 function updateDetectionChart(){
@@ -580,13 +601,39 @@ function updateDetectionChart(){
     labels.shift();
     labels.push(newLabel);
 
-    chart.data.datasets.forEach(dataset => {
-        const prev = dataset.data[dataset.data.length - 1] || 0;
-        dataset.data.shift();
-        dataset.data.push(prev);
-    });
-
-    chart.update("none");
+    // Fetch real event data and update chart
+    fetch("/events")
+        .then(r => r.json())
+        .then(events => {
+            const arr = Array.isArray(events) ? events : [];
+            const oneMinAgo = now.getTime() - 60000;
+            let personCount = 0, vehicleCount = 0, alertCount = 0;
+            arr.forEach(e => {
+                const ts = e.timestamp ? new Date(e.timestamp).getTime() : 0;
+                if (ts >= oneMinAgo) {
+                    const etype = (e.event_type || "").toUpperCase();
+                    if (etype.includes("PERSON") || etype.includes("LOITERING")) personCount++;
+                    if (etype.includes("VEHICLE")) vehicleCount++;
+                    if (e.severity === "HIGH" || e.severity === "CRITICAL") alertCount++;
+                }
+            });
+            chart.data.datasets[0].data.shift();
+            chart.data.datasets[0].data.push(personCount);
+            chart.data.datasets[1].data.shift();
+            chart.data.datasets[1].data.push(vehicleCount);
+            chart.data.datasets[2].data.shift();
+            chart.data.datasets[2].data.push(alertCount);
+            chart.update("none");
+        })
+        .catch(() => {
+            // On error, just shift with previous values
+            chart.data.datasets.forEach(dataset => {
+                const prev = dataset.data[dataset.data.length - 1] || 0;
+                dataset.data.shift();
+                dataset.data.push(prev);
+            });
+            chart.update("none");
+        });
 
 }
 
@@ -609,9 +656,12 @@ async function updateAIPerformance() {
 
     if (!chartContainer) return;
 
-    if (spinner) spinner.style.display = 'flex';
-    if (chartContainer) chartContainer.classList.add('chart-loading');
-    if (metricsEl) metricsEl.style.display = 'none';
+    // Only show spinner on first load (before chart exists)
+    if (!performanceChart) {
+        if (spinner) spinner.style.display = 'flex';
+        chartContainer.classList.add('chart-loading');
+    }
+    if (metricsEl && !performanceChart) metricsEl.style.display = 'none';
     if (errorEl) errorEl.style.display = 'none';
 
     const controller = new AbortController();
@@ -729,7 +779,8 @@ async function updateAIPerformance() {
         if (spinner) spinner.style.display = 'none';
         if (chartContainer) chartContainer.classList.remove('chart-loading');
 
-        if (errorEl) {
+        // Only show error if no chart has been rendered yet (avoid persistent errors)
+        if (errorEl && !performanceChart) {
             errorEl.innerHTML = '<div style="color:#ef4444;font-size:12px;padding:10px;text-align:center;">Unable to load AI performance data. <button onclick="updateAIPerformance()" style="background:none;border:none;color:#3b82f6;cursor:pointer;text-decoration:underline;">Retry</button></div>';
             errorEl.style.display = 'block';
         }
@@ -740,10 +791,10 @@ async function updateAIPerformance() {
    INIT
 ========================================== */
 
-loadEvidence();
+if (typeof loadEvidence === 'function') loadEvidence();
 initDetectionChart();
 updateDetectionChart();
-window._dashboardIntervals.push(setInterval(updateAIPerformance, 2000));
+window._dashboardIntervals.push(setInterval(updateAIPerformance, 3000));
 updateAIPerformance();
 /* ==========================================
    CLEANUP ON PAGE LEAVE

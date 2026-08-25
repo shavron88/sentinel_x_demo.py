@@ -9,6 +9,7 @@
 
 .notification-wrapper {
     position: relative;
+    z-index: 1000;
 }
 
 #notification-btn {
