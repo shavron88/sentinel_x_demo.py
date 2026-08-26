@@ -427,3 +427,76 @@
     font-size:14px;
 
 }
+
+/* ==========================================
+   THEME ADAPTATIONS
+========================================== */
+
+/* Restore the per-card accent text that the shared .kpi-text theme
+   overrides flatten (Midnight keeps the accents natively) */
+
+[data-theme="dark"] .kpi-card.threat .kpi-text{
+
+    color:#22c55e !important;
+
+}
+
+[data-theme="dark"] .kpi-card.cameras .kpi-text{
+
+    color:#3b82f6 !important;
+
+}
+
+[data-theme="dark"] .kpi-card.accuracy .kpi-text{
+
+    color:#a855f7 !important;
+
+}
+
+[data-theme="dark"] .kpi-card.alerts .kpi-text{
+
+    color:#f59e0b !important;
+
+}
+
+/* Light surfaces — softer elevation, blue hover ring and 600-weight
+   accent text for contrast on white (needs !important to also beat
+   the later-loading polish.css rules) */
+
+[data-theme="light"] .kpi-card{
+
+    box-shadow:0 1px 3px rgba(15,23,42,.04), 0 6px 18px rgba(15,23,42,.06) !important;
+
+}
+
+[data-theme="light"] .kpi-card:hover{
+
+    border-color:rgba(37,99,235,.22) !important;
+
+    box-shadow:0 10px 28px rgba(15,23,42,.1), 0 0 0 1px rgba(37,99,235,.08) !important;
+
+}
+
+[data-theme="light"] .kpi-card.threat .kpi-text{
+
+    color:#15803d !important;
+
+}
+
+[data-theme="light"] .kpi-card.cameras .kpi-text{
+
+    color:#2563eb !important;
+
+}
+
+[data-theme="light"] .kpi-card.accuracy .kpi-text{
+
+    color:#9333ea !important;
+
+}
+
+[data-theme="light"] .kpi-card.alerts .kpi-text{
+
+    color:#d97706 !important;
+
+}

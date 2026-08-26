@@ -810,6 +810,152 @@
 
 }
 
+/* ===========================================
+   THEME ADAPTATIONS — LIGHT
+   Dark & Midnight keep the glass defaults; Light swaps the
+   dark pills, icon buttons and dropdowns for light surfaces.
+=========================================== */
+
+[data-theme="light"] .page-title h2{
+
+    color:#0f172a;
+
+}
+
+[data-theme="light"] .breadcrumb{
+
+    color:#64748b;
+
+}
+
+[data-theme="light"] .topbar-controls{
+
+    background:rgba(241,245,249,.75);
+
+    border-color:rgba(15,23,42,.08);
+
+    box-shadow:0 4px 20px rgba(15,23,42,.06),inset 0 1px 0 rgba(255,255,255,.7);
+
+}
+
+[data-theme="light"] .notification-btn,
+
+[data-theme="light"] #notification-btn,
+
+[data-theme="light"] .sound-toggle{
+
+    background:rgba(255,255,255,.9);
+
+    border-color:rgba(15,23,42,.08);
+
+    color:#475569;
+
+}
+
+[data-theme="light"] .notification-btn:hover,
+
+[data-theme="light"] #notification-btn:hover,
+
+[data-theme="light"] .sound-toggle:hover{
+
+    background:rgba(59,130,246,.12);
+
+    border-color:rgba(59,130,246,.35);
+
+    color:#1e40af;
+
+}
+
+[data-theme="light"] .sound-toggle.active{
+
+    color:#2563eb;
+
+}
+
+[data-theme="light"] .status-chip{
+
+    border-color:rgba(15,23,42,.08);
+
+}
+
+[data-theme="light"] .status-chip:hover{
+
+    background:rgba(59,130,246,.08) !important;
+
+    border-color:rgba(59,130,246,.3);
+
+}
+
+[data-theme="light"] #notification-count{
+
+    border-color:#ffffff;
+
+}
+
+[data-theme="light"] .avatar-status,
+
+[data-theme="light"] #avatarBtn .avatar-status{
+
+    border-color:#ffffff;
+
+}
+
+[data-theme="light"] .profile-dropdown{
+
+    background:rgba(255,255,255,.97);
+
+    border-color:rgba(15,23,42,.08);
+
+    box-shadow:0 20px 50px rgba(15,23,42,.18),0 0 0 1px rgba(15,23,42,.03);
+
+}
+
+[data-theme="light"] .profile-dropdown-header{
+
+    border-bottom-color:rgba(15,23,42,.08);
+
+    background:linear-gradient(135deg,rgba(59,130,246,.07) 0%,rgba(255,255,255,0) 70%);
+
+}
+
+[data-theme="light"] .profile-dropdown-name{
+
+    color:#0f172a;
+
+}
+
+[data-theme="light"] .profile-dropdown-email{
+
+    color:#64748b;
+
+}
+
+[data-theme="light"] .profile-dropdown-item{
+
+    color:#334155;
+
+}
+
+[data-theme="light"] .profile-dropdown-item:hover{
+
+    background:rgba(59,130,246,.08);
+
+    color:#1e40af;
+
+}
+
+[data-theme="light"] .profile-dropdown-item svg{
+
+    color:#64748b;
+
+}
+
+[data-theme="light"] .profile-dropdown-item:hover svg{
+
+    color:#1e40af;
+
+}
+
 /* MOBILE */
 
 @media(max-width:1300px){
