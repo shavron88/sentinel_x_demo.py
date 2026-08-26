@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  sentinelx:
+    build: .
+    container_name: sentinelx
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./evidence:/app/evidence
+      - ./logs:/app/logs
+      - ./models:/app/models
+      - ./backups:/app/backups
+      - ./sentinelx.db:/app/sentinelx.db
+    environment:
+      - FLASK_DEBUG=0
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=5000
+      - MODEL_PATH=models/yolov8m.pt
+      - CONFIDENCE_THRESHOLD=0.60
+      - CAMERA_SOURCE=0
+      - EVENT_COOLDOWN=600
+      - LOITERING_THRESHOLD=30
+      - CROWD_THRESHOLD=5
+      - MAX_QUEUE_SIZE=30
+      - RTSP_TIMEOUT_MS=5000
+      - RTSP_BUFFER_SIZE=1
+      - RTSP_TRANSPORT=tcp
+    devices:
+      - /dev/video0:/dev/video0
+    shm_size: '2gb'
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000/api/v1/health')"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+        reservations:
+          cpus: '2'
+          memory: 2G
+
+  # Optional: Redis for caching and session management
+  redis:
+    image: redis:7-alpine
+    container_name: sentinelx-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+volumes:
+  redis_data:

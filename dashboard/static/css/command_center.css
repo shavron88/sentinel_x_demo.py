@@ -1,0 +1,111 @@
+.command-grid{
+
+display:grid;
+
+grid-template-columns:2fr 1fr;
+
+grid-template-areas:
+
+"live threat"
+
+"analytics health"
+
+"map evidence"
+
+"copilot copilot";
+
+gap:22px;
+
+}
+
+.live-wall{
+
+grid-area:live;
+
+}
+
+.threat-feed{
+
+grid-area:threat;
+
+}
+
+.analytics{
+
+grid-area:analytics;
+
+}
+
+.health{
+
+grid-area:health;
+
+}
+
+.security-map{
+
+grid-area:map;
+
+}
+
+.latest-evidence{
+
+grid-area:evidence;
+
+}
+
+.copilot{
+
+    grid-area:copilot;
+
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media(max-width:1200px){
+
+    .command-grid{
+
+        grid-template-columns:1fr 1fr;
+
+        grid-template-areas:
+
+        "live threat"
+
+        "analytics health"
+
+        "map evidence"
+
+        "copilot copilot";
+
+    }
+
+}
+
+@media(max-width:768px){
+
+    .command-grid{
+
+        grid-template-columns:1fr;
+
+        grid-template-areas:
+
+        "live"
+
+        "threat"
+
+        "analytics"
+
+        "health"
+
+        "map"
+
+        "evidence"
+
+        "copilot";
+
+    }
+
+}

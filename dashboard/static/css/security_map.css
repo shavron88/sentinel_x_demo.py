@@ -1,0 +1,207 @@
+.map-container{
+
+position:relative;
+
+width:100%;
+
+background:#111827;
+
+padding:20px;
+
+border-radius:20px;
+
+overflow:hidden;
+
+}
+
+.floor-map{
+
+width:100%;
+
+border-radius:15px;
+
+}
+
+.camera-marker{
+
+position:absolute;
+
+font-size:34px;
+
+cursor:pointer;
+
+animation:pulse 2s infinite;
+
+}
+
+.event-marker{
+
+position:absolute;
+
+font-size:28px;
+
+animation:blink 1s infinite;
+
+}
+
+.c1{
+
+top:18%;
+
+left:24%;
+
+}
+
+.c2{
+
+top:42%;
+
+left:67%;
+
+}
+
+.c3{
+
+top:72%;
+
+left:30%;
+
+}
+
+.e1{
+
+top:48%;
+
+left:52%;
+
+}
+
+.e2{
+
+top:30%;
+
+left:39%;
+
+}
+
+.e3{
+
+top:78%;
+
+left:74%;
+
+}
+
+@keyframes blink{
+
+    50%{
+
+        opacity:.25;
+
+    }
+
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media(max-width:768px){
+
+    .map-container{
+
+        padding:14px;
+
+        border-radius:16px;
+
+    }
+
+    .floor-map{
+
+        border-radius:10px;
+
+    }
+
+    .camera-marker{
+
+        font-size:26px;
+
+    }
+
+    .event-marker{
+
+        font-size:22px;
+
+    }
+
+}
+
+@media(max-width:480px){
+
+    .map-container{
+
+        padding:10px;
+
+        border-radius:12px;
+
+    }
+
+    .camera-marker{
+
+        font-size:22px;
+
+    }
+
+    .event-marker{
+
+        font-size:18px;
+
+    }
+
+}
+
+/* ==========================================
+   MAP TOOLTIP
+========================================== */
+
+.map-tooltip{
+
+    position:absolute;
+
+    background:rgba(15,23,42,.95);
+
+    border:1px solid rgba(59,130,246,.3);
+
+    border-radius:10px;
+
+    padding:10px 12px;
+
+    font-size:12px;
+
+    color:#e2e8f0;
+
+    line-height:1.5;
+
+    z-index:50;
+
+    pointer-events:none;
+
+    min-width:140px;
+
+    box-shadow:0 8px 24px rgba(0,0,0,.4);
+
+    backdrop-filter:blur(8px);
+
+}
+
+.map-tooltip strong{
+
+    display:block;
+
+    margin-bottom:4px;
+
+    font-size:13px;
+
+    color:#fff;
+
+}

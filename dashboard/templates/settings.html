@@ -1,0 +1,843 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-content fade-in">
+
+<section class="settings-page">
+
+    <!-- HEADER -->
+
+    <div class="settings-header">
+
+        <div class="settings-title-area">
+
+            <h1>⚙️ Settings</h1>
+
+            <p>Manage your dashboard preferences and system configuration</p>
+
+        </div>
+
+        <div class="settings-header-actions">
+
+            <button class="btn btn-primary" onclick="saveAllSettings()">
+
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+
+                    <polyline points="7 3 7 8 15 8"></polyline>
+
+                </svg>
+
+                Save Changes
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- USER PROFILE -->
+
+    <div class="settings-section">
+
+        <div class="section-header">
+
+            <h2>👤 User Profile</h2>
+
+            <span class="section-badge">Administrator</span>
+
+        </div>
+
+        <div class="profile-card" id="profileCard">
+
+            <div class="profile-avatar">
+
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+
+                    <circle cx="12" cy="7" r="4"></circle>
+
+                </svg>
+
+            </div>
+
+            <div class="profile-details">
+
+                <div class="profile-field">
+
+                    <label>Full Name</label>
+
+                    <input type="text" id="profileName" value="Admin User" placeholder="Enter your name">
+
+                </div>
+
+                <div class="profile-field">
+
+                    <label>Email</label>
+
+                    <input type="email" id="profileEmail" value="admin@sentinelx.ai" placeholder="Enter your email">
+
+                </div>
+
+                <div class="profile-field">
+
+                    <label>Role</label>
+
+                    <input type="text" value="System Administrator" disabled>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- CAMERA CARDS -->
+
+    <div class="settings-section">
+
+        <div class="section-header">
+
+            <h2>📹 Camera Configuration</h2>
+
+            <span class="section-badge">4 Active</span>
+
+        </div>
+
+        <div class="camera-cards-grid" id="cameraCardsGrid">
+
+            <div class="camera-card">
+
+                <div class="camera-card-header">
+
+                    <div class="camera-info">
+
+                        <span class="camera-icon">📹</span>
+
+                        <div>
+
+                            <h4>Camera 01</h4>
+
+                            <p>Main Entrance</p>
+
+                        </div>
+
+                    </div>
+
+                    <label class="toggle-switch">
+
+                        <input type="checkbox" checked>
+
+                        <span class="toggle-slider"></span>
+
+                    </label>
+
+                </div>
+
+                <div class="camera-card-body">
+
+                    <div class="camera-setting">
+
+                        <label>Resolution</label>
+
+                        <select>
+
+                            <option>1920x1080</option>
+
+                            <option>1280x720</option>
+
+                            <option>640x480</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="camera-setting">
+
+                        <label>FPS</label>
+
+                        <input type="number" value="30" min="1" max="60">
+
+                    </div>
+
+                    <div class="camera-setting">
+
+                        <label>Detection</label>
+
+                        <div class="camera-toggles">
+
+                            <label class="toggle-label">
+
+                                <input type="checkbox" checked>
+
+                                <span>Person</span>
+
+                            </label>
+
+                            <label class="toggle-label">
+
+                                <input type="checkbox" checked>
+
+                                <span>Vehicle</span>
+
+                            </label>
+
+                            <label class="toggle-label">
+
+                                <input type="checkbox">
+
+                                <span>Weapon</span>
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="camera-card">
+
+                <div class="camera-card-header">
+
+                    <div class="camera-info">
+
+                        <span class="camera-icon">📹</span>
+
+                        <div>
+
+                            <h4>Camera 02</h4>
+
+                            <p>Parking A</p>
+
+                        </div>
+
+                    </div>
+
+                    <label class="toggle-switch">
+
+                        <input type="checkbox" checked>
+
+                        <span class="toggle-slider"></span>
+
+                    </label>
+
+                </div>
+
+                <div class="camera-card-body">
+
+                    <div class="camera-setting">
+
+                        <label>Resolution</label>
+
+                        <select>
+
+                            <option>1920x1080</option>
+
+                            <option>1280x720</option>
+
+                            <option>640x480</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="camera-setting">
+
+                        <label>FPS</label>
+
+                        <input type="number" value="30" min="1" max="60">
+
+                    </div>
+
+                    <div class="camera-setting">
+
+                        <label>Detection</label>
+
+                        <div class="camera-toggles">
+
+                            <label class="toggle-label">
+
+                                <input type="checkbox" checked>
+
+                                <span>Person</span>
+
+                            </label>
+
+                            <label class="toggle-label">
+
+                                <input type="checkbox" checked>
+
+                                <span>Vehicle</span>
+
+                            </label>
+
+                            <label class="toggle-label">
+
+                                <input type="checkbox">
+
+                                <span>Weapon</span>
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="camera-card">
+
+                <div class="camera-card-header">
+
+                    <div class="camera-info">
+
+                        <span class="camera-icon">📹</span>
+
+                        <div>
+
+                            <h4>Camera 03</h4>
+
+                            <p>Warehouse</p>
+
+                        </div>
+
+                    </div>
+
+                    <label class="toggle-switch">
+
+                        <input type="checkbox">
+
+                        <span class="toggle-slider"></span>
+
+                    </label>
+
+                </div>
+
+                <div class="camera-card-body">
+
+                    <div class="camera-setting">
+
+                        <label>Resolution</label>
+
+                        <select>
+
+                            <option>1920x1080</option>
+
+                            <option>1280x720</option>
+
+                            <option>640x480</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="camera-setting">
+
+                        <label>FPS</label>
+
+                        <input type="number" value="30" min="1" max="60">
+
+                    </div>
+
+                    <div class="camera-setting">
+
+                        <label>Detection</label>
+
+                        <div class="camera-toggles">
+
+                            <label class="toggle-label">
+
+                                <input type="checkbox" checked>
+
+                                <span>Person</span>
+
+                            </label>
+
+                            <label class="toggle-label">
+
+                                <input type="checkbox" checked>
+
+                                <span>Vehicle</span>
+
+                            </label>
+
+                            <label class="toggle-label">
+
+                                <input type="checkbox">
+
+                                <span>Weapon</span>
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- NOTIFICATIONS -->
+
+    <div class="settings-section">
+
+        <div class="section-header">
+
+            <h2>🔔 Notification Preferences</h2>
+
+            <span class="section-badge">6 Rules</span>
+
+        </div>
+
+        <div class="notification-grid" id="notificationGrid">
+
+            <div class="notification-card">
+
+                <div class="notification-header">
+
+                    <div class="notification-icon">🖥️</div>
+
+                    <h4>Desktop Notifications</h4>
+
+                </div>
+
+                <p>Show system tray notifications for detected events</p>
+
+                <label class="toggle-switch">
+
+                    <input type="checkbox" checked>
+
+                    <span class="toggle-slider"></span>
+
+                </label>
+
+            </div>
+
+            <div class="notification-card" id="emailAlertsCard">
+
+                <div class="notification-header">
+
+                    <div class="notification-icon">📧</div>
+
+                    <h4>Email Alerts</h4>
+
+                </div>
+
+                <p>Send email for critical and high severity events</p>
+
+                <label class="toggle-switch">
+
+                    <input type="checkbox" id="toggleEmailAlerts">
+
+                    <span class="toggle-slider"></span>
+
+                </label>
+
+                <div class="email-config" id="emailAlertsConfig">
+
+                    <div class="email-field">
+
+                        <label>Send From</label>
+
+                        <input type="text" class="email-from-display" value="alerts@sentinelx.ai" disabled>
+
+                    </div>
+
+                    <div class="email-field">
+
+                        <label>Recipient Emails</label>
+
+                        <textarea id="emailRecipients" class="email-textarea" rows="3" placeholder="Enter email addresses, separated by commas or new lines&#10;e.g. admin@company.com, ops@company.com"></textarea>
+
+                        <span class="email-hint">Separate multiple addresses with commas or new lines</span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="notification-card">
+
+                <div class="notification-header">
+
+                    <div class="notification-icon">📱</div>
+
+                    <h4>SMS Alerts</h4>
+
+                </div>
+
+                <p>Send SMS for critical events only</p>
+
+                <label class="toggle-switch">
+
+                    <input type="checkbox">
+
+                    <span class="toggle-slider"></span>
+
+                </label>
+
+            </div>
+
+            <div class="notification-card">
+
+                <div class="notification-header">
+
+                    <div class="notification-icon">🔊</div>
+
+                    <h4>Sound Alerts</h4>
+
+                </div>
+
+                <p>Play alert sound for high and critical events</p>
+
+                <label class="toggle-switch">
+
+                    <input type="checkbox" checked>
+
+                    <span class="toggle-slider"></span>
+
+                </label>
+
+            </div>
+
+            <div class="notification-card" id="dailyReportsCard">
+
+                <div class="notification-header">
+
+                    <div class="notification-icon">📊</div>
+
+                    <h4>Daily Reports</h4>
+
+                </div>
+
+                <p>Receive daily summary report via email</p>
+
+                <label class="toggle-switch">
+
+                    <input type="checkbox" checked id="toggleDailyReports">
+
+                    <span class="toggle-slider"></span>
+
+                </label>
+
+                <div class="email-config" id="dailyReportsConfig">
+
+                    <div class="email-field">
+
+                        <label>Send From</label>
+
+                        <input type="text" class="email-from-display" value="reports@sentinelx.ai" disabled>
+
+                    </div>
+
+                    <div class="email-field">
+
+                        <label>Recipient Emails</label>
+
+                        <textarea id="dailyReportRecipients" class="email-textarea" rows="3" placeholder="Enter email addresses, separated by commas or new lines&#10;e.g. manager@company.com, team@company.com"></textarea>
+
+                        <span class="email-hint">Separate multiple addresses with commas or new lines</span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="notification-card">
+
+                <div class="notification-header">
+
+                    <div class="notification-icon">🔒</div>
+
+                    <h4>Security Alerts</h4>
+
+                </div>
+
+                <p>Instant notification for perimeter breaches</p>
+
+                <label class="toggle-switch">
+
+                    <input type="checkbox" checked>
+
+                    <span class="toggle-slider"></span>
+
+                </label>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- APPEARANCE / THEME -->
+
+    <div class="settings-section">
+
+        <div class="section-header">
+
+            <h2>🎨 Appearance</h2>
+
+            <span class="section-badge">Theme</span>
+
+        </div>
+
+        <div class="theme-grid" id="themeGrid">
+
+            <div class="theme-card active" data-theme="dark">
+
+                <div class="theme-preview dark-preview">
+
+                    <div class="theme-mockup">
+
+                        <div class="mockup-header"></div>
+
+                        <div class="mockup-body">
+
+                            <div class="mockup-sidebar"></div>
+
+                            <div class="mockup-content">
+
+                                <div class="mockup-card"></div>
+
+                                <div class="mockup-card"></div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <h4>Dark</h4>
+
+                <p>Professional dark theme</p>
+
+            </div>
+
+            <div class="theme-card" data-theme="light">
+
+                <div class="theme-preview light-preview">
+
+                    <div class="theme-mockup">
+
+                        <div class="mockup-header"></div>
+
+                        <div class="mockup-body">
+
+                            <div class="mockup-sidebar"></div>
+
+                            <div class="mockup-content">
+
+                                <div class="mockup-card"></div>
+
+                                <div class="mockup-card"></div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <h4>Light</h4>
+
+                <p>Clean light theme</p>
+
+            </div>
+
+            <div class="theme-card" data-theme="midnight">
+
+                <div class="theme-preview midnight-preview">
+
+                    <div class="theme-mockup">
+
+                        <div class="mockup-header"></div>
+
+                        <div class="mockup-body">
+
+                            <div class="mockup-sidebar"></div>
+
+                            <div class="mockup-content">
+
+                                <div class="mockup-card"></div>
+
+                                <div class="mockup-card"></div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <h4>Midnight</h4>
+
+                <p>Deep blue accent theme</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- SYSTEM -->
+
+    <div class="settings-section">
+
+        <div class="section-header">
+
+            <h2>⚡ System</h2>
+
+            <span class="section-badge">Advanced</span>
+
+        </div>
+
+        <div class="system-grid" id="systemGrid">
+
+            <div class="system-card">
+
+                <h4>AI Engine</h4>
+
+                <p>YOLOv8 • OpenCV • TensorRT</p>
+
+                <div class="system-status">
+
+                    <span class="status-dot online"></span>
+
+                    <span>Running</span>
+
+                </div>
+
+                <button class="btn btn-secondary" onclick="restartEngine()">
+
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                        <polyline points="23 4 23 10 17 10"></polyline>
+
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+
+                    </svg>
+
+                    Restart
+
+                </button>
+
+            </div>
+
+            <div class="system-card">
+
+                <h4>Database</h4>
+
+                <p>SQLite • 12.4 GB Used</p>
+
+                <div class="system-status">
+
+                    <span class="status-dot online"></span>
+
+                    <span>Connected</span>
+
+                </div>
+
+                <button class="btn btn-secondary" onclick="backupDatabase()">
+
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+
+                        <polyline points="7 10 12 15 17 10"></polyline>
+
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+
+                    </svg>
+
+                    Backup
+
+                </button>
+
+            </div>
+
+            <div class="system-card">
+
+                <h4>Storage</h4>
+
+                <p>Evidence • Thumbnails • Logs</p>
+
+                <div class="system-status">
+
+                    <span class="status-dot warning"></span>
+
+                    <span>78% Full</span>
+
+                </div>
+
+                <button class="btn btn-secondary" onclick="clearOldEvidence()">
+
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                        <polyline points="3 6 5 6 21 6"></polyline>
+
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+
+                    </svg>
+
+                    Clean Up
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<div id="emptyState" style="display:none;"></div>
+
+<script>
+
+(function() {
+
+    showSkeletonCards("cameraCardsGrid", 3);
+
+    showSkeletonRows("notificationGrid", 3);
+
+    showSkeletonCards("themeGrid", 3);
+
+    showSkeletonCards("systemGrid", 3);
+
+    setTimeout(function() {
+
+        // In production, check if settings data exists
+
+        // If empty: showEmptyState("emptyState", "No Settings Found", "Settings could not be loaded.", [{label:"Retry", onclick:"loadSettings()", class:"btn-primary"}])
+
+    }, 600);
+
+})();
+
+</script>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SentinelX</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <script>
+        try {
+            var savedTheme = localStorage.getItem('sentinelx-theme');
+            if (savedTheme && ['dark', 'light', 'midnight'].indexOf(savedTheme) !== -1) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else {
+                document.documentElement.setAttribute('data-theme', 'midnight');
+            }
+        } catch (e) {
+            document.documentElement.setAttribute('data-theme', 'midnight');
+        }
+    </script>
+
+    <!-- CSS — Design tokens first, then reset, then component styles -->
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reset.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/topbar.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading.css') }}">
+
+    {% if request.path == '/evidence' %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/evidence.css') }}">
+
+    {% endif %}
+
+    {% if request.path == '/live_wall' %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/live_wall.css') }}">
+
+    {% endif %}
+
+    {% if request.path == '/security_map' %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/security_map.css') }}">
+
+    {% endif %}
+
+    {% if request.path == '/threat_center' %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/threat_center.css') }}">
+
+    {% endif %}
+
+    {% if request.path == '/command_center' %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/command_center.css') }}">
+
+    {% endif %}
+
+    <!-- Polish layer — visual refinements (loaded last for cascade override) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/polish.css') }}">
+
+</head>
+
+<body>
+
+<div class="page-loading-overlay" id="pageLoadingOverlay">
+
+    <div class="loading-spinner large"></div>
+
+    <p style="color:#94a3b8;font-size:14px;font-weight:500;">Loading Sentinel X...</p>
+
+</div>
+
+<div class="container">
+
+    <!-- ================= SIDEBAR OVERLAY ================= -->
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <!-- BRAND -->
+
+        <div class="sidebar-brand">
+
+            <div class="sidebar-logo">
+
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#3b82f6" opacity="0.9"></path>
+
+                    <path d="M2 17l10 5 10-5" stroke="#3b82f6" opacity="0.7"></path>
+
+                    <path d="M2 12l10 5 10-5" stroke="#60a5fa" opacity="0.5"></path>
+
+                </svg>
+
+            </div>
+
+            <div class="sidebar-brand-text">
+
+                <h2>SentinelX</h2>
+
+                <p>AI Edge Security</p>
+
+            </div>
+
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- NAVIGATION -->
+
+        <nav class="sidebar-nav">
+
+            <a href="/" class="sidebar-nav-link {% if request.path=='/' %}active{% endif %}">
+
+                <span class="sidebar-nav-icon">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+
+                        <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+
+                        <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+
+                        <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+
+                    </svg>
+
+                </span>
+
+                <span class="sidebar-nav-label">Dashboard</span>
+
+            </a>
+
+            <a href="/cameras" class="sidebar-nav-link {% if request.path=='/cameras' %}active{% endif %}">
+
+                <span class="sidebar-nav-icon">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+
+                        <circle cx="12" cy="13" r="4"></circle>
+
+                    </svg>
+
+                </span>
+
+                <span class="sidebar-nav-label">Cameras</span>
+
+            </a>
+
+            <a href="/incidents" class="sidebar-nav-link {% if request.path=='/incidents' %}active{% endif %}">
+
+                <span class="sidebar-nav-icon">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+
+                    </svg>
+
+                </span>
+
+                <span class="sidebar-nav-label">Incidents</span>
+
+            </a>
+
+            <a href="/analytics" class="sidebar-nav-link {% if request.path=='/analytics' %}active{% endif %}">
+
+                <span class="sidebar-nav-icon">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+
+                    </svg>
+
+                </span>
+
+                <span class="sidebar-nav-label">Analytics</span>
+
+            </a>
+
+            <a href="/reports" class="sidebar-nav-link {% if request.path=='/reports' %}active{% endif %}">
+
+                <span class="sidebar-nav-icon">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+
+                        <polyline points="14 2 14 8 20 8"></polyline>
+
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+
+                        <polyline points="10 9 9 9 8 9"></polyline>
+
+                    </svg>
+
+                </span>
+
+                <span class="sidebar-nav-label">Reports</span>
+
+            </a>
+
+            <a href="/settings" class="sidebar-nav-link {% if request.path=='/settings' %}active{% endif %}">
+
+                <span class="sidebar-nav-icon">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <circle cx="12" cy="12" r="3"></circle>
+
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+
+                    </svg>
+
+                </span>
+
+                <span class="sidebar-nav-label">Settings</span>
+
+            </a>
+
+        </nav>
+
+        <!-- FOOTER -->
+
+        <div class="sidebar-footer">
+
+            <div class="system-status">
+
+                <span class="status-dot"></span>
+
+                System Online
+
+            </div>
+
+            <small>SentinelX v1.0</small>
+
+        </div>
+
+    </aside>
+
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <main class="main-content">
+
+        <!-- ===== MOBILE TOGGLE ===== -->
+
+        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" aria-label="Toggle Menu">
+
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+
+            </svg>
+
+        </button>
+
+        <!-- ===== TOPBAR ===== -->
+
+        <header class="topbar">
+
+            <div class="top-left">
+
+                <div class="page-title">
+
+                    <h2 id="pageName">Sentinel X AI Command Center</h2>
+
+                    <span class="breadcrumb">
+
+                        AI Edge Surveillance Platform
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="top-right">
+
+                <div class="status-chip status-chip--primary">
+
+                    <span class="status-dot"></span>
+
+                    AI ONLINE
+
+                </div>
+
+                <div class="topbar-controls">
+
+                    <div class="notification-wrapper">
+
+                        <button class="notification-btn" id="notification-btn" aria-label="Notifications">
+
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9z"></path>
+
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+
+                            </svg>
+
+                        </button>
+
+                        <span id="notification-count"></span>
+
+                        <div id="notification-panel">
+
+                            <div class="notification-panel-header">
+
+                                <h4>Notifications</h4>
+
+                                <div class="notification-panel-actions">
+
+                                    <button onclick="markAllAsRead()">Mark all read</button>
+
+                                    <button onclick="clearNotificationHistory()">Clear all</button>
+
+                                </div>
+
+                            </div>
+
+                            <div id="notification-list">
+
+                                <div class="notification-empty">
+
+                                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4">
+
+                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+
+                                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+
+                                    </svg>
+
+                                    <p>No notifications yet</p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <button class="sound-toggle active" id="soundToggle" title="Toggle Sound">
+
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+
+                        </svg>
+
+                    </button>
+
+                    <div class="profile" id="profileMenu">
+
+                    <button class="avatar" id="avatarBtn" type="button" tabindex="0" aria-label="User menu" aria-expanded="false" aria-haspopup="true">
+
+                        <span class="avatar-initials" id="avatarInitials">{{ session.get('username', 'Admin')[:2]|upper }}</span>
+
+                        <span class="avatar-status" aria-hidden="true"></span>
+
+                    </button>
+
+                    <div class="profile-dropdown" id="profileDropdown" role="menu" style="display:none;">
+
+                        <div class="profile-dropdown-header">
+
+                            <div class="profile-dropdown-avatar">
+
+                                <span id="dropdownAvatarInitials">{{ session.get('username', 'Admin')[:2]|upper }}</span>
+
+                            </div>
+
+                            <div class="profile-dropdown-meta">
+
+                                <span class="profile-dropdown-name" id="profileDisplayName">{{ session.get('username', 'Admin')|capitalize }}</span>
+
+                                <span class="profile-dropdown-email" id="profileDisplayEmail">{{ session.get('email', 'admin@sentinelx.ai') }}</span>
+
+                                <span class="profile-dropdown-role" id="profileDisplayRole">{{ session.get('role', 'System Administrator') }}</span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="profile-dropdown-body">
+
+                            <button class="profile-dropdown-item profile-dropdown-signout" id="logoutBtn" type="button" role="menuitem">
+
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+
+                                    <polyline points="16 17 21 12 16 7"></polyline>
+
+                                    <line x1="21" y1="12" x2="9" y2="12"></line>
+
+                                </svg>
+
+                                Sign Out
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+        <!-- PAGE CONTENT -->
+
+        {% block content %}
+
+        {% endblock %}
+
+    </main>
+
+</div>
+
+<!-- ================= ALERT POPUP ================= -->
+
+<div id="alertPopup">
+
+    <div class="alert-popup">
+
+        <div class="alert-popup-header">
+
+            <div class="alert-popup-icon">🚨</div>
+
+            <div class="alert-popup-header-text">
+
+                <h3 id="alertPopupTitle">Critical Alert</h3>
+
+                <p>Immediate attention required</p>
+
+            </div>
+
+        </div>
+
+        <div class="alert-popup-body">
+
+            <div class="alert-popup-message" id="alertPopupMessage"></div>
+
+            <div class="alert-popup-time" id="alertPopupTime"></div>
+
+        </div>
+
+        <div class="alert-popup-footer">
+
+            <button class="alert-popup-btn-view" onclick="window.location.href='/incidents'">View Details</button>
+
+            <button class="alert-popup-btn-ack" onclick="closeAlertPopup()">Acknowledge</button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= TOAST ================= -->
+
+<div id="toast-container"></div>
+
+<!-- ================= JS ================= -->
+
+<script>
+
+window._loadingQueue = [];
+
+['showSkeletonCards','showSkeletonRows','showSkeletonTable','showEmptyState'].forEach(function(fn){
+
+    if (!window[fn]) {
+
+        window[fn] = function(){ window._loadingQueue.push([fn, arguments]); };
+
+    }
+
+});
+
+</script>
+
+<script src="{{ url_for('static', filename='js/loading.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/alerts.js') }}"></script>
+
+    {% if request.path == '/cameras' or request.path == '/camera_view' %}
+
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+
+    {% endif %}
+
+{% if request.path == '/incidents' %}
+
+<script src="{{ url_for('static', filename='js/incidents.js') }}"></script>
+
+{% endif %}
+
+{% if request.path == '/evidence' %}
+
+<script src="{{ url_for('static', filename='js/evidence.js') }}"></script>
+
+{% endif %}
+
+{% if request.path == '/live_wall' %}
+
+<script src="{{ url_for('static', filename='js/live_wall.js') }}"></script>
+
+{% endif %}
+
+{% if request.path == '/security_map' %}
+
+<script src="{{ url_for('static', filename='js/security_map.js') }}"></script>
+
+{% endif %}
+
+{% if request.path == '/threat_center' %}
+
+<script src="{{ url_for('static', filename='js/threat_center.js') }}"></script>
+
+{% endif %}
+
+{% if request.path == '/command_center' %}
+
+<script src="{{ url_for('static', filename='js/command_center.js') }}"></script>
+
+{% endif %}
+
+{% if request.path == '/copilot' %}
+
+<script src="{{ url_for('static', filename='js/copilot.js') }}"></script>
+
+{% endif %}
+
+{% if request.path == '/replay' %}
+
+<script src="{{ url_for('static', filename='js/replay.js') }}"></script>
+
+{% endif %}
+
+{% if request.path == '/analytics' %}
+
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+
+{% endif %}
+
+    {% if request.path == '/reports' %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}">
+
+    <script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+
+    {% endif %}
+
+    {% if request.path == '/analytics' %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}">
+
+    {% endif %}
+
+    <!-- variables.css moved to <head> for correct load order -->
+
+    {% if request.path == '/settings' %}
+
+<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+
+    {% endif %}
+
+    {% if request.path == '/notifications' %}
+
+<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+
+    {% endif %}
+
+</body>
+
+</html>

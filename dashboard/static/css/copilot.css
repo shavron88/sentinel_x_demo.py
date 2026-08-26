@@ -1,0 +1,189 @@
+.copilot-container{
+
+height:75vh;
+
+display:flex;
+
+flex-direction:column;
+
+background:#111827;
+
+border-radius:18px;
+
+overflow:hidden;
+
+}
+
+.chat-window{
+
+flex:1;
+
+overflow:auto;
+
+padding:25px;
+
+}
+
+.ai-message{
+
+background:#1f2937;
+
+padding:16px;
+
+border-radius:12px;
+
+margin-bottom:15px;
+
+width:max-content;
+
+max-width:70%;
+
+}
+
+.user-message{
+
+background:#2563eb;
+
+padding:16px;
+
+border-radius:12px;
+
+margin-left:auto;
+
+margin-bottom:15px;
+
+width:max-content;
+
+max-width:70%;
+
+color:white;
+
+}
+
+.chat-input{
+
+display:flex;
+
+padding:20px;
+
+background:#1f2937;
+
+gap:15px;
+
+}
+
+.chat-input input{
+
+flex:1;
+
+padding:14px;
+
+border:none;
+
+border-radius:10px;
+
+background:#111827;
+
+color:white;
+
+}
+
+.chat-input button{
+
+    padding:14px 22px;
+
+    background:#2563eb;
+
+    border:none;
+
+    border-radius:10px;
+
+    color:white;
+
+    cursor:pointer;
+
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media(max-width:768px){
+
+    .copilot-container{
+
+        height:auto;
+
+        min-height:70vh;
+
+    }
+
+    .chat-window{
+
+        padding:16px;
+
+    }
+
+    .ai-message,
+    .user-message{
+
+        max-width:85%;
+
+        padding:12px;
+
+    }
+
+    .chat-input{
+
+        padding:14px;
+
+        gap:10px;
+
+    }
+
+    .chat-input input{
+
+        padding:12px;
+
+        font-size:14px;
+
+    }
+
+    .chat-input button{
+
+        padding:12px 16px;
+
+        font-size:14px;
+
+    }
+
+}
+
+@media(max-width:480px){
+
+    .copilot-container{
+
+        min-height:60vh;
+
+        border-radius:14px;
+
+    }
+
+    .chat-window{
+
+        padding:12px;
+
+    }
+
+    .ai-message,
+    .user-message{
+
+        max-width:95%;
+
+        padding:10px;
+
+        font-size:13px;
+
+    }
+
+}

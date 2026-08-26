@@ -1,0 +1,785 @@
+/* ==========================================
+   SENTINELX — AUTHENTICATION LANDING PAGE
+   Premium Security Operations Center Entry
+========================================== */
+
+/* ==========================================
+   1. BASE RESET & LAYOUT
+========================================== */
+
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    background: #060a13;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+/* ==========================================
+   2. ANIMATED BACKGROUND LAYERS
+========================================== */
+
+.auth-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(15, 23, 42, 0.9) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(30, 58, 138, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 40% at 20% 70%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+        #060a13;
+}
+
+/* -- Animated Grid -- */
+.grid-overlay {
+    position: absolute;
+    inset: -50%;
+    background-image:
+        linear-gradient(rgba(59, 130, 246, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridDrift 25s linear infinite;
+    transform: perspective(500px) rotateX(30deg);
+    transform-origin: center top;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 70%);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 70%);
+}
+
+@keyframes gridDrift {
+    0%   { background-position: 0 0; }
+    100% { background-position: 60px 60px; }
+}
+
+/* -- Scan Line -- */
+.scan-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.25), rgba(6, 182, 212, 0.15), transparent);
+    box-shadow: 0 0 20px 4px rgba(59, 130, 246, 0.08);
+    animation: scanDown 8s ease-in-out infinite;
+    z-index: 1;
+}
+
+@keyframes scanDown {
+    0%   { top: -2px; opacity: 0; }
+    5%   { opacity: 1; }
+    95%  { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+}
+
+/* -- Glow Rings -- */
+.glow-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(59, 130, 246, 0.08);
+    animation: ringPulse 6s ease-in-out infinite;
+}
+
+.glow-ring--1 {
+    width: 500px;
+    height: 500px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 80px 20px rgba(59, 130, 246, 0.04), inset 0 0 80px 20px rgba(59, 130, 246, 0.02);
+    animation-delay: 0s;
+}
+
+.glow-ring--2 {
+    width: 700px;
+    height: 700px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-color: rgba(6, 182, 212, 0.05);
+    box-shadow: 0 0 120px 30px rgba(6, 182, 212, 0.03);
+    animation-delay: -2s;
+    animation-duration: 8s;
+}
+
+.glow-ring--3 {
+    width: 350px;
+    height: 350px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-color: rgba(59, 130, 246, 0.06);
+    box-shadow: 0 0 60px 10px rgba(59, 130, 246, 0.03);
+    animation-delay: -4s;
+    animation-duration: 5s;
+}
+
+@keyframes ringPulse {
+    0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
+    50%      { opacity: 0.8; transform: translate(-50%, -50%) scale(1.06); }
+}
+
+/* -- Particle Canvas -- */
+#particleCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* -- Vignette -- */
+.vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(6, 10, 19, 0.7) 100%);
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* ==========================================
+   3. MAIN LAYOUT
+========================================== */
+
+.auth-main {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    padding: 24px;
+    width: 100%;
+    max-width: 480px;
+    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Exit animation after successful login */
+.auth-exit {
+    animation: fadeOutScale 0.5s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@keyframes fadeOutScale {
+    to { opacity: 0; transform: scale(0.96) translateY(-10px); }
+}
+
+/* ==========================================
+   4. HERO / BRANDING
+========================================== */
+
+.hero {
+    text-align: center;
+    animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: 0.1s;
+}
+
+.hero-shield {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(6, 182, 212, 0.08));
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+    margin-bottom: 16px;
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.12);
+    animation: shieldGlow 4s ease-in-out infinite;
+}
+
+@keyframes shieldGlow {
+    0%, 100% { box-shadow: 0 0 25px rgba(59, 130, 246, 0.1); }
+    50%      { box-shadow: 0 0 40px rgba(59, 130, 246, 0.2), 0 0 60px rgba(6, 182, 212, 0.08); }
+}
+
+.hero-title {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: #f1f5f9;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.hero-title .accent {
+    color: #3b82f6;
+}
+
+.hero-subtitle {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.hero-tagline {
+    font-size: 13px;
+    font-style: italic;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+}
+
+/* ==========================================
+   5. LOGIN CARD — GLASSMORPHISM
+========================================== */
+
+.login-card {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(24px) saturate(1.2);
+    -webkit-backdrop-filter: blur(24px) saturate(1.2);
+    border: 1px solid rgba(59, 130, 246, 0.12);
+    border-radius: 20px;
+    padding: 36px 32px 28px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+        0 1px 0 rgba(255, 255, 255, 0.04) inset;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.3s ease;
+    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: 0.25s;
+    will-change: transform;
+}
+
+.login-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), rgba(6, 182, 212, 0.2), transparent);
+}
+
+.login-card:hover {
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.35),
+        0 0 0 1px rgba(59, 130, 246, 0.1) inset,
+        0 1px 0 rgba(255, 255, 255, 0.05) inset;
+}
+
+/* Card shake animation for failed login */
+.login-card.shake {
+    animation: cardShake 0.4s ease;
+}
+
+@keyframes cardShake {
+    0%, 100% { transform: translateX(0); }
+    15%      { transform: translateX(-8px); }
+    30%      { transform: translateX(6px); }
+    45%      { transform: translateX(-5px); }
+    60%      { transform: translateX(3px); }
+    75%      { transform: translateX(-2px); }
+}
+
+/* Card header */
+.card-header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.card-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+}
+
+.card-header p {
+    font-size: 13px;
+    color: #64748b;
+}
+
+/* ==========================================
+   6. ERROR ALERT
+========================================== */
+
+.alert-error {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    color: #fca5a5;
+    font-size: 13px;
+    line-height: 1.4;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.3s, max-height 0.3s, margin 0.3s, padding 0.3s;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.alert-error.visible {
+    opacity: 1;
+    max-height: 80px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+}
+
+.alert-error svg {
+    flex-shrink: 0;
+    color: #ef4444;
+}
+
+/* ==========================================
+   7. FORM FIELDS
+========================================== */
+
+.field {
+    margin-bottom: 20px;
+}
+
+.field label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.field label svg {
+    color: #64748b;
+}
+
+.field input[type="text"],
+.field input[type="password"] {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    color: #e2e8f0;
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+}
+
+.field input::placeholder {
+    color: #475569;
+}
+
+.field input:focus {
+    border-color: rgba(59, 130, 246, 0.5);
+    background: rgba(15, 23, 42, 0.8);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 0 20px rgba(59, 130, 246, 0.05);
+}
+
+/* Password field wrapper */
+.password-wrap {
+    position: relative;
+}
+
+.password-wrap input {
+    padding-right: 48px;
+}
+
+.pw-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+}
+
+.pw-toggle:hover {
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.pw-toggle:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* ==========================================
+   8. REMEMBER ME CHECKBOX
+========================================== */
+
+.form-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #94a3b8;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #3b82f6;
+    cursor: pointer;
+}
+
+.checkmark {
+    display: none; /* Using native accent-color instead */
+}
+
+/* ==========================================
+   9. LOGIN BUTTON
+========================================== */
+
+.btn-login {
+    width: 100%;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: transform 0.2s, box-shadow 0.3s, background 0.3s;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.5px;
+}
+
+.btn-login::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s;
+}
+
+.btn-login:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.35), 0 0 40px rgba(59, 130, 246, 0.1);
+}
+
+.btn-login:hover:not(:disabled)::before {
+    transform: translateX(100%);
+}
+
+.btn-login:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-login:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 3px;
+}
+
+.btn-login:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Loading state */
+.btn-loader {
+    display: none;
+}
+
+.btn-login.is-loading .btn-text {
+    display: none;
+}
+
+.btn-login.is-loading .btn-loader {
+    display: flex;
+    animation: spinLoader 1s linear infinite;
+}
+
+@keyframes spinLoader {
+    to { transform: rotate(360deg); }
+}
+
+/* ==========================================
+   10. SECURITY INDICATOR
+========================================== */
+
+.card-security {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    text-align: center;
+}
+
+.secure-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: #22c55e;
+    text-transform: uppercase;
+}
+
+.pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+    animation: dotPulse 2s ease-in-out infinite;
+    box-shadow: 0 0 6px #22c55e;
+}
+
+@keyframes dotPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.5; transform: scale(0.8); }
+}
+
+.restricted {
+    margin-top: 10px;
+    font-size: 11px;
+    color: #64748b;
+    letter-spacing: 0.3px;
+}
+
+/* ==========================================
+   11. FOOTER
+========================================== */
+
+.auth-footer {
+    text-align: center;
+    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: 0.4s;
+}
+
+.auth-footer p {
+    font-size: 12px;
+    color: #475569;
+}
+
+.auth-footer-sub {
+    margin-top: 4px;
+    font-size: 11px !important;
+    color: #334155 !important;
+}
+
+/* ==========================================
+   12. RESPONSIVE DESIGN
+========================================== */
+
+@media (max-width: 520px) {
+    .auth-main {
+        padding: 20px 16px;
+        gap: 20px;
+    }
+
+    .hero-title {
+        font-size: 26px;
+        letter-spacing: 3px;
+    }
+
+    .hero-subtitle {
+        font-size: 10px;
+        letter-spacing: 2px;
+    }
+
+    .login-card {
+        padding: 28px 20px 24px;
+        border-radius: 16px;
+    }
+
+    .card-header h2 {
+        font-size: 18px;
+    }
+
+    .glow-ring--1 { width: 300px; height: 300px; }
+    .glow-ring--2 { width: 420px; height: 420px; }
+    .glow-ring--3 { width: 220px; height: 220px; }
+}
+
+@media (max-width: 360px) {
+    .hero-title {
+        font-size: 22px;
+        letter-spacing: 2px;
+    }
+
+    .login-card {
+        padding: 24px 16px 20px;
+    }
+
+    .btn-login {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+}
+
+@media (max-height: 700px) {
+    .auth-main {
+        gap: 16px;
+    }
+
+    .hero {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .hero-shield {
+        width: 56px;
+        height: 56px;
+        margin-bottom: 10px;
+    }
+
+    .hero-shield svg {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* Landscape mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    body {
+        overflow-y: auto;
+    }
+
+    .auth-main {
+        min-height: auto;
+        padding-top: 16px;
+        padding-bottom: 16px;
+    }
+
+    .hero-shield {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 8px;
+    }
+
+    .hero-title {
+        font-size: 22px;
+    }
+}
+
+/* ==========================================
+   13. ACCESSIBILITY — REDUCED MOTION
+========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .grid-overlay {
+        animation: none;
+    }
+
+    .scan-line {
+        display: none;
+    }
+
+    .glow-ring {
+        animation: none;
+        opacity: 0.5;
+    }
+
+    .hero-shield {
+        animation: none;
+    }
+
+    .pulse-dot {
+        animation: none;
+    }
+
+    #particleCanvas {
+        display: none;
+    }
+
+    .auth-main {
+        animation: none;
+    }
+
+    .login-card {
+        animation: none;
+    }
+
+    .auth-footer {
+        animation: none;
+    }
+}
+
+/* ==========================================
+   14. FOCUS STATES (Accessibility)
+========================================== */
+
+.field input:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 1px;
+}
+
+.checkbox-label:focus-within {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* ==========================================
+   15. HIGH CONTRAST SUPPORT
+========================================== */
+
+@media (forced-colors: active) {
+    .login-card {
+        border: 2px solid ButtonText;
+    }
+
+    .btn-login {
+        border: 2px solid ButtonText;
+    }
+
+    .field input {
+        border: 1px solid ButtonText;
+    }
+}
