@@ -173,6 +173,8 @@ def api_auth_status():
         return jsonify({
             "authenticated": True,
             "username": session.get("username"),
+            "email": session.get("email"),
+            "role": session.get("role"),
             "csrf_token": get_csrf_token()
         }), 200
     

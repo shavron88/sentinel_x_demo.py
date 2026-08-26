@@ -367,7 +367,38 @@ window.addEventListener("resize", () => {
     const dropdown  = document.getElementById("profileDropdown");
     const logoutBtn = document.getElementById("logoutBtn");
 
+    function setText(id, value, fallback) {
+        const el = document.getElementById(id);
+        if (el && value) el.textContent = value;
+        else if (el && fallback) el.textContent = fallback;
+    }
+
+    function setInitials(text) {
+        const initials = (text || "SX").slice(0, 2).toUpperCase();
+        setText("avatarInitials", initials);
+        setText("dropdownAvatarInitials", initials);
+    }
+
+    function loadUserProfile() {
+        fetch("/api/auth/status")
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .then(function(data) {
+                if (!data || !data.authenticated) return;
+                const name = data.username || "";
+                const email = data.email || "";
+                const role = data.role || "";
+                setText("profileDisplayName", name.charAt(0).toUpperCase() + name.slice(1), name);
+                setText("profileDisplayEmail", email, "admin@sentinelx.ai");
+                setText("profileDisplayRole", role, "System Administrator");
+                setInitials(name);
+            })
+            .catch(function() { /* Keep server-rendered defaults */ });
+    }
+
     if (avatarBtn && dropdown) {
+        // Populate dynamic user info on every dashboard page load
+        loadUserProfile();
+
         avatarBtn.addEventListener("click", function(e) {
             e.stopPropagation();
             const isOpen = dropdown.classList.toggle("open");
@@ -403,9 +434,20 @@ window.addEventListener("resize", () => {
     if (logoutBtn) {
         logoutBtn.addEventListener("click", function() {
             logoutBtn.disabled = true;
-            fetch("/api/auth/logout", { method: "POST" })
+            const csrf = window.__SENTINELX_CSRF__ ||
+                         (function() {
+                             try { return sessionStorage.getItem("sentinelx_csrf"); } catch(e) { return null; }
+                         })();
+
+            const headers = { "Accept": "application/json" };
+            if (csrf) headers["X-CSRF-Token"] = csrf;
+
+            fetch("/api/auth/logout", { method: "POST", headers: headers })
                 .then(function() {
-                    try { sessionStorage.removeItem("sentinelx_csrf"); } catch(e) {}
+                    try {
+                        sessionStorage.removeItem("sentinelx_csrf");
+                        localStorage.removeItem("sentinelx_notifications");
+                    } catch(e) {}
                     window.location.href = "/login";
                 })
                 .catch(function() {

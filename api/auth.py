@@ -81,6 +81,8 @@ def login(username, password):
         session.clear()
         session["authenticated"] = True
         session["username"] = username
+        session["email"] = f"{username}@sentinelx.ai"
+        session["role"] = "System Administrator"
         session["last_active"] = datetime.now().isoformat()
         session["csrf_token"] = secrets.token_hex(32)
         return True, "Login successful"

@@ -44,6 +44,8 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
 
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/topbar.css') }}">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/loading.css') }}">
 
     {% if request.path == '/evidence' %}
@@ -319,7 +321,7 @@
 
             <div class="top-right">
 
-                <div class="status-chip">
+                <div class="status-chip status-chip--primary">
 
                     <span class="status-dot"></span>
 
@@ -327,61 +329,123 @@
 
                 </div>
 
-                <div class="status-chip">
+                <div class="topbar-controls">
 
-                    📹 4 Cameras
+                    <div class="notification-wrapper">
 
-                </div>
+                        <button class="notification-btn" id="notification-btn" aria-label="Notifications">
 
-                <div class="status-chip">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
-                    ⚡ 30 FPS
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9z"></path>
 
-                </div>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
 
-                <div class="status-chip">
+                            </svg>
 
-                    💚 System Healthy
+                        </button>
 
-                </div>
+                        <span id="notification-count"></span>
 
-                <div class="notification-wrapper">
+                        <div id="notification-panel">
 
-                    <button class="notification-btn" id="notification-btn">🔔</button>
+                            <div class="notification-panel-header">
 
-                    <span id="notification-count"></span>
+                                <h4>Notifications</h4>
 
-                    <div id="notification-panel">
+                                <div class="notification-panel-actions">
 
-                        <div class="notification-panel-header">
+                                    <button onclick="markAllAsRead()">Mark all read</button>
 
-                            <h4>Notifications</h4>
+                                    <button onclick="clearNotificationHistory()">Clear all</button>
 
-                            <div class="notification-panel-actions">
+                                </div>
 
-                                <button onclick="markAllAsRead()">Mark all read</button>
+                            </div>
 
-                                <button onclick="clearNotificationHistory()">Clear all</button>
+                            <div id="notification-list">
+
+                                <div class="notification-empty">
+
+                                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4">
+
+                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+
+                                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+
+                                    </svg>
+
+                                    <p>No notifications yet</p>
+
+                                </div>
 
                             </div>
 
                         </div>
 
-                        <div id="notification-list">
+                    </div>
 
-                            <div class="notification-empty">
+                    <button class="sound-toggle active" id="soundToggle" title="Toggle Sound">
 
-                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 
-                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
 
-                                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+
+                        </svg>
+
+                    </button>
+
+                    <div class="profile" id="profileMenu">
+
+                    <button class="avatar" id="avatarBtn" type="button" tabindex="0" aria-label="User menu" aria-expanded="false" aria-haspopup="true">
+
+                        <span class="avatar-initials" id="avatarInitials">{{ session.get('username', 'Admin')[:2]|upper }}</span>
+
+                        <span class="avatar-status" aria-hidden="true"></span>
+
+                    </button>
+
+                    <div class="profile-dropdown" id="profileDropdown" role="menu" style="display:none;">
+
+                        <div class="profile-dropdown-header">
+
+                            <div class="profile-dropdown-avatar">
+
+                                <span id="dropdownAvatarInitials">{{ session.get('username', 'Admin')[:2]|upper }}</span>
+
+                            </div>
+
+                            <div class="profile-dropdown-meta">
+
+                                <span class="profile-dropdown-name" id="profileDisplayName">{{ session.get('username', 'Admin')|capitalize }}</span>
+
+                                <span class="profile-dropdown-email" id="profileDisplayEmail">{{ session.get('email', 'admin@sentinelx.ai') }}</span>
+
+                                <span class="profile-dropdown-role" id="profileDisplayRole">{{ session.get('role', 'System Administrator') }}</span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="profile-dropdown-body">
+
+                            <button class="profile-dropdown-item profile-dropdown-signout" id="logoutBtn" type="button" role="menuitem">
+
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+
+                                    <polyline points="16 17 21 12 16 7"></polyline>
+
+                                    <line x1="21" y1="12" x2="9" y2="12"></line>
 
                                 </svg>
 
-                                <p>No notifications yet</p>
+                                Sign Out
 
-                            </div>
+                            </button>
 
                         </div>
 
@@ -389,42 +453,7 @@
 
                 </div>
 
-                <button class="sound-toggle active" id="soundToggle" title="Toggle Sound">
-
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-
-                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-
-                    </svg>
-
-                </button>
-
-            <div class="profile" id="profileMenu">
-
-                <div class="avatar" id="avatarBtn" tabindex="0" role="button" aria-label="User menu" aria-expanded="false">
-
-                    SX
-
                 </div>
-
-                <div class="profile-dropdown" id="profileDropdown">
-                    <div class="profile-dropdown-header">
-                        <span class="profile-dropdown-name" id="profileDisplayName">Admin</span>
-                        <span class="profile-dropdown-role">System Administrator</span>
-                    </div>
-                    <button class="profile-dropdown-item" id="logoutBtn" type="button">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                            <polyline points="16 17 21 12 16 7"/>
-                            <line x1="21" y1="12" x2="9" y2="12"/>
-                        </svg>
-                        Sign Out
-                    </button>
-                </div>
-
-            </div>
 
             </div>
 
