@@ -867,6 +867,87 @@
 }
 
 /* ==========================================
+<<<<<<< HEAD
+=======
+   THEME ADAPTATIONS — LIGHT
+   variables.css forces the hero container white in Light theme, so
+   replace the dark header/footer bars, white text and dark info tiles.
+========================================== */
+
+[data-theme="light"] .camera-hero{
+    box-shadow:0 8px 24px rgba(15,23,42,.12);
+}
+
+[data-theme="light"] .camera-hero-header{
+    background:rgba(248,250,252,.6);
+    border-bottom-color:rgba(15,23,42,.08);
+}
+
+[data-theme="light"] .camera-hero-footer{
+    background:rgba(248,250,252,.6);
+    border-top-color:rgba(15,23,42,.08);
+}
+
+[data-theme="light"] .camera-hero-title h2{
+    color:#0f172a;
+}
+
+[data-theme="light"] .camera-hero-footer span{
+    color:#475569;
+}
+
+[data-theme="light"] .camera-hero-footer strong{
+    color:#0f172a;
+}
+
+[data-theme="light"] .camera-hero-footer .ai-active{
+    color:#16a34a;
+}
+
+[data-theme="light"] .live-badge{
+    background:rgba(239,68,68,.08);
+    border-color:rgba(239,68,68,.28);
+    color:#dc2626;
+}
+
+[data-theme="light"] .status-chip.small{
+    border-color:rgba(15,23,42,.1);
+}
+
+[data-theme="light"] .status-chip.small:hover{
+    background:rgba(59,130,246,.08) !important;
+    border-color:rgba(59,130,246,.3);
+    color:#1e40af !important;
+}
+
+/* Legacy camera cards */
+
+[data-theme="light"] .camera-top h3{
+    color:#0f172a;
+}
+
+[data-theme="light"] .camera-top p{
+    color:#64748b;
+}
+
+[data-theme="light"] .camera-info div{
+    background:#f8fafc;
+}
+
+[data-theme="light"] .camera-info span{
+    color:#64748b;
+}
+
+[data-theme="light"] .camera-info strong{
+    color:#0f172a;
+}
+
+[data-theme="light"] .camera-placeholder{
+    color:#475569;
+}
+
+/* ==========================================
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
    RESPONSIVE
 ========================================== */
 

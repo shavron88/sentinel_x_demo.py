@@ -58,6 +58,12 @@
     --st-radius: 22px;
     --st-radius-sm: 12px;
     --st-transition: all .25s cubic-bezier(.4,0,.2,1);
+<<<<<<< HEAD
+=======
+    --st-shadow: 0 8px 32px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.03);
+    --st-shadow-hover: 0 14px 36px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.04);
+    --st-focus-ring: 0 0 0 3px rgba(59,130,246,.14);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 }
 
 /* ==========================================
@@ -157,6 +163,14 @@
     --st-text: #0f172a;
     --st-text-secondary: #334155;
     --st-text-muted: #64748b;
+<<<<<<< HEAD
+=======
+
+    /* Softer elevation for light surfaces */
+    --st-shadow: 0 8px 32px rgba(15,23,42,.08);
+    --st-shadow-hover: 0 14px 36px rgba(15,23,42,.12);
+    --st-focus-ring: 0 0 0 3px rgba(37,99,235,.16);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 }
 
 /* ==========================================
@@ -385,11 +399,23 @@
 [data-theme="dark"] .btn-success,
 [data-theme="dark"] .btn-danger,
 [data-theme="dark"] .btn-outline,
+<<<<<<< HEAD
 [data-theme="dark"] button,
 [data-theme="dark"] .camera-control-btn {
     color: #ffffff !important;
 }
 
+=======
+[data-theme="dark"] button {
+    color: #ffffff !important;
+}
+
+/* NOTE: .camera-control-btn is intentionally NOT in the color lists above —
+   it is an input-style icon control already covered by the input overrides
+   (dark: #e2e8f0, light: #0f172a). Listing it here forced white text on the
+   light #f1f5f9 surface, making the labels invisible in Light theme. */
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 [data-theme="dark"] .btn-outline,
 [data-theme="dark"] .btn-secondary {
     background: transparent !important;
@@ -402,8 +428,12 @@
 [data-theme="light"] .btn-success,
 [data-theme="light"] .btn-danger,
 [data-theme="light"] .btn-outline,
+<<<<<<< HEAD
 [data-theme="light"] button,
 [data-theme="light"] .camera-control-btn {
+=======
+[data-theme="light"] button {
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     color: #ffffff !important;
 }
 
@@ -568,6 +598,346 @@
     background: #cbd5e1 !important;
 }
 
+<<<<<<< HEAD
+=======
+/* ==========================================
+   LIGHT THEME — DASHBOARD & SHARED COMPONENT
+   ADAPTATIONS
+   Restores dark ink, light surfaces, tracks and
+   hover states for components whose base files
+   hardcode dark-UI colors (style.css, cards.css,
+   camera.css, polish.css, loading.css).
+========================================== */
+
+/* Panel headings + grid gutters */
+
+[data-theme="light"] .panel h3 {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .command-center {
+    background: transparent !important;
+}
+
+/* Inset surfaces */
+
+[data-theme="light"] .camera-status .status-item,
+[data-theme="light"] .ai-stat,
+[data-theme="light"] .perf-item {
+    background: #f8fafc !important;
+    border-color: rgba(15, 23, 42, 0.07) !important;
+}
+
+[data-theme="light"] .ai-risk-card,
+[data-theme="light"] .ai-recommendation {
+    background: #f8fafc !important;
+    border-color: rgba(15, 23, 42, 0.07) !important;
+}
+
+[data-theme="light"] .stat-card {
+    background: #ffffff !important;
+    border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Dark ink on inset surfaces */
+
+[data-theme="light"] .camera-status .status-item strong,
+[data-theme="light"] .ai-stat-value,
+[data-theme="light"] .perf-value,
+[data-theme="light"] .resource-item strong,
+[data-theme="light"] .stat-card h1,
+[data-theme="light"] .stat-card h2 {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .ai-recommendation p {
+    color: #334155 !important;
+}
+
+[data-theme="light"] .ai-risk-value {
+    color: #15803d !important;
+    background: rgba(34, 197, 94, 0.12) !important;
+    border-color: rgba(34, 197, 94, 0.25) !important;
+}
+
+/* Progress / risk bar tracks (invisible white-on-white otherwise) */
+
+[data-theme="light"] .progress,
+[data-theme="light"] .ai-risk-bar {
+    background: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* AI live feed items */
+
+[data-theme="light"] .ai-feed-item {
+    background: #f8fafc !important;
+}
+
+[data-theme="light"] .ai-feed-item:hover {
+    background: #eff6ff !important;
+}
+
+[data-theme="light"] .ai-feed-title {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .ai-feed-meta {
+    color: #64748b !important;
+}
+
+/* System health list */
+
+[data-theme="light"] .health-item:hover {
+    background: #f8fafc !important;
+}
+
+[data-theme="light"] .health-item span:first-child {
+    color: #475569 !important;
+}
+
+[data-theme="light"] .health-online {
+    color: #15803d !important;
+    background: rgba(34, 197, 94, 0.1) !important;
+}
+
+[data-theme="light"] .health-offline {
+    color: #dc2626 !important;
+    background: rgba(239, 68, 68, 0.08) !important;
+}
+
+/* Panel elevation for light surfaces */
+
+[data-theme="light"] .panel {
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 20px rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-theme="light"] .panel:hover {
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1) !important;
+    border-color: rgba(59, 130, 246, 0.22) !important;
+}
+
+/* Demo scenario buttons */
+
+[data-theme="light"] .demo-btn {
+    background: #f8fafc !important;
+    border-color: rgba(15, 23, 42, 0.09) !important;
+    color: #334155 !important;
+}
+
+[data-theme="light"] .demo-btn:hover {
+    background: rgba(59, 130, 246, 0.08) !important;
+    border-color: rgba(59, 130, 246, 0.3) !important;
+    color: #1e40af !important;
+}
+
+[data-theme="light"] .demo-btn-critical {
+    border-color: rgba(239, 68, 68, 0.28) !important;
+}
+
+[data-theme="light"] .demo-btn-critical:hover {
+    background: rgba(239, 68, 68, 0.07) !important;
+    border-color: rgba(239, 68, 68, 0.42) !important;
+    color: #b91c1c !important;
+}
+
+[data-theme="light"] .demo-section p {
+    color: #64748b !important;
+}
+
+/* Camera control buttons */
+
+[data-theme="light"] .camera-control-btn:hover {
+    background: rgba(59, 130, 246, 0.1) !important;
+    border-color: rgba(59, 130, 246, 0.35) !important;
+    color: #1e40af !important;
+}
+
+/* LIVE badges keep their red identity on light surfaces */
+
+[data-theme="light"] .feed-badge {
+    background: rgba(239, 68, 68, 0.08) !important;
+    border-color: rgba(239, 68, 68, 0.28) !important;
+    color: #dc2626 !important;
+}
+
+/* Severity chips (feed items) — solid fills per severity.
+   Dark restores the designed chips that the badge group rule
+   above was flattening; Midnight never had the override. */
+
+[data-theme="dark"] .ai-feed-badge.high {
+    background: #ef4444 !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .ai-feed-badge.medium {
+    background: #f59e0b !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .ai-feed-badge.low {
+    background: #22c55e !important;
+    color: #ffffff !important;
+}
+
+[data-theme="light"] .ai-feed-badge.high {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+}
+
+[data-theme="light"] .ai-feed-badge.medium {
+    background: #d97706 !important;
+    color: #ffffff !important;
+}
+
+[data-theme="light"] .ai-feed-badge.low {
+    background: #16a34a !important;
+    color: #ffffff !important;
+}
+
+/* Legend, links, footer */
+
+[data-theme="light"] .legend-item {
+    color: #475569 !important;
+}
+
+[data-theme="light"] .view-all-link {
+    color: #2563eb !important;
+}
+
+[data-theme="light"] .dashboard-footer {
+    border-top-color: rgba(15, 23, 42, 0.08) !important;
+    color: #475569 !important;
+}
+
+[data-theme="light"] .dashboard-footer strong {
+    color: #334155 !important;
+}
+
+[data-theme="light"] .latest-evidence-grid img,
+[data-theme="light"] .gallery-grid img {
+    border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Mobile sidebar toggle */
+
+[data-theme="light"] .sidebar-toggle {
+    background: #ffffff !important;
+    border-color: rgba(15, 23, 42, 0.08) !important;
+    color: #334155 !important;
+}
+
+[data-theme="light"] .sidebar-toggle:hover {
+    background: rgba(59, 130, 246, 0.1) !important;
+    color: #1e40af !important;
+}
+
+/* Filter buttons & chips (incidents / notifications pages) */
+
+[data-theme="light"] .filter-btn,
+[data-theme="light"] .filter-chip {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+    border-color: rgba(15, 23, 42, 0.1);
+}
+
+[data-theme="light"] .filter-btn:hover,
+[data-theme="light"] .filter-chip:hover {
+    background: rgba(59, 130, 246, 0.08) !important;
+    color: #1e40af !important;
+}
+
+[data-theme="light"] .filter-btn.active,
+[data-theme="light"] .filter-chip.active {
+    background: rgba(37, 99, 235, 0.12) !important;
+    color: #1e40af !important;
+    border-color: rgba(37, 99, 235, 0.4);
+}
+
+/* Notifications page */
+
+[data-theme="light"] .notification-history-container {
+    background: #ffffff !important;
+    border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .notification-header {
+    border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .notification-actions-bar {
+    border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .notification-search {
+    background: #f1f5f9 !important;
+    border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+[data-theme="light"] .notification-stats {
+    color: #64748b !important;
+}
+
+[data-theme="light"] .notification-clear-btn {
+    background: rgba(239, 68, 68, 0.08) !important;
+    border-color: rgba(239, 68, 68, 0.25) !important;
+    color: #b91c1c !important;
+}
+
+[data-theme="light"] .notification-clear-btn:hover {
+    background: rgba(239, 68, 68, 0.15) !important;
+}
+
+/* Analytics page cards, values and controls */
+
+[data-theme="light"] .analytics-kpi-card,
+[data-theme="light"] .analytics-card,
+[data-theme="light"] .analytics-timeline-card {
+    background: #ffffff !important;
+    border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .analytics-header-left h1,
+[data-theme="light"] .analytics-kpi-value,
+[data-theme="light"] .analytics-card-title,
+[data-theme="light"] .analytics-legend-value,
+[data-theme="light"] .analytics-legend-label,
+[data-theme="light"] .detection-item-value,
+[data-theme="light"] .zone-item-count,
+[data-theme="light"] .analytics-timeline-title {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .zone-item-name {
+    color: #475569 !important;
+}
+
+[data-theme="light"] .analytics-control-btn {
+    background: #f1f5f9 !important;
+    border-color: rgba(15, 23, 42, 0.1) !important;
+    color: #334155 !important;
+}
+
+[data-theme="light"] .analytics-control-btn:hover {
+    background: rgba(59, 130, 246, 0.08) !important;
+    border-color: rgba(59, 130, 246, 0.3) !important;
+    color: #1e40af !important;
+}
+
+[data-theme="light"] .analytics-card-select {
+    background: #f1f5f9 !important;
+    border-color: rgba(15, 23, 42, 0.1) !important;
+    color: #334155 !important;
+}
+
+[data-theme="light"] .analytics-timeline-link {
+    color: #2563eb !important;
+}
+
+[data-theme="light"] .analytics-row {
+    border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 /* Transition for theme changes */
 
 body,

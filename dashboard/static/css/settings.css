@@ -2,6 +2,7 @@
    SETTINGS PAGE - FORENSIC GRADE
 ========================================== */
 
+<<<<<<< HEAD
 :root {
 
     --st-bg: #0B1220;
@@ -17,6 +18,12 @@
     --st-transition: all .25s cubic-bezier(.4,0,.2,1);
 
 }
+=======
+/* Design tokens (--st-*) are defined per theme in variables.css.
+   Do NOT redefine them in a :root block here: this file loads AFTER
+   variables.css, so a :root block would override the [data-theme]
+   values and break Dark/Light/Midnight switching. */
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 /* ==========================================
    PAGE
@@ -53,7 +60,15 @@
 
     align-items: center;
 
+<<<<<<< HEAD
     padding: 24px 28px;
+=======
+    gap: 18px;
+
+    flex-wrap: wrap;
+
+    padding: 26px 30px;
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
     background: linear-gradient(135deg, rgba(17,24,39,.95), rgba(30,41,59,.9));
 
@@ -63,7 +78,11 @@
 
     backdrop-filter: blur(20px);
 
+<<<<<<< HEAD
     box-shadow: 0 8px 32px rgba(0,0,0,.2);
+=======
+    box-shadow: var(--st-shadow);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
     position: relative;
 
@@ -93,6 +112,7 @@
 
     margin: 0;
 
+<<<<<<< HEAD
     font-size: 24px;
 
     font-weight: 700;
@@ -100,17 +120,35 @@
     color: white;
 
     letter-spacing: -0.01em;
+=======
+    font-size: 26px;
+
+    font-weight: 700;
+
+    color: var(--st-text);
+
+    letter-spacing: -0.02em;
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
 .settings-title-area p {
 
+<<<<<<< HEAD
     margin: 6px 0 0 0;
+=======
+    margin: 8px 0 0 0;
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
     color: var(--st-text-muted);
 
     font-size: 14px;
 
+<<<<<<< HEAD
+=======
+    letter-spacing: .01em;
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 }
 
 .settings-header-actions {
@@ -133,11 +171,19 @@
 
     border-radius: var(--st-radius);
 
+<<<<<<< HEAD
     padding: 24px;
 
     backdrop-filter: blur(20px);
 
     box-shadow: 0 8px 32px rgba(0,0,0,.2);
+=======
+    padding: 26px;
+
+    backdrop-filter: blur(20px);
+
+    box-shadow: var(--st-shadow);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
     position: relative;
 
@@ -171,9 +217,19 @@
 
     align-items: center;
 
+<<<<<<< HEAD
     margin-bottom: 20px;
 
     padding-bottom: 14px;
+=======
+    gap: 12px;
+
+    flex-wrap: wrap;
+
+    margin-bottom: 20px;
+
+    padding-bottom: 16px;
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
     border-bottom: 1px solid var(--st-border);
 
@@ -183,6 +239,7 @@
 
     margin: 0;
 
+<<<<<<< HEAD
     font-size: 18px;
 
     font-weight: 700;
@@ -190,11 +247,21 @@
     color: white;
 
     letter-spacing: -0.01em;
+=======
+    font-size: 17px;
+
+    font-weight: 700;
+
+    color: var(--st-text);
+
+    letter-spacing: -0.015em;
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
 .section-badge {
 
+<<<<<<< HEAD
     padding: 4px 12px;
 
     border-radius: 20px;
@@ -206,12 +273,33 @@
     color: var(--st-accent);
 
     font-size: 11px;
+=======
+    padding: 5px 14px;
+
+    border-radius: 50px;
+
+    background: linear-gradient(135deg, rgba(59,130,246,.14), rgba(59,130,246,.06));
+
+    border: 1px solid rgba(59,130,246,.25);
+
+    color: #93c5fd;
+
+    font-size: 10px;
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
     font-weight: 700;
 
     text-transform: uppercase;
 
+<<<<<<< HEAD
     letter-spacing: .5px;
+=======
+    letter-spacing: .8px;
+
+    white-space: nowrap;
+
+    box-shadow: 0 0 12px rgba(59,130,246,.1);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
@@ -249,10 +337,28 @@
 
     color: var(--st-accent);
 
+<<<<<<< HEAD
+=======
+    box-shadow: 0 8px 24px rgba(59,130,246,.14), inset 0 1px 0 rgba(255,255,255,.04);
+
+    transition: var(--st-transition);
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     flex-shrink: 0;
 
 }
 
+<<<<<<< HEAD
+=======
+.profile-card:hover .profile-avatar {
+
+    border-color: rgba(59,130,246,.35);
+
+    box-shadow: 0 12px 28px rgba(59,130,246,.22), inset 0 1px 0 rgba(255,255,255,.05);
+
+}
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 .profile-details {
 
     flex: 1;
@@ -291,7 +397,11 @@
 
 .profile-field input {
 
+<<<<<<< HEAD
     padding: 10px 14px;
+=======
+    padding: 11px 14px;
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
     border: 1px solid var(--st-border);
 
@@ -311,11 +421,26 @@
 
 }
 
+<<<<<<< HEAD
+=======
+.profile-field input:hover:not(:disabled) {
+
+    border-color: rgba(255,255,255,.18);
+
+}
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 .profile-field input:focus {
 
     border-color: var(--st-accent);
 
+<<<<<<< HEAD
     box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+=======
+    box-shadow: var(--st-focus-ring);
+
+    background: rgba(15,23,42,.75);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
@@ -355,11 +480,21 @@
 
 }
 
+<<<<<<< HEAD
 .camera-card:hover {
 
     border-color: rgba(255,255,255,.12);
 
     box-shadow: 0 8px 24px rgba(0,0,0,.2);
+=======
+.camera-cards-grid .camera-card:hover {
+
+    transform: translateY(-3px);
+
+    border-color: rgba(59,130,246,.25);
+
+    box-shadow: 0 12px 32px rgba(0,0,0,.3), 0 0 0 1px rgba(59,130,246,.08);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
@@ -401,14 +536,35 @@
 
     justify-content: center;
 
+<<<<<<< HEAD
     background: rgba(59,130,246,.1);
 
     border: 1px solid rgba(59,130,246,.2);
+=======
+    background: linear-gradient(135deg, rgba(59,130,246,.16), rgba(59,130,246,.06));
+
+    border: 1px solid rgba(59,130,246,.22);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
     border-radius: var(--st-radius-sm);
 
     font-size: 18px;
 
+<<<<<<< HEAD
+=======
+    transition: var(--st-transition);
+
+}
+
+.camera-cards-grid .camera-card:hover .camera-icon {
+
+    transform: scale(1.08);
+
+    border-color: rgba(59,130,246,.4);
+
+    box-shadow: 0 0 16px rgba(59,130,246,.18);
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 }
 
 .camera-info h4 {
@@ -419,7 +575,11 @@
 
     font-weight: 700;
 
+<<<<<<< HEAD
     color: white;
+=======
+    color: var(--st-text);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
@@ -471,7 +631,11 @@
 
 .camera-setting select {
 
+<<<<<<< HEAD
     padding: 8px 12px;
+=======
+    padding: 9px 12px;
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
     border: 1px solid var(--st-border);
 
@@ -489,6 +653,19 @@
 
     font-family: inherit;
 
+<<<<<<< HEAD
+=======
+    cursor: pointer;
+
+}
+
+.camera-setting input:hover:not(:disabled),
+
+.camera-setting select:hover {
+
+    border-color: rgba(255,255,255,.18);
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 }
 
 .camera-setting input:focus,
@@ -497,7 +674,11 @@
 
     border-color: var(--st-accent);
 
+<<<<<<< HEAD
     box-shadow: 0 0 0 2px rgba(59,130,246,.1);
+=======
+    box-shadow: var(--st-focus-ring);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
@@ -525,6 +706,19 @@
 
     cursor: pointer;
 
+<<<<<<< HEAD
+=======
+    transition: color .2s ease;
+
+    user-select: none;
+
+}
+
+.toggle-label:hover {
+
+    color: var(--st-text);
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 }
 
 .toggle-label input {
@@ -569,9 +763,17 @@
 
 .notification-card:hover {
 
+<<<<<<< HEAD
     border-color: rgba(255,255,255,.12);
 
     box-shadow: 0 8px 24px rgba(0,0,0,.2);
+=======
+    transform: translateY(-3px);
+
+    border-color: rgba(255,255,255,.14);
+
+    box-shadow: 0 12px 32px rgba(0,0,0,.3);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
@@ -597,14 +799,47 @@
 
     justify-content: center;
 
+<<<<<<< HEAD
     background: rgba(59,130,246,.1);
 
     border: 1px solid rgba(59,130,246,.2);
+=======
+    background: linear-gradient(135deg, rgba(59,130,246,.16), rgba(59,130,246,.06));
+
+    border: 1px solid rgba(59,130,246,.22);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
     border-radius: var(--st-radius-sm);
 
     font-size: 18px;
 
+<<<<<<< HEAD
+=======
+    transition: var(--st-transition);
+
+}
+
+.notification-card:hover .notification-icon {
+
+    transform: scale(1.08);
+
+    border-color: rgba(59,130,246,.4);
+
+    box-shadow: 0 0 16px rgba(59,130,246,.18);
+
+}
+
+/* Neutralize the global .notification-header treatment inside settings cards */
+
+.notification-card .notification-header {
+
+    margin-bottom: 0;
+
+    padding-bottom: 0;
+
+    border-bottom: none;
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 }
 
 .notification-header h4 {
@@ -615,7 +850,11 @@
 
     font-weight: 700;
 
+<<<<<<< HEAD
     color: white;
+=======
+    color: var(--st-text);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
@@ -651,11 +890,23 @@
 
     gap: 12px;
 
+<<<<<<< HEAD
     margin-top: 4px;
 
     padding-top: 12px;
 
     border-top: 1px solid var(--st-border);
+=======
+    margin-top: 6px;
+
+    padding: 14px;
+
+    background: rgba(15,23,42,.4);
+
+    border: 1px solid var(--st-border);
+
+    border-radius: var(--st-radius-sm);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
@@ -733,11 +984,26 @@
 
 }
 
+<<<<<<< HEAD
+=======
+.email-textarea:hover {
+
+    border-color: rgba(255,255,255,.16);
+
+}
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 .email-textarea:focus {
 
     border-color: var(--st-accent);
 
+<<<<<<< HEAD
     box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+=======
+    box-shadow: var(--st-focus-ring);
+
+    background: rgba(15,23,42,.75);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
@@ -755,7 +1021,13 @@
 
     color: var(--st-text-muted);
 
+<<<<<<< HEAD
     font-style: italic;
+=======
+    opacity: .85;
+
+    letter-spacing: .02em;
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
@@ -801,6 +1073,17 @@
 
     border: 1px solid rgba(255,255,255,.08);
 
+<<<<<<< HEAD
+=======
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.15);
+
+}
+
+.toggle-switch:hover .toggle-slider {
+
+    border-color: rgba(255,255,255,.18);
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 }
 
 .toggle-slider::before {
@@ -829,9 +1112,23 @@
 
 .toggle-switch input:checked + .toggle-slider {
 
+<<<<<<< HEAD
     background: var(--st-accent);
 
     border-color: transparent;
+=======
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+
+    border-color: rgba(59,130,246,.4);
+
+    box-shadow: 0 0 0 3px rgba(59,130,246,.12), 0 2px 10px rgba(59,130,246,.3);
+
+}
+
+.toggle-switch input:focus-visible + .toggle-slider {
+
+    box-shadow: 0 0 0 3px rgba(59,130,246,.3);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
@@ -857,6 +1154,11 @@
 
 .theme-card {
 
+<<<<<<< HEAD
+=======
+    position: relative;
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     background: rgba(255,255,255,.03);
 
     border: 2px solid var(--st-border);
@@ -875,11 +1177,19 @@
 
 .theme-card:hover {
 
+<<<<<<< HEAD
     border-color: rgba(255,255,255,.15);
 
     transform: translateY(-4px);
 
     box-shadow: 0 12px 24px rgba(0,0,0,.2);
+=======
+    border-color: rgba(59,130,246,.3);
+
+    transform: translateY(-3px);
+
+    box-shadow: 0 12px 28px rgba(0,0,0,.28);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
@@ -887,7 +1197,45 @@
 
     border-color: var(--st-accent);
 
+<<<<<<< HEAD
     box-shadow: 0 0 0 2px rgba(59,130,246,.2), 0 8px 24px rgba(0,0,0,.2);
+=======
+    box-shadow: 0 0 0 3px rgba(59,130,246,.18), 0 10px 28px rgba(59,130,246,.16);
+
+}
+
+.theme-card.active::after {
+
+    content: "✓";
+
+    position: absolute;
+
+    top: 12px;
+
+    right: 12px;
+
+    width: 22px;
+
+    height: 22px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+
+    color: #fff;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    box-shadow: 0 2px 10px rgba(37,99,235,.45);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
@@ -905,6 +1253,17 @@
 
     border: 1px solid var(--st-border);
 
+<<<<<<< HEAD
+=======
+    transition: border-color .25s ease;
+
+}
+
+.theme-card:hover .theme-preview {
+
+    border-color: rgba(255,255,255,.14);
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 }
 
 .theme-mockup {
@@ -975,13 +1334,23 @@
 
 .theme-card h4 {
 
+<<<<<<< HEAD
     margin: 0 0 4px 0;
+=======
+    margin: 0 0 6px 0;
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
     font-size: 14px;
 
     font-weight: 700;
 
+<<<<<<< HEAD
     color: white;
+=======
+    color: var(--st-text);
+
+    letter-spacing: -0.01em;
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
@@ -1015,6 +1384,36 @@
 
 }
 
+<<<<<<< HEAD
+=======
+/* Light preview internals — dark tints keep the mockup blocks visible
+   on the light canvas regardless of the active theme */
+
+.light-preview .mockup-header {
+
+    background: rgba(15,23,42,.06);
+
+    border-bottom-color: rgba(15,23,42,.08);
+
+}
+
+.light-preview .mockup-sidebar {
+
+    background: rgba(15,23,42,.04);
+
+    border-right-color: rgba(15,23,42,.08);
+
+}
+
+.light-preview .mockup-card {
+
+    background: rgba(15,23,42,.05);
+
+    border-color: rgba(15,23,42,.08);
+
+}
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 /* ==========================================
    SYSTEM CARDS
 ========================================== */
@@ -1051,9 +1450,17 @@
 
 .system-card:hover {
 
+<<<<<<< HEAD
     border-color: rgba(255,255,255,.12);
 
     box-shadow: 0 8px 24px rgba(0,0,0,.2);
+=======
+    transform: translateY(-3px);
+
+    border-color: rgba(255,255,255,.14);
+
+    box-shadow: 0 12px 32px rgba(0,0,0,.3);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
@@ -1061,11 +1468,21 @@
 
     margin: 0;
 
+<<<<<<< HEAD
     font-size: 14px;
 
     font-weight: 700;
 
     color: white;
+=======
+    font-size: 15px;
+
+    font-weight: 700;
+
+    color: var(--st-text);
+
+    letter-spacing: -0.01em;
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
@@ -1117,6 +1534,25 @@
 
 }
 
+<<<<<<< HEAD
+=======
+.system-grid .system-status {
+
+    font-size: 12px;
+
+    color: #86efac;
+
+    letter-spacing: .3px;
+
+}
+
+.system-grid .system-status:has(.status-dot.warning) {
+
+    color: #fbbf24;
+
+}
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 @keyframes pulse {
 
     0%, 100% { opacity: 1; transform: scale(1); }
@@ -1142,7 +1578,11 @@
 
     border-radius: 14px;
 
+<<<<<<< HEAD
     padding: 14px 22px;
+=======
+    padding: 13px 22px;
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
     background: linear-gradient(135deg, #2563eb, #3b82f6);
 
@@ -1150,9 +1590,19 @@
 
     font-weight: 600;
 
+<<<<<<< HEAD
     cursor: pointer;
 
     transition: all .35s cubic-bezier(.4,0,.2,1);
+=======
+    font-size: 14px;
+
+    letter-spacing: .2px;
+
+    cursor: pointer;
+
+    transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
     font-family: inherit;
 
@@ -1164,19 +1614,44 @@
 
     gap: 8px;
 
+<<<<<<< HEAD
+=======
+    box-shadow: 0 4px 14px rgba(37,99,235,.25);
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 }
 
 .settings-page button:hover {
 
+<<<<<<< HEAD
     transform: translateY(-4px);
 
     box-shadow: 0 15px 35px rgba(37,99,235,.45);
+=======
+    transform: translateY(-2px);
+
+    box-shadow: 0 10px 26px rgba(37,99,235,.35);
+
+    filter: brightness(1.05);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
 .settings-page button:active {
 
+<<<<<<< HEAD
     transform: translateY(-2px) scale(.98);
+=======
+    transform: translateY(0) scale(.98);
+
+}
+
+.settings-page button:focus-visible {
+
+    outline: 2px solid #60a5fa;
+
+    outline-offset: 2px;
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
@@ -1188,17 +1663,145 @@
 
     color: var(--st-text-secondary);
 
+<<<<<<< HEAD
+=======
+    box-shadow: none;
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 }
 
 .settings-page .btn-secondary:hover {
 
+<<<<<<< HEAD
     border-color: rgba(255,255,255,.15);
+=======
+    transform: translateY(-2px);
+
+    border-color: rgba(255,255,255,.2);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
     color: white;
 
     background: rgba(15,23,42,.9);
 
+<<<<<<< HEAD
     box-shadow: 0 8px 24px rgba(0,0,0,.2);
+=======
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+
+}
+
+.settings-page .btn-secondary:active {
+
+    transform: translateY(0) scale(.98);
+
+}
+
+.settings-page .btn-secondary:focus-visible {
+
+    outline: 2px solid rgba(96,165,250,.6);
+
+    outline-offset: 2px;
+
+}
+
+/* ==========================================
+   THEME ADAPTATIONS
+   Dark & Midnight keep the navy glass defaults; Light gets
+   light surfaces, visible toggle tracks and darker status ink.
+========================================== */
+
+[data-theme="light"] .settings-header {
+
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+
+}
+
+[data-theme="light"] .settings-section {
+
+    background: linear-gradient(160deg, #ffffff, #f8fafc);
+
+}
+
+[data-theme="light"] .email-config {
+
+    background: rgba(15,23,42,.04);
+
+}
+
+[data-theme="light"] .toggle-slider {
+
+    background: rgba(15,23,42,.14);
+
+    border-color: rgba(15,23,42,.1);
+
+}
+
+[data-theme="light"] .toggle-switch:hover .toggle-slider {
+
+    border-color: rgba(15,23,42,.22);
+
+}
+
+[data-theme="light"] .notification-card:hover {
+
+    border-color: rgba(37,99,235,.3);
+
+    box-shadow: 0 12px 32px rgba(15,23,42,.1);
+
+}
+
+[data-theme="light"] .system-card:hover {
+
+    border-color: rgba(37,99,235,.3);
+
+    box-shadow: 0 12px 32px rgba(15,23,42,.1);
+
+}
+
+[data-theme="light"] .camera-cards-grid .camera-card:hover {
+
+    box-shadow: 0 12px 32px rgba(15,23,42,.12), 0 0 0 1px rgba(37,99,235,.1);
+
+}
+
+[data-theme="light"] .theme-card:hover .theme-preview {
+
+    border-color: rgba(37,99,235,.35);
+
+}
+
+[data-theme="light"] .system-grid .system-status {
+
+    color: #15803d;
+
+}
+
+[data-theme="light"] .system-grid .system-status:has(.status-dot.warning) {
+
+    color: #b45309;
+
+}
+
+/* Secondary buttons are forced to outline style by the theme layer
+   (variables.css) — give their hover state feedback in every theme */
+
+[data-theme="light"] .settings-page .btn-secondary:hover {
+
+    background: rgba(37,99,235,.08) !important;
+
+    border-color: rgba(37,99,235,.35) !important;
+
+}
+
+[data-theme="dark"] .settings-page .btn-secondary:hover,
+
+[data-theme="midnight"] .settings-page .btn-secondary:hover {
+
+    background: rgba(59,130,246,.12) !important;
+
+    border-color: rgba(59,130,246,.4) !important;
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 }
 
@@ -1309,3 +1912,28 @@
     background: rgba(59,130,246,.35);
 
 }
+<<<<<<< HEAD
+=======
+
+/* ==========================================
+   REDUCED MOTION
+========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .settings-page *,
+
+    .settings-page *::before,
+
+    .settings-page *::after {
+
+        animation-duration: .01ms !important;
+
+        animation-iteration-count: 1 !important;
+
+        transition-duration: .01ms !important;
+
+    }
+
+}
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227

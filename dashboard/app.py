@@ -43,6 +43,7 @@ app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.secret_key = os.getenv("FLASK_SECRET_KEY", secrets.token_hex(32))
 
+<<<<<<< HEAD
 # --- Production Security Headers & Cookies ---
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
@@ -50,6 +51,8 @@ app.config.update(
     SESSION_COOKIE_SECURE=True  # Production mein HTTPS ke sath True karein
 )
 
+=======
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 # ==========================================
 # SENTINEL-X AI PIPELINE INITIALIZATION
 # ==========================================
@@ -201,6 +204,10 @@ def api_csrf_token():
 # ROUTE PROTECTION
 # ==========================
 
+<<<<<<< HEAD
+=======
+# Endpoints that do NOT require authentication
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 _PUBLIC_ENDPOINTS = frozenset({
     "login_page", "static", "api_login", "api_auth_status",
     "api_logout", "api_csrf_token",
@@ -217,8 +224,14 @@ def _enforce_auth():
     API endpoints receive a 401 JSON response instead of a redirect."""
     ep = request.endpoint
     if ep is None:
+<<<<<<< HEAD
         return  
 
+=======
+        return  # Let Flask handle 404
+
+    # Allow public endpoints
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     if ep in _PUBLIC_ENDPOINTS:
         return
     for prefix in _PUBLIC_PREFIXES:
@@ -226,6 +239,10 @@ def _enforce_auth():
             return
 
     if not is_authenticated():
+<<<<<<< HEAD
+=======
+        # API / data endpoints get 401 JSON
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
         if request.path.startswith("/api/") or \
            request.path.startswith("/video_feed") or \
            request.path.startswith("/download_") or \
@@ -235,6 +252,10 @@ def _enforce_auth():
                             "/analytics_data", "/reports_data"):
             return jsonify({"error": "Authentication required",
                             "status": "unauthorized"}), 401
+<<<<<<< HEAD
+=======
+        # Page routes redirect to login
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
         return redirect(url_for("login_page"))
 
 
@@ -244,7 +265,12 @@ def _enforce_auth():
 
 @app.route("/login")
 def login_page():
+<<<<<<< HEAD
     """Render the authentication landing page."""
+=======
+    """Render the authentication landing page.
+    Already-authenticated users are sent to the dashboard."""
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     if is_authenticated():
         return redirect(url_for("home"))
     return render_template("login.html")
@@ -313,6 +339,10 @@ def notifications_page():
 
 @app.route("/api/copilot", methods=["POST"])
 def api_copilot():
+<<<<<<< HEAD
+=======
+    """Copilot chat endpoint - returns pending status if not implemented."""
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     return jsonify({
         "response": "Backend integration pending. AI chat functionality is not yet connected to a language model.",
         "status": "pending"
@@ -329,6 +359,10 @@ def settings():
 from dashboard.stream import generate as stream_generate
 
 def generate_camera_stream(camera_name="Camera_01"):
+<<<<<<< HEAD
+=======
+    """Stream generator that uses AI-annotated frames when available."""
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     from camera.camera_manager import camera_manager
     
     camera_status = "ONLINE"
@@ -351,6 +385,10 @@ def generate_camera_stream(camera_name="Camera_01"):
 
 @app.route("/video_feed")
 def video_feed():
+<<<<<<< HEAD
+=======
+    """Live Video Streaming Route (Direct CameraManager Binding)."""
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     camera_name = request.args.get('camera_name', 'Camera_01')
     return Response(generate_camera_stream(camera_name), mimetype="multipart/x-mixed-replace; boundary=frame")
 
@@ -368,6 +406,10 @@ def timeline():
 
 @app.route("/api/storage")
 def api_storage():
+<<<<<<< HEAD
+=======
+    """Returns actual storage usage for evidence files."""
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     total_size = 0
     screenshots_dir = os.path.join("evidence", "screenshots")
     if os.path.isdir(screenshots_dir):
@@ -386,6 +428,10 @@ def api_storage():
 
 @app.route("/gallery")
 def gallery_endpoint():
+<<<<<<< HEAD
+=======
+    """Fetches recorded evidence images and video logs directly."""
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     try:
         with get_connection() as conn:
             cursor = conn.cursor()
@@ -397,6 +443,10 @@ def gallery_endpoint():
 
 @app.route("/ai_summary")
 def ai_summary_endpoint():
+<<<<<<< HEAD
+=======
+    """Returns AI model detection summary metrics directly."""
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     try:
         from dashboard.store import get_stats
         stats = get_stats()
@@ -421,6 +471,10 @@ def ai_summary_endpoint():
 
 @app.route("/api/v1/health")
 def api_health_status():
+<<<<<<< HEAD
+=======
+    """Dashboard UI ke liye real-time System & AI Telemetry."""
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     return jsonify({
         "system": sys_monitor.get_stats(),
         "ai_engine": ai_health.get_health_status(),
@@ -430,6 +484,10 @@ def api_health_status():
 
 @app.route("/api/demo/scenarios", methods=["GET"])
 def api_demo_scenarios():
+<<<<<<< HEAD
+=======
+    """Returns available demo scenarios."""
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     from events.demo_controller import demo_controller
     return jsonify({
         "scenarios": list(demo_controller.scenarios.keys())
@@ -438,6 +496,10 @@ def api_demo_scenarios():
 
 @app.route("/api/demo/trigger", methods=["POST"])
 def api_demo_trigger():
+<<<<<<< HEAD
+=======
+    """Triggers a synthetic demo scenario."""
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     from events.demo_controller import demo_controller
     data = request.get_json() or {}
     scenario = data.get("scenario", "")
@@ -455,6 +517,10 @@ def api_demo_trigger():
 
 @app.route("/analytics_data")
 def analytics_data():
+<<<<<<< HEAD
+=======
+    """Returns aggregated analytics data for the analytics page."""
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     try:
         from dashboard.store import get_stats, get_events
         from database.db import get_all_evidence
@@ -504,13 +570,29 @@ def analytics_data():
         }), 200
     except Exception as e:
         return jsonify({
+<<<<<<< HEAD
             "total": 0, "people": 0, "vehicles": 0, "threat": "UNKNOWN",
             "labels": [], "values": [], "falls": 0, "weapons": 0, "events": []
+=======
+            "total": 0,
+            "people": 0,
+            "vehicles": 0,
+            "threat": "UNKNOWN",
+            "labels": [],
+            "values": [],
+            "falls": 0,
+            "weapons": 0,
+            "events": []
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
         }), 200
 
 
 @app.route("/reports_data")
 def reports_data():
+<<<<<<< HEAD
+=======
+    """Returns structured report data for the reports page."""
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     try:
         from services.report_service import ReportService
         data = ReportService.generate_summary_data(timeframe="daily")
@@ -518,8 +600,22 @@ def reports_data():
         from database.db import get_all_cameras
         cameras = get_all_cameras()
         
+<<<<<<< HEAD
         event_summary = [{"name": name, "count": count} for name, count in data.get("breakdown_by_type", {}).items()]
         camera_summary = [{"name": cam.get("name", "Unknown"), "status": cam.get("status", "OFFLINE"), "events": cam.get("event_count", 0)} for cam in cameras]
+=======
+        event_summary = []
+        for name, count in data.get("breakdown_by_type", {}).items():
+            event_summary.append({"name": name, "count": count})
+        
+        camera_summary = []
+        for cam in cameras:
+            camera_summary.append({
+                "name": cam.get("name", "Unknown"),
+                "status": cam.get("status", "OFFLINE"),
+                "events": cam.get("event_count", 0)
+            })
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
         
         evidence_count = 0
         evidence_today = 0
@@ -564,18 +660,41 @@ def reports_data():
             "threat_level": "CRITICAL" if data["metrics"].get("high_severity", 0) > 5 else ("MEDIUM" if data["metrics"].get("high_severity", 0) > 0 else "LOW"),
             "event_summary": event_summary,
             "camera_summary": camera_summary,
+<<<<<<< HEAD
             "evidence": {"images": evidence_count, "today": evidence_today, "storage": f"{storage_mb} MB"},
+=======
+            "evidence": {
+                "images": evidence_count,
+                "today": evidence_today,
+                "storage": f"{storage_mb} MB"
+            },
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
             "high_priority": high_priority
         }), 200
     except Exception as e:
         return jsonify({
+<<<<<<< HEAD
             "camera_online": 0, "total_events": 0, "total_evidence": 0, "threat_level": "LOW",
             "event_summary": [], "camera_summary": [], "evidence": {"images": 0, "today": 0, "storage": "0 MB"}, "high_priority": []
+=======
+            "camera_online": 0,
+            "total_events": 0,
+            "total_evidence": 0,
+            "threat_level": "LOW",
+            "event_summary": [],
+            "camera_summary": [],
+            "evidence": {"images": 0, "today": 0, "storage": "0 MB"},
+            "high_priority": []
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
         }), 200
 
 
 @app.route("/download_csv")
 def download_csv():
+<<<<<<< HEAD
+=======
+    """Generates and downloads a CSV report."""
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     try:
         from services.report_service import ReportService
         csv_data = ReportService.generate_csv_report(timeframe="daily")
@@ -590,6 +709,11 @@ def download_csv():
 
 @app.route("/download_pdf")
 def download_pdf():
+<<<<<<< HEAD
+=======
+    """PDF export is handled client-side via printable HTML report.
+    This endpoint provides a redirect hint for direct URL access."""
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     return jsonify({
         "success": False,
         "error": "PDF export is generated from the Reports page. Use the Export PDF button.",
@@ -599,7 +723,10 @@ def download_pdf():
 
 @app.route("/api/settings", methods=["GET", "POST"])
 @require_auth
+<<<<<<< HEAD
 @require_csrf  # <-- CSRF Protection Added Here
+=======
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 @rate_limit
 def api_settings():
     if request.method == "GET":
@@ -690,6 +817,10 @@ def api_system_cleanup():
 
 @app.route("/evidence/screenshots/<path:filename>")
 def evidence_screenshot(filename):
+<<<<<<< HEAD
+=======
+    """Serves stored evidence screenshots using project-root-relative path."""
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     project_root = os.path.dirname(app.root_path)
     evidence_dir = os.path.join(project_root, "evidence", "screenshots")
     

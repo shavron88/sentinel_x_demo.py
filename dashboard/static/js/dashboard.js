@@ -1,14 +1,31 @@
 function animateValue(id, start, end, duration = 500){
+<<<<<<< HEAD
     if(start === end) return;
     const element = document.getElementById(id);
     if(!element) return;
     let startTimestamp = null;
     function step(timestamp){
         if(!startTimestamp) startTimestamp = timestamp;
+=======
+
+    if(start === end) return;
+
+    const element = document.getElementById(id);
+
+    if(!element) return;
+
+    let startTimestamp = null;
+
+    function step(timestamp){
+
+        if(!startTimestamp) startTimestamp = timestamp;
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
         const progress = Math.min(
             (timestamp - startTimestamp) / duration,
             1
         );
+<<<<<<< HEAD
         const value = Math.floor(
             progress * (end - start) + start
         );
@@ -20,6 +37,29 @@ function animateValue(id, start, end, duration = 500){
     window.requestAnimationFrame(step);
 }
 
+=======
+
+        const value = Math.floor(
+            progress * (end - start) + start
+        );
+
+        element.innerText = value;
+
+        if(progress < 1){
+
+            window.requestAnimationFrame(step);
+
+        }
+
+    }
+
+    window.requestAnimationFrame(step);
+
+}
+
+
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 function escapeHtml(text) {
     if (text == null) return "";
     const div = document.createElement("div");
@@ -27,6 +67,7 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+<<<<<<< HEAD
 // Added missing updateSystemStatus function to prevent ReferenceError
 function updateSystemStatus(stats) {
     const statusEl = document.getElementById("system-status");
@@ -36,6 +77,10 @@ function updateSystemStatus(stats) {
 }
 
 async function updateDashboard() {
+=======
+async function updateDashboard() {
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     // Skip if this page has no dashboard elements
     if (!document.getElementById("stats-grid") && !document.getElementById("person-count") && !document.getElementById("kpi-threat")) {
         return;
@@ -44,6 +89,10 @@ async function updateDashboard() {
     showSkeletonCards("stats-grid", 4);
 
     try {
+<<<<<<< HEAD
+=======
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
         const response = await fetch("/stats");
         const stats = await response.json();
 
@@ -140,20 +189,38 @@ async function updateDashboard() {
             errorEl.style.display = "block";
         }
     }
+<<<<<<< HEAD
 }
 
 async function loadAIFeed() {
+=======
+
+}
+
+
+async function loadAIFeed() {
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     // Skip if this page has no timeline element
     if (!document.getElementById("timeline")) return;
 
     try {
+<<<<<<< HEAD
         const response = await fetch("/timeline");
         const data = await response.json();
+=======
+
+        const response = await fetch("/timeline");
+
+        const data = await response.json();
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
         const feed = document.getElementById("timeline");
 
         if(!feed) return;
 
         feed.innerHTML = "";
+<<<<<<< HEAD
         const timelineItems = data.timeline || [];
 
         if(timelineItems.length === 0){
@@ -192,6 +259,76 @@ async function loadAIFeed() {
     }
 }
 
+=======
+
+        const timelineItems = data.timeline || [];
+
+        if(timelineItems.length === 0){
+
+            feed.innerHTML = '<div style="color:#64748b;font-size:12px;padding:10px;">No recent events</div>';
+
+            return;
+
+        }
+
+        timelineItems.forEach((item, index) => {
+
+            const event = item.event_type || item.event || "Unknown Event";
+
+            const severity = item.severity || "LOW";
+
+            const zone = item.zone || "Unknown";
+
+            const timestamp = item.timestamp || item.time || "";
+
+            const timeStr = timestamp ? new Date(timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }) : "--:--";
+
+            const div = document.createElement("div");
+
+            div.className = `ai-feed-item feed-${severity.toLowerCase()}`;
+
+            div.innerHTML = `
+
+                <span class="ai-feed-time">${timeStr}</span>
+
+                <div class="ai-feed-content">
+
+                    <div class="ai-feed-title">${event}</div>
+
+                    <div class="ai-feed-meta">
+
+                        <span>📍 ${zone}</span>
+
+                    </div>
+
+                </div>
+
+                <span class="ai-feed-badge ${severity.toLowerCase()}">${severity}</span>
+
+            `;
+
+            feed.appendChild(div);
+
+        });
+
+        feed.scrollTop = feed.scrollHeight;
+
+    } catch(err) {
+
+        console.log(err);
+
+        if(feed){
+
+            feed.innerHTML = '<div style="color:#ef4444;font-size:12px;padding:10px;">Unable to load timeline. <button onclick="loadAIFeed()" style="background:none;border:none;color:#3b82f6;cursor:pointer;text-decoration:underline;">Retry</button></div>';
+
+        }
+
+    }
+
+}
+
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 // Refresh every second
 window._dashboardIntervals = window._dashboardIntervals || [];
 window._dashboardIntervals.push(setInterval(updateDashboard, 1000));
@@ -225,23 +362,45 @@ updateAlerts();
 // Run immediately
 updateDashboard();
 loadAIFeed();
+<<<<<<< HEAD
 
+=======
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 // ==========================
 // Evidence Gallery
 // ==========================
 
 async function loadGallery(){
+<<<<<<< HEAD
     const response = await fetch("/gallery");
     const data = await response.json();
+=======
+
+    const response = await fetch("/gallery");
+
+    const data = await response.json();
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     const gallery = document.getElementById("gallery");
 
     if(!gallery) return;
 
     let html="";
+<<<<<<< HEAD
     const items = Array.isArray(data) ? data : [];
 
     items.forEach(item => {
         const raw = item.image_path || "";
+=======
+
+    const items = Array.isArray(data) ? data : [];
+
+    items.forEach(item => {
+
+        const raw = item.image_path || "";
+
+        // Handle both forward-slash and backslash paths (cross-platform safety)
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
         const filename = raw.split(/[\\/]/).pop();
 
         if(!filename) return;
@@ -255,9 +414,17 @@ async function loadGallery(){
             >
         </a>
         `;
+<<<<<<< HEAD
     });
 
     gallery.innerHTML=html;
+=======
+
+    });
+
+    gallery.innerHTML=html;
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 }
 
 window._dashboardIntervals.push(setInterval(loadGallery, 1000));
@@ -268,6 +435,10 @@ loadGallery();
 ========================================== */
 
 async function updateKPIBar(stats){
+<<<<<<< HEAD
+=======
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     const threatEl = document.getElementById("kpi-threat");
     const camerasEl = document.getElementById("kpi-cameras");
     const accuracyEl = document.getElementById("kpi-accuracy");
@@ -295,15 +466,33 @@ async function updateKPIBar(stats){
     if(accuracyEl){
         accuracyEl.innerText = "--";
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 }
 
 /* ==========================================
    AI DETECTION OVERLAY
+<<<<<<< HEAD
 ========================================== */
 
 async function loadAISummary(){
     try{
         const response=await fetch("/ai_summary");
+=======
+   Real data is loaded from /ai_summary
+========================================== */
+
+// AI overlay data is now fetched from backend via loadAISummary()
+
+async function loadAISummary(){
+
+    try{
+
+        const response=await fetch("/ai_summary");
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
         const data=await response.json();
 
         const riskEl = document.getElementById("ai-risk-level");
@@ -322,12 +511,26 @@ async function loadAISummary(){
         if(recommendationEl) recommendationEl.innerText = data.recommendation || "Continue Monitoring";
 
     }
+<<<<<<< HEAD
     catch(e){
         console.log(e);
     }
 }
 
 window._dashboardIntervals.push(setInterval(loadAISummary, 2000));
+=======
+
+    catch(e){
+
+        console.log(e);
+
+    }
+
+}
+
+window._dashboardIntervals.push(setInterval(loadAISummary, 2000));
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 loadAISummary();
 
 /* ==========================================
@@ -335,6 +538,7 @@ loadAISummary();
 ========================================== */
 
 document.querySelectorAll(".camera-control-btn").forEach(btn => {
+<<<<<<< HEAD
     btn.addEventListener("click", function() {
         const action = this.dataset.action;
 
@@ -364,6 +568,65 @@ document.querySelectorAll(".camera-control-btn").forEach(btn => {
                 break;
         }
     });
+=======
+
+    btn.addEventListener("click", function() {
+
+        const action = this.dataset.action;
+
+        switch(action) {
+
+            case "snapshot":
+
+                showToast("Camera", "Snapshot captured", "success");
+
+                break;
+
+            case "record":
+
+                this.classList.toggle("recording");
+
+                const isRecording = this.classList.contains("recording");
+
+                this.querySelector("span").innerText = isRecording ? "Stop" : "Record";
+
+                showToast("Camera", isRecording ? "Recording started" : "Recording stopped", "info");
+
+                break;
+
+            case "ptz":
+
+                showToast("Camera", "PTZ controls activated", "info");
+
+                break;
+
+            case "zoom":
+
+                showToast("Camera", "Zoom toggled", "info");
+
+                break;
+
+            case "ai-tracking":
+
+                this.classList.toggle("active");
+
+                const tracking = this.classList.contains("active");
+
+                showToast("AI", tracking ? "AI Tracking enabled" : "AI Tracking disabled", "success");
+
+                break;
+
+            case "export":
+
+                showToast("Export", "Preparing export...", "info");
+
+                break;
+
+        }
+
+    });
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 });
 
 /* ==========================================
@@ -373,6 +636,10 @@ document.querySelectorAll(".camera-control-btn").forEach(btn => {
 let detectionChart;
 
 function initDetectionChart(){
+<<<<<<< HEAD
+=======
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     const ctx = document.getElementById("detectionChart");
     if(!ctx) return;
     const labels = [];
@@ -484,13 +751,25 @@ function initDetectionChart(){
         }
     });
 
+<<<<<<< HEAD
+=======
+    // Hide detection spinner once chart is ready
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     const detSpinner = document.getElementById('detectionSpinner');
     if (detSpinner) detSpinner.style.display = 'none';
     const detContainer = document.getElementById('detectionChartContainer');
     if (detContainer) detContainer.classList.remove('chart-loading');
+<<<<<<< HEAD
 }
 
 function updateDetectionChart(){
+=======
+
+}
+
+function updateDetectionChart(){
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     if(!detectionChart) return;
 
     const chart = detectionChart;
@@ -501,6 +780,10 @@ function updateDetectionChart(){
     labels.shift();
     labels.push(newLabel);
 
+<<<<<<< HEAD
+=======
+    // Fetch real event data and update chart
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     fetch("/events")
         .then(r => r.json())
         .then(events => {
@@ -525,6 +808,10 @@ function updateDetectionChart(){
             chart.update("none");
         })
         .catch(() => {
+<<<<<<< HEAD
+=======
+            // On error, just shift with previous values
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
             chart.data.datasets.forEach(dataset => {
                 const prev = dataset.data[dataset.data.length - 1] || 0;
                 dataset.data.shift();
@@ -532,6 +819,10 @@ function updateDetectionChart(){
             });
             chart.update("none");
         });
+<<<<<<< HEAD
+=======
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 }
 
 window._dashboardIntervals.push(setInterval(updateDetectionChart, 5000));
@@ -545,6 +836,10 @@ const fpsHistory = [];
 const MAX_FPS_HISTORY = 20;
 
 async function updateAIPerformance() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     const spinner = document.getElementById('perfSpinner');
     const chartContainer = document.getElementById('perfChartContainer');
     const metricsEl = document.getElementById('aiPerfMetrics');
@@ -552,6 +847,10 @@ async function updateAIPerformance() {
 
     if (!chartContainer) return;
 
+<<<<<<< HEAD
+=======
+    // Only show spinner on first load (before chart exists)
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     if (!performanceChart) {
         if (spinner) spinner.style.display = 'flex';
         chartContainer.classList.add('chart-loading');
@@ -674,6 +973,10 @@ async function updateAIPerformance() {
         if (spinner) spinner.style.display = 'none';
         if (chartContainer) chartContainer.classList.remove('chart-loading');
 
+<<<<<<< HEAD
+=======
+        // Only show error if no chart has been rendered yet (avoid persistent errors)
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
         if (errorEl && !performanceChart) {
             errorEl.innerHTML = '<div style="color:#ef4444;font-size:12px;padding:10px;text-align:center;">Unable to load AI performance data. <button onclick="updateAIPerformance()" style="background:none;border:none;color:#3b82f6;cursor:pointer;text-decoration:underline;">Retry</button></div>';
             errorEl.style.display = 'block';
@@ -690,7 +993,10 @@ initDetectionChart();
 updateDetectionChart();
 window._dashboardIntervals.push(setInterval(updateAIPerformance, 3000));
 updateAIPerformance();
+<<<<<<< HEAD
 
+=======
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 /* ==========================================
    CLEANUP ON PAGE LEAVE
 ========================================== */
@@ -709,4 +1015,8 @@ function cleanupDashboard() {
     }
 }
 
+<<<<<<< HEAD
 window.addEventListener("beforeunload", cleanupDashboard);
+=======
+window.addEventListener("beforeunload", cleanupDashboard);
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227

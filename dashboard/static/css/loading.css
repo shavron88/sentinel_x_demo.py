@@ -541,6 +541,49 @@
 .skeleton-text.h100 { width: 100%; }
 
 /* ==========================================
+<<<<<<< HEAD
+=======
+   THEME ADAPTATIONS — LIGHT
+========================================== */
+
+[data-theme="light"] .skeleton,
+[data-theme="light"] .skeleton-text {
+
+    background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+
+    background-size: 200% 100%;
+
+}
+
+[data-theme="light"] .skeleton-card {
+
+    background: #f8fafc;
+
+    border-color: rgba(15, 23, 42, .06);
+
+}
+
+[data-theme="light"] .skeleton-table .skeleton-row,
+[data-theme="light"] .table-loading .skeleton-row {
+
+    border-bottom-color: rgba(15, 23, 42, .05);
+
+}
+
+[data-theme="light"] .page-loading-overlay {
+
+    background: #f1f5f9;
+
+}
+
+[data-theme="light"] .progress-bar {
+
+    background: rgba(15, 23, 42, .08);
+
+}
+
+/* ==========================================
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
    RESPONSIVE
 ========================================== */
 

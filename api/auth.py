@@ -1,17 +1,32 @@
 """
 SentinelX Authentication Module
 
+<<<<<<< HEAD
 Database-backed secure authentication for the SentinelX security event monitoring system.
 """
 import os
 import sqlite3
+=======
+Simple session-based authentication for the hackathon demo.
+In production, replace with proper user management and JWT tokens.
+"""
+import os
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 import hashlib
 import secrets
 import time
 from datetime import datetime, timedelta
 from flask import session, request, jsonify
 
+<<<<<<< HEAD
 DB_PATH = "sentinelx.db"
+=======
+# Demo credentials (in production, use a proper database)
+DEMO_USERNAME = os.getenv("SENTINELX_USER", "sentinelx")
+DEMO_PASSWORD_HASH = hashlib.sha256(
+    os.getenv("SENTINELX_PASSWORD", "auth").encode()
+).hexdigest()
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 
 # Session settings
 SESSION_TIMEOUT_MINUTES = int(os.getenv("SESSION_TIMEOUT", "60"))
@@ -47,6 +62,10 @@ def is_authenticated():
     if session.get("authenticated") != True:
         return False
     
+<<<<<<< HEAD
+=======
+    # Check session expiration
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     last_active = session.get("last_active")
     if not last_active:
         return False
@@ -60,17 +79,26 @@ def is_authenticated():
         session.clear()
         return False
     
+<<<<<<< HEAD
+=======
+    # Update last active time
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     session["last_active"] = datetime.now().isoformat()
     return True
 
 
 def login(username, password):
+<<<<<<< HEAD
     """Attempt to log in by validating against the SQLite database hash."""
+=======
+    """Attempt to log in with the given credentials."""
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     if not username or not password:
         return False, "Username and password required"
     
     password_hash = hashlib.sha256(password.encode()).hexdigest()
     
+<<<<<<< HEAD
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
@@ -91,6 +119,18 @@ def login(username, password):
     except Exception as e:
         print(f"Database authentication error: {e}")
         
+=======
+    if username == DEMO_USERNAME and password_hash == DEMO_PASSWORD_HASH:
+        session.clear()
+        session["authenticated"] = True
+        session["username"] = username
+        session["email"] = f"{username}@sentinelx.ai"
+        session["role"] = "System Administrator"
+        session["last_active"] = datetime.now().isoformat()
+        session["csrf_token"] = secrets.token_hex(32)
+        return True, "Login successful"
+    
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     return False, "Invalid credentials"
 
 
@@ -145,7 +185,11 @@ def rate_limit(f):
     
     @wraps(f)
     def decorated_function(*args, **kwargs):
+<<<<<<< HEAD
         client_ip = request.headers.get("X-Forwarded-For", request.remote_addr) or "unknown"
+=======
+        client_ip = request.remote_addr or "unknown"
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
         rate_key = f"{client_ip}:{request.path}"
         
         if not _check_rate_limit(rate_key):
@@ -153,4 +197,8 @@ def rate_limit(f):
         
         return f(*args, **kwargs)
     
+<<<<<<< HEAD
     return decorated_function
+=======
+    return decorated_function
+>>>>>>> e9db60090b9098332b468e1f462e3026c107e227
