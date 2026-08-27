@@ -58,12 +58,9 @@
     --st-radius: 22px;
     --st-radius-sm: 12px;
     --st-transition: all .25s cubic-bezier(.4,0,.2,1);
-<<<<<<< HEAD
-=======
     --st-shadow: 0 8px 32px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.03);
     --st-shadow-hover: 0 14px 36px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.04);
     --st-focus-ring: 0 0 0 3px rgba(59,130,246,.14);
->>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 }
 
 /* ==========================================
@@ -163,14 +160,10 @@
     --st-text: #0f172a;
     --st-text-secondary: #334155;
     --st-text-muted: #64748b;
-<<<<<<< HEAD
-=======
-
     /* Softer elevation for light surfaces */
     --st-shadow: 0 8px 32px rgba(15,23,42,.08);
     --st-shadow-hover: 0 14px 36px rgba(15,23,42,.12);
     --st-focus-ring: 0 0 0 3px rgba(37,99,235,.16);
->>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 }
 
 /* ==========================================
@@ -399,13 +392,6 @@
 [data-theme="dark"] .btn-success,
 [data-theme="dark"] .btn-danger,
 [data-theme="dark"] .btn-outline,
-<<<<<<< HEAD
-[data-theme="dark"] button,
-[data-theme="dark"] .camera-control-btn {
-    color: #ffffff !important;
-}
-
-=======
 [data-theme="dark"] button {
     color: #ffffff !important;
 }
@@ -414,8 +400,6 @@
    it is an input-style icon control already covered by the input overrides
    (dark: #e2e8f0, light: #0f172a). Listing it here forced white text on the
    light #f1f5f9 surface, making the labels invisible in Light theme. */
-
->>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 [data-theme="dark"] .btn-outline,
 [data-theme="dark"] .btn-secondary {
     background: transparent !important;
@@ -428,12 +412,7 @@
 [data-theme="light"] .btn-success,
 [data-theme="light"] .btn-danger,
 [data-theme="light"] .btn-outline,
-<<<<<<< HEAD
-[data-theme="light"] button,
-[data-theme="light"] .camera-control-btn {
-=======
 [data-theme="light"] button {
->>>>>>> e9db60090b9098332b468e1f462e3026c107e227
     color: #ffffff !important;
 }
 
@@ -598,8 +577,6 @@
     background: #cbd5e1 !important;
 }
 
-<<<<<<< HEAD
-=======
 /* ==========================================
    LIGHT THEME — DASHBOARD & SHARED COMPONENT
    ADAPTATIONS
@@ -936,8 +913,6 @@
 [data-theme="light"] .analytics-row {
     border-bottom-color: rgba(15, 23, 42, 0.08) !important;
 }
-
->>>>>>> e9db60090b9098332b468e1f462e3026c107e227
 /* Transition for theme changes */
 
 body,
