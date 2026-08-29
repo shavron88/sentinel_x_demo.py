@@ -1,20 +1,20 @@
 .command-grid{
 
-display:grid;
+    display:grid;
 
-grid-template-columns:2fr 1fr;
+    grid-template-columns:2fr 1fr;
 
-grid-template-areas:
+    grid-template-areas:
 
-"live threat"
+    "live threat"
 
-"analytics health"
+    "analytics health"
 
-"map evidence"
+    "map evidence"
 
-"copilot copilot";
+    "copilot copilot";
 
-gap:22px;
+    gap:20px;
 
 }
 

@@ -101,37 +101,41 @@
     gap: 14px;
     text-decoration: none;
     color: var(--ev-text-secondary);
-    padding: 13px 16px;
+    padding: 12px 16px;
     border-radius: 10px;
-    transition: color 180ms ease, background 180ms ease, transform 180ms ease;
-    font-size: 15px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 14px;
     font-weight: 500;
     position: relative;
     box-sizing: border-box;
+    border: 1px solid transparent;
 }
 
 .sidebar-nav-link:hover {
-    background: var(--ev-border-weak, rgba(40, 110, 220, 0.07));
+    background: rgba(59, 130, 246, 0.06);
     color: var(--ev-text);
-    transform: translateX(2px);
+    transform: translateX(3px);
+    border-color: rgba(59, 130, 246, 0.08);
 }
 
 .sidebar-nav-link.active {
-    background: linear-gradient(90deg, rgba(37, 99, 235, 0.10), rgba(37, 99, 235, 0.025), transparent);
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.12), rgba(59, 130, 246, 0.04), transparent);
     color: #ffffff;
     font-weight: 600;
+    border-color: rgba(59, 130, 246, 0.15);
+    box-shadow: 0 0 24px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .sidebar-nav-link.active::before {
     content: "";
     position: absolute;
     left: 0;
-    top: 12px;
-    bottom: 12px;
-    width: 2px;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
     background: var(--ev-primary);
     border-radius: 0 3px 3px 0;
-    box-shadow: 0 0 8px var(--ev-primary-glow, rgba(59, 130, 246, 0.9)), 0 0 18px var(--ev-primary-glow, rgba(59, 130, 246, 0.45));
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.6), 0 0 24px rgba(59, 130, 246, 0.3);
 }
 
 .sidebar-nav-link.active::after {
@@ -141,7 +145,7 @@
     right: 0;
     bottom: 0;
     height: 1px;
-    background: linear-gradient(90deg, rgba(59, 130, 246, 0.35), transparent);
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.4), transparent);
     border-radius: 0 0 10px 10px;
 }
 

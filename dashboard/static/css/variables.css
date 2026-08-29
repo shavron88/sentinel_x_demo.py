@@ -8,15 +8,20 @@
 ========================================== */
 
 :root {
+    /* Surfaces */
     --ev-bg: #050a14;
     --ev-surface: #0a1428;
     --ev-surface-2: #0f1d35;
     --ev-surface-3: #0f1d35;
     --ev-surface-4: #0a1428;
     --ev-surface-5: #0f1d35;
+    --ev-surface-elevated: #111d35;
 
+    /* Accent */
     --ev-primary: #3b82f6;
     --ev-primary-hover: #2563eb;
+    --ev-primary-soft: rgba(59, 130, 246, 0.12);
+    --ev-primary-glow: rgba(59, 130, 246, 0.25);
     --ev-success: #22c55e;
     --ev-danger: #ef4444;
     --ev-warning: #f59e0b;
@@ -25,18 +30,27 @@
     --ev-amber: #d97706;
     --ev-cyan: #00e5ff;
 
+    /* Text */
     --ev-text: #e2e8f0;
     --ev-text-secondary: #cbd5e1;
     --ev-text-muted: #94a3b8;
     --ev-text-dark: #64748b;
     --ev-text-darker: #9ca3af;
+    --ev-text-inverse: #0f172a;
 
+    /* Borders */
     --ev-border: rgba(59, 130, 246, 0.15);
     --ev-border-weak: rgba(59, 130, 246, 0.08);
     --ev-border-strong: rgba(59, 130, 246, 0.25);
     --ev-border-dark: rgba(59, 130, 246, 0.2);
+    --ev-border-subtle: rgba(255, 255, 255, 0.06);
 
+    /* Layout */
     --ev-sidebar-width: 280px;
+    --ev-topbar-height: 88px;
+    --ev-content-max-width: 1600px;
+
+    /* Radius */
     --ev-radius: 16px;
     --ev-radius-sm: 12px;
     --ev-radius-md: 20px;
@@ -44,9 +58,69 @@
     --ev-radius-xl: 24px;
     --ev-radius-full: 50px;
 
-    --ev-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    --ev-font: 'Inter', sans-serif;
+    /* Typography */
+    --ev-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --ev-font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+    --ev-text-xs: 11px;
+    --ev-text-sm: 12px;
+    --ev-text-base: 14px;
+    --ev-text-lg: 16px;
+    --ev-text-xl: 18px;
+    --ev-text-2xl: 20px;
+    --ev-text-3xl: 24px;
+    --ev-text-4xl: 32px;
+    --ev-text-5xl: 42px;
+    --ev-leading-tight: 1.25;
+    --ev-leading-normal: 1.5;
+    --ev-leading-relaxed: 1.65;
 
+    /* Shadows */
+    --ev-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
+    --ev-shadow-md: 0 4px 20px rgba(0, 0, 0, 0.2);
+    --ev-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.25);
+    --ev-shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.35);
+    --ev-shadow-glow: 0 0 20px rgba(59, 130, 246, 0.15);
+
+    /* Transitions */
+    --ev-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --ev-transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --ev-transition-slow: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Z-index scale */
+    --ev-z-base: 1;
+    --ev-z-dropdown: 100;
+    --ev-z-sticky: 200;
+    --ev-z-overlay: 300;
+    --ev-z-modal: 400;
+    --ev-z-toast: 500;
+    --ev-z-loading: 999;
+
+    /* Status tokens */
+    --ev-status-online: #22c55e;
+    --ev-status-offline: #ef4444;
+    --ev-status-connecting: #f59e0b;
+    --ev-status-warning: #f59e0b;
+    --ev-status-info: #3b82f6;
+
+    /* Severity tokens */
+    --ev-severity-low: #22c55e;
+    --ev-severity-medium: #f59e0b;
+    --ev-severity-high: #ef4444;
+    --ev-severity-critical: #dc2626;
+
+    /* Spacing scale */
+    --ev-space-1: 4px;
+    --ev-space-2: 8px;
+    --ev-space-3: 12px;
+    --ev-space-4: 16px;
+    --ev-space-5: 20px;
+    --ev-space-6: 24px;
+    --ev-space-8: 32px;
+    --ev-space-10: 40px;
+    --ev-space-12: 48px;
+    --ev-space-16: 64px;
+
+    /* Legacy compatibility */
     --st-bg: #050a14;
     --st-surface: rgba(59, 130, 246, 0.05);
     --st-border: rgba(59, 130, 246, 0.15);
@@ -74,17 +148,20 @@
     --ev-surface-3: #1f2937;
     --ev-surface-4: #171f2e;
     --ev-surface-5: #1b2432;
+    --ev-surface-elevated: #1e293b;
 
     --ev-text: #e2e8f0;
     --ev-text-secondary: #cbd5e1;
     --ev-text-muted: #94a3b8;
     --ev-text-dark: #64748b;
     --ev-text-darker: #9ca3af;
+    --ev-text-inverse: #0f172a;
 
     --ev-border: rgba(255, 255, 255, 0.08);
     --ev-border-weak: rgba(255, 255, 255, 0.04);
     --ev-border-strong: rgba(255, 255, 255, 0.12);
     --ev-border-dark: rgba(51, 65, 85, 0.5);
+    --ev-border-subtle: rgba(255, 255, 255, 0.06);
 
     --st-bg: #0B1220;
     --st-surface: rgba(255,255,255,.05);
@@ -107,17 +184,20 @@
     --ev-surface-3: #0f1d35;
     --ev-surface-4: #0a1428;
     --ev-surface-5: #0f1d35;
+    --ev-surface-elevated: #111d35;
 
     --ev-text: #e2e8f0;
     --ev-text-secondary: #cbd5e1;
     --ev-text-muted: #94a3b8;
     --ev-text-dark: #64748b;
     --ev-text-darker: #9ca3af;
+    --ev-text-inverse: #0f172a;
 
     --ev-border: rgba(59, 130, 246, 0.15);
     --ev-border-weak: rgba(59, 130, 246, 0.08);
     --ev-border-strong: rgba(59, 130, 246, 0.25);
     --ev-border-dark: rgba(59, 130, 246, 0.2);
+    --ev-border-subtle: rgba(59, 130, 246, 0.1);
 
     --st-bg: #050a14;
     --st-surface: rgba(59, 130, 246, 0.05);
@@ -140,17 +220,20 @@
     --ev-surface-3: #f1f5f9;
     --ev-surface-4: #ffffff;
     --ev-surface-5: #f8fafc;
+    --ev-surface-elevated: #ffffff;
 
     --ev-text: #0f172a;
     --ev-text-secondary: #334155;
     --ev-text-muted: #64748b;
     --ev-text-dark: #94a3b8;
     --ev-text-darker: #64748b;
+    --ev-text-inverse: #f8fafc;
 
     --ev-border: rgba(0, 0, 0, 0.08);
     --ev-border-weak: rgba(0, 0, 0, 0.04);
     --ev-border-strong: rgba(0, 0, 0, 0.12);
     --ev-border-dark: rgba(0, 0, 0, 0.1);
+    --ev-border-subtle: rgba(0, 0, 0, 0.06);
 
     --st-bg: #f1f5f9;
     --st-surface: rgba(0, 0, 0, 0.03);
@@ -160,9 +243,15 @@
     --st-text: #0f172a;
     --st-text-secondary: #334155;
     --st-text-muted: #64748b;
-    /* Softer elevation for light surfaces */
-    --st-shadow: 0 8px 32px rgba(15,23,42,.08);
-    --st-shadow-hover: 0 14px 36px rgba(15,23,42,.12);
+
+    --ev-shadow-sm: 0 1px 3px rgba(15,23,42,.06);
+    --ev-shadow-md: 0 4px 12px rgba(15,23,42,.08);
+    --ev-shadow-lg: 0 8px 24px rgba(15,23,42,.1);
+    --ev-shadow-xl: 0 12px 36px rgba(15,23,42,.14);
+    --ev-shadow-glow: 0 0 16px rgba(37, 99, 235, 0.1);
+
+    --st-shadow: 0 1px 3px rgba(15,23,42,.06), 0 6px 16px rgba(15,23,42,.08);
+    --st-shadow-hover: 0 8px 24px rgba(15,23,42,.12), 0 0 0 1px rgba(37,99,235,.08);
     --st-focus-ring: 0 0 0 3px rgba(37,99,235,.16);
 }
 
@@ -387,24 +476,25 @@
 
 /* Button overrides */
 
+/* NOTE: .camera-control-btn is intentionally NOT in the color lists —
+   it is an input-style icon control already covered by the input overrides
+   (dark: #e2e8f0, light: #0f172a). Listing it here forced white text on the
+   light #f1f5f9 surface, making the labels invisible in Light theme. */
+
 [data-theme="dark"] .btn-primary,
 [data-theme="dark"] .btn-secondary,
 [data-theme="dark"] .btn-success,
 [data-theme="dark"] .btn-danger,
 [data-theme="dark"] .btn-outline,
 [data-theme="dark"] button {
-    color: #ffffff !important;
+    color: var(--ev-text) !important;
 }
 
-/* NOTE: .camera-control-btn is intentionally NOT in the color lists above —
-   it is an input-style icon control already covered by the input overrides
-   (dark: #e2e8f0, light: #0f172a). Listing it here forced white text on the
-   light #f1f5f9 surface, making the labels invisible in Light theme. */
 [data-theme="dark"] .btn-outline,
 [data-theme="dark"] .btn-secondary {
     background: transparent !important;
     border-color: rgba(255, 255, 255, 0.15) !important;
-    color: #e2e8f0 !important;
+    color: var(--ev-text-secondary) !important;
 }
 
 [data-theme="light"] .btn-primary,
@@ -413,7 +503,14 @@
 [data-theme="light"] .btn-danger,
 [data-theme="light"] .btn-outline,
 [data-theme="light"] button {
-    color: #ffffff !important;
+    color: var(--ev-text-inverse) !important;
+}
+
+[data-theme="light"] .btn-outline,
+[data-theme="light"] .btn-secondary {
+    background: transparent !important;
+    border-color: rgba(0, 0, 0, 0.15) !important;
+    color: var(--ev-text-inverse) !important;
 }
 
 [data-theme="light"] .btn-outline,
@@ -795,19 +892,6 @@
     border-color: rgba(15, 23, 42, 0.08) !important;
 }
 
-/* Mobile sidebar toggle */
-
-[data-theme="light"] .sidebar-toggle {
-    background: #ffffff !important;
-    border-color: rgba(15, 23, 42, 0.08) !important;
-    color: #334155 !important;
-}
-
-[data-theme="light"] .sidebar-toggle:hover {
-    background: rgba(59, 130, 246, 0.1) !important;
-    color: #1e40af !important;
-}
-
 /* Filter buttons & chips (incidents / notifications pages) */
 
 [data-theme="light"] .filter-btn,
@@ -913,6 +997,7 @@
 [data-theme="light"] .analytics-row {
     border-bottom-color: rgba(15, 23, 42, 0.08) !important;
 }
+
 /* Transition for theme changes */
 
 body,

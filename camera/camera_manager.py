@@ -51,6 +51,11 @@ class CameraStream:
         self._thread = None
         self._lock = threading.Lock()
 
+        # Detect if source is a video file (for EOF handling)
+        self._is_video = self._is_video_file()
+        # Per-frame delay for real-time video file playback (set on connect)
+        self._video_frame_delay = 0.0
+
         # Directories
         self.snapshot_dir = os.path.join("evidence", "screenshots")
         self.video_dir = os.path.join("evidence", "videos")
@@ -90,6 +95,24 @@ class CameraStream:
     def _is_rtsp(self):
         url = str(self.ip_url)
         return url.startswith("rtsp://") or url.startswith("rtsps://")
+
+    def _is_video_file(self):
+        """Check if the source is a video file (not a live stream or webcam index)."""
+        url = str(self.ip_url)
+        # Webcam indices are digits (0, 1, 2)
+        if url.isdigit():
+            return False
+        # RTSP/HTTP streams are not local files
+        if url.startswith(("rtsp://", "rtsps://", "http://", "https://")):
+            return False
+        # Check if it's a file path that exists or has a video extension
+        video_extensions = ('.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv', '.webm', '.m4v')
+        if any(url.lower().endswith(ext) for ext in video_extensions):
+            return True
+        # Check if it's an existing file
+        if os.path.isfile(url):
+            return True
+        return False
 
     def _pre_configure_rtsp_env(self):
         """Sets RTSP environment variables BEFORE cv2.VideoCapture is called.
@@ -147,8 +170,8 @@ class CameraStream:
                     self._pre_configure_rtsp_env()
 
                     target = int(self.ip_url) if str(self.ip_url).isdigit() else self.ip_url
-                    # Use FFMPEG backend for RTSP (CAP_DSHOW doesn't support network streams)
-                    if self._is_rtsp():
+                    # Use FFMPEG backend for RTSP and video files (CAP_DSHOW only supports capture devices)
+                    if self._is_rtsp() or self._is_video:
                         backend = cv2.CAP_FFMPEG
                     elif sys.platform.startswith("win"):
                         backend = cv2.CAP_DSHOW
@@ -175,11 +198,36 @@ class CameraStream:
                         h = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
                         self.resolution = f"{w}x{h}" if w > 0 else "1920x1080"
                         logger.info(f"[{self.name}] Connected successfully ({self.resolution})")
+                        # Native frame rate pacing for video files (real-time playback)
+                        if self._is_video:
+                            vfps = self.cap.get(cv2.CAP_PROP_FPS)
+                            self._video_frame_delay = (1.0 / vfps) if (vfps and vfps > 0) else 0.0
 
                 ret, frame = self.cap.read()
                 self.latency = round((time.time() - ping_start) * 1000, 2)  # ms
 
                 if not ret:
+                    # Video file reached EOF — loop back to frame 0 so it behaves
+                    # like a continuous surveillance feed for the hackathon demo.
+                    # The same CameraStream / DetectionQueueManager / YOLO / tracking
+                    # pipeline keeps running; only the capture position resets.
+                    if self._is_video:
+                        logger.info(f"[{self.name}] Video file reached EOF; looping to frame 0.")
+                        if self.cap and self.cap.isOpened():
+                            seek_ok = self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                            if seek_ok:
+                                self.status = "ONLINE"
+                                self.network_errors = 0
+                                self.reconnects = 0
+                                continue
+                        # If seek failed, release and let the top of the loop reopen
+                        self.status = "RECONNECTING"
+                        if self.cap:
+                            self.cap.release()
+                            self.cap = None
+                        continue
+
+                    # Live stream disconnect — reconnect with backoff
                     self.last_error = "Frame read failed"
                     logger.warning(f"[{self.name}] Frame drop / network interruption.")
                     self.status = "DISCONNECTED"
@@ -197,6 +245,13 @@ class CameraStream:
                 # Update latest frame
                 with self.lock:
                     self.latest_frame = frame.copy()
+
+                # Pace video files to their native frame rate (mimics a live CCTV
+                # feed and avoids max-speed decoding overloading the CPU)
+                if self._is_video and self._video_frame_delay > 0:
+                    spent = time.time() - ping_start
+                    if spent < self._video_frame_delay:
+                        time.sleep(self._video_frame_delay - spent)
 
                 # Handle Video Recording Frame Writing
                 if self.is_recording and self.video_writer is not None:
@@ -306,7 +361,8 @@ class CameraStream:
             "network_errors": self.network_errors,
             "decode_errors": self.decode_errors,
             "last_error": self.last_error,
-            "is_rtsp": self._is_rtsp()
+            "is_rtsp": self._is_rtsp(),
+            "is_video_file": self._is_video
         }
 
     def _sync_db(self):
@@ -374,6 +430,12 @@ class CameraPipeline:
         self._frame_thread = None
         self._frame_id = 0
 
+        # Live detection summary (per-camera AI display for the dashboard)
+        self.last_person_count = 0
+        self.last_vehicle_count = 0
+        self.last_detections = []  # [{label, confidence}]
+        self.last_detection_time = 0.0
+
     def start(self, model_path=None):
         """Starts the camera pipeline."""
         if self.is_running:
@@ -420,8 +482,10 @@ class CameraPipeline:
         h = h[0] if h is not None and len(h) > 0 else 360
 
         person_count = 0
+        vehicle_count = 0
         person_locations = {}
         events = []
+        detection_summary = []
 
         for det in detections:
             cls_id = det["class_id"]
@@ -430,8 +494,14 @@ class CameraPipeline:
             cx = ((x1 + x2) / 2) / w
             cy = ((y1 + y2) / 2) / h
 
-            if cls_id == 0:
+            label = str(det.get("label", "")).lower()
+            detection_summary.append({"label": label, "confidence": det.get("confidence", 0.0)})
+            if cls_id == 0 or label == "person":
                 person_count += 1
+            elif label in ("car", "bus", "truck", "motorcycle", "bicycle", "van"):
+                vehicle_count += 1
+
+            if cls_id == 0:
                 if track_id is None:
                     continue
 
@@ -545,10 +615,16 @@ class CameraPipeline:
                     camera=self.name
                 )
 
+        # Update live per-camera detection summary (real YOLO results only)
+        self.last_person_count = person_count
+        self.last_vehicle_count = vehicle_count
+        self.last_detections = detection_summary[:8]  # capped for UI display
+        self.last_detection_time = time.time()
+
         if annotated_frame is not None:
             try:
                 from dashboard.stream import set_frame
-                set_frame(annotated_frame)
+                set_frame(annotated_frame, camera_name=self.name)
             except Exception:
                 pass
 
@@ -597,6 +673,10 @@ class CameraPipeline:
     def get_status(self):
         """Gets the combined status of the pipeline."""
         stream_details = self.stream.get_details()
+        stream_details["persons"] = self.last_person_count
+        stream_details["vehicles"] = self.last_vehicle_count
+        stream_details["detections"] = self.last_detections
+        stream_details["last_detection_time"] = self.last_detection_time
         if self.health:
             health_status = self.health.get_health_status()
             stream_details["pipeline_status"] = health_status.get("pipeline_status", "Unknown")

@@ -84,6 +84,28 @@ def init_db():
         except sqlite3.OperationalError:
             pass
 
+        # Admin Users Table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS admin_users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                email TEXT,
+                role TEXT DEFAULT 'System Administrator',
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # Seed default admin user if not exists
+        import hashlib
+        default_username = "sentinelx_admin"
+        default_password = "SentinelX_SecurePassword2026!"
+        default_password_hash = hashlib.sha256(default_password.encode()).hexdigest()
+        cursor.execute(
+            "INSERT OR IGNORE INTO admin_users (username, password_hash, email, role) VALUES (?, ?, ?, ?)",
+            (default_username, default_password_hash, f"{default_username}@sentinelx.ai", "System Administrator")
+        )
+
         conn.commit()
         logger.info("Database initialized successfully.")
 

@@ -4,27 +4,50 @@
 
 <div class="page-content fade-in">
 
-<div class="map-container chart-loading">
+<div class="panel map-panel">
 
-    <div class="loading-spinner small"></div>
+    <div class="panel-header">
 
-    <img
-    src="{{ url_for('static',filename='images/floorplan.png') }}"
-    class="floor-map">
+        <h3><svg class="h-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3z"/><path d="M9 3v15M15 6v15"/></svg>Security Map</h3>
 
-    <div class="camera-marker c1" data-marker="camera" data-index="0">📹</div>
+        <div class="map-legend">
 
-    <div class="camera-marker c2" data-marker="camera" data-index="1">📹</div>
+            <span class="legend-chip"><span class="legend-dot cam"></span>Cameras</span>
 
-    <div class="camera-marker c3" data-marker="camera" data-index="2">📹</div>
+            <span class="legend-chip"><span class="legend-dot person"></span>Person</span>
 
-    <div class="event-marker e1" data-marker="event" data-index="0">🚨</div>
+            <span class="legend-chip"><span class="legend-dot vehicle"></span>Vehicle</span>
 
-    <div class="event-marker e2" data-marker="event" data-index="1">🚶</div>
+            <span class="legend-chip"><span class="legend-dot alert"></span>Alert</span>
 
-    <div class="event-marker e3" data-marker="event" data-index="2">🚗</div>
+        </div>
 
-    <div id="mapTooltip" class="map-tooltip" style="display:none;"></div>
+    </div>
+
+    <div class="map-container chart-loading">
+
+        <div class="loading-spinner small"></div>
+
+        <img
+        src="{{ url_for('static',filename='images/floor_plan.svg') }}"
+        class="floor-map"
+        alt="Floor Plan">
+
+        <div class="camera-marker c1" data-marker="camera" data-index="0"><svg class="marker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m23 7-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+
+        <div class="camera-marker c2" data-marker="camera" data-index="1"><svg class="marker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m23 7-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+
+        <div class="camera-marker c3" data-marker="camera" data-index="2"><svg class="marker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m23 7-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+
+        <div class="event-marker e1" data-marker="event" data-index="0"><svg class="marker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+
+        <div class="event-marker e2" data-marker="event" data-index="1"><svg class="marker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+
+        <div class="event-marker e3" data-marker="event" data-index="2"><svg class="marker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M5 17a2 2 0 0 1-2-2V9l2-5h14l2 5v6a2 2 0 0 1-2 2M7 17v2M17 17v2"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/></svg></div>
+
+        <div id="mapTooltip" class="map-tooltip" style="display:none;"></div>
+
+    </div>
 
 </div>
 

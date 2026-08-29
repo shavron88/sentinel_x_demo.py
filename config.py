@@ -73,6 +73,21 @@ if _cameras_env:
             CAMERAS.append(cam)
 
 # ==========================================
+# Recorded CCTV Video File (Second Camera)
+# ==========================================
+# Set VIDEO_FILE env var to a video file path to auto-register as Recorded_CCTV
+VIDEO_FILE = _get_env("VIDEO_FILE", "")
+VIDEO_FILE_NAME = _get_env("VIDEO_FILE_NAME", "Recorded_CCTV")
+VIDEO_FILE_ZONE = _get_env("VIDEO_FILE_ZONE", "Demo Zone")
+
+if VIDEO_FILE and os.path.isfile(VIDEO_FILE):
+    CAMERAS.append({
+        "name": VIDEO_FILE_NAME,
+        "source": VIDEO_FILE,
+        "zone": VIDEO_FILE_ZONE,
+    })
+
+# ==========================================
 # RTSP Settings
 # ==========================================
 RTSP_TIMEOUT_MS = int(_get_env("RTSP_TIMEOUT_MS", "5000"))

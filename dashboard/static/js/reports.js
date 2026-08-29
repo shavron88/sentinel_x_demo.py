@@ -197,7 +197,7 @@ function printReport() {
 
 loadReport();
 
-window._reportInterval = setInterval(loadReport,5000);
+window._reportInterval = setInterval(loadReport, 15000);
 /* ==========================================
    REPORTS CLEANUP
 ========================================== */

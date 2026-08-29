@@ -44,10 +44,11 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.secret_key = os.getenv("FLASK_SECRET_KEY", secrets.token_hex(32))
 
 # --- Production Security Headers & Cookies ---
+_is_production = os.getenv("FLASK_ENV", "development") == "production"
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
-    SESSION_COOKIE_SECURE=True  # Production mein HTTPS ke sath True karein
+    SESSION_COOKIE_SECURE=_is_production  # Only require HTTPS in production
 )
 # ==========================================
 # SENTINEL-X AI PIPELINE INITIALIZATION
@@ -752,6 +753,48 @@ def evidence_screenshot(filename):
     if os.path.exists(real_filepath):
         return send_file(real_filepath)
     return jsonify({"error": "Resource not found"}), 404
+
+
+# ==========================================
+# AUTO-START CAMERAS FROM CONFIG
+# ==========================================
+def _auto_start_cameras():
+    """Start cameras from CAMERAS config (including VIDEO_FILE if set)."""
+    from config import CAMERAS
+
+    # Always ensure the default webcam (Camera_01) is running first so that
+    # adding a recorded video camera never blocks the primary webcam.
+    try:
+        camera_manager._ensure_default_camera()
+    except Exception as e:
+        print(f"⚠️ Failed to auto-start Camera_01: {e}")
+
+    if not CAMERAS:
+        return
+    for cam_config in CAMERAS:
+        name = cam_config["name"]
+        source = cam_config["source"]
+        zone = cam_config.get("zone", "General Area")
+        # Parse source: digit → int (webcam index), else string (file/URL)
+        if str(source).isdigit():
+            ip_url = int(source)
+        else:
+            ip_url = source
+        try:
+            camera_manager.add_camera(
+                name=name,
+                ip_url=ip_url,
+                zone=zone,
+                auto_start=True
+            )
+            print(f"✔ Auto-started camera: {name} ({zone})")
+        except Exception as e:
+            print(f"⚠️ Failed to auto-start camera {name}: {e}")
+
+try:
+    _auto_start_cameras()
+except Exception as e:
+    print(f"⚠️ Camera auto-start notice: {e}")
 
 
 if __name__ == "__main__":

@@ -52,10 +52,15 @@ def handle_stop_record():
 @camera_bp.route('/status', methods=['GET'])
 def handle_status():
     cam_name = request.args.get('camera_name', 'Camera_01')
+    # Prefer the full pipeline status (includes per-camera AI detection summary)
+    pipeline = camera_manager.get_pipeline(cam_name)
+    if pipeline:
+        return jsonify(pipeline.get_status()), 200
+
     stream = camera_manager.get_camera_stream(cam_name)
     if stream:
         return jsonify(stream.get_details()), 200
-    
+
     return jsonify(camera_manager.get_all_status()), 200
 
 

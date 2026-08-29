@@ -22,6 +22,18 @@
 
     backdrop-filter:blur(20px);
 
+    transition:all .4s cubic-bezier(.4,0,.2,1);
+
+}
+
+.camera-hero:hover{
+
+    transform:translateY(-4px);
+
+    box-shadow:0 20px 50px rgba(0,0,0,.4), 0 0 0 1px rgba(59,130,246,.15);
+
+    border-color:rgba(255,255,255,.12);
+
 }
 
 /* Header */
@@ -33,6 +45,12 @@
     justify-content:space-between;
 
     align-items:center;
+
+    gap:14px 16px;
+
+    flex-wrap:wrap;
+
+    min-height:64px;
 
     padding:18px 24px;
 
@@ -156,7 +174,7 @@
 
     align-items:center;
 
-    gap:10px;
+    gap:14px;
 
 }
 
@@ -210,6 +228,16 @@
 
     animation:pulse 2s infinite;
 
+}
+
+/* AI status chip with inline live dot */
+.ai-chip{
+    padding:6px 14px;
+}
+
+.ai-chip .status-dot{
+    width:7px;
+    height:7px;
 }
 
 /* Body - 16:9 Video */
@@ -538,6 +566,312 @@
 
     color:#22c55e;
 
+}
+
+/* ==========================================
+   DUAL CAMERA GRID & PER-CAMERA METRICS
+========================================= */
+
+/* Section header above the camera grid */
+.camera-section-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+}
+
+.camera-section-titles{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+}
+
+.camera-section-titles h2{
+    margin:0;
+    font-size:20px;
+    font-weight:700;
+    color:white;
+    letter-spacing:-.01em;
+    line-height:1.2;
+}
+
+.camera-section-sub{
+    font-size:12px;
+    font-weight:500;
+    color:#94a3b8;
+}
+
+.camera-view-all{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 14px;
+    border-radius:20px;
+    background:rgba(59,130,246,.12);
+    border:1px solid rgba(59,130,246,.25);
+    color:var(--ev-primary, #3b82f6);
+    text-decoration:none;
+    font-size:13px;
+    font-weight:600;
+    transition:all .25s ease;
+}
+
+.camera-view-all svg{
+    transition:transform .25s ease;
+}
+
+.camera-view-all:hover{
+    background:rgba(59,130,246,.22);
+    border-color:rgba(59,130,246,.4);
+    color:#60a5fa;
+    opacity:1;
+}
+
+.camera-view-all:hover svg{
+    transform:translate(2px,-2px);
+}
+
+.dual-camera-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:20px;
+    align-items:stretch;
+    width:100%;
+    min-width:0;
+}
+
+/* Ensure each camera hero fills the grid cell height */
+.dual-camera-grid > .camera-hero{
+    height:100%;
+    min-width:0;
+}
+
+/* Metrics strip */
+.camera-hero-metrics{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0, 1fr));
+    gap:12px;
+    padding:16px 20px;
+    background:rgba(15,23,42,.35);
+    border-top:1px solid rgba(255,255,255,.06);
+    border-bottom:1px solid rgba(255,255,255,.06);
+    width:100%;
+    box-sizing:border-box;
+    min-width:0;
+}
+
+.camera-hero-metrics .metric{
+    background:rgba(17,24,39,.6);
+    border-radius:12px;
+    padding:12px 10px;
+    text-align:center;
+    min-width:0;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    border:1px solid rgba(255,255,255,.04);
+    transition:all .25s ease;
+}
+
+.camera-hero-metrics .metric:hover{
+    background:rgba(17,24,39,.8);
+    border-color:rgba(59,130,246,.15);
+    transform:translateY(-2px);
+}
+
+.camera-hero-metrics .metric span{
+    display:block;
+    color:#64748b;
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.4px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.camera-hero-metrics .metric strong{
+    display:block;
+    color:white;
+    font-size:15px;
+    font-weight:700;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    font-variant-numeric:tabular-nums;
+}
+
+/* Controls strip */
+.camera-hero-controls{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:12px;
+    padding:16px 20px;
+    background:rgba(15,23,42,.35);
+    width:100%;
+    box-sizing:border-box;
+    min-width:0;
+}
+
+.cam-btn{
+    border:none;
+    border-radius:12px;
+    padding:12px 10px;
+    cursor:pointer;
+    color:white;
+    font-weight:600;
+    font-size:12px;
+    transition:all .25s cubic-bezier(.4,0,.2,1);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    min-height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    position:relative;
+    overflow:hidden;
+}
+
+.cam-btn::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    background:linear-gradient(135deg, rgba(255,255,255,.1), transparent);
+    opacity:0;
+    transition:opacity .25s ease;
+}
+
+.cam-btn:hover::before{
+    opacity:1;
+}
+
+.cam-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(0,0,0,.3);
+}
+
+.cam-btn:active{
+    transform:translateY(0);
+}
+
+.cam-btn.snapshot{
+    background:linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.cam-btn.record{
+    background:linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.cam-btn.record.recording{
+    background:linear-gradient(135deg, #16a34a, #15803d);
+}
+
+.cam-btn.replay{
+    background:linear-gradient(135deg, #0f766e, #115e59);
+}
+
+/* Status dot states */
+.status-dot.online,
+.status-dot.playing{
+    background:#22c55e;
+    box-shadow:0 0 6px rgba(34,197,94,.5);
+}
+
+.status-dot.offline,
+.status-dot.ended,
+.status-dot.error{
+    background:#ef4444;
+    box-shadow:0 0 6px rgba(239,68,68,.5);
+}
+
+.status-dot.connecting,
+.status-dot.reconnecting{
+    background:#f59e0b;
+    box-shadow:0 0 6px rgba(245,158,11,.5);
+}
+
+/* Light theme dual-camera adaptations */
+[data-theme="light"] .camera-hero-metrics{
+    background:rgba(248,250,252,.5);
+    border-top-color:rgba(15,23,42,.08);
+    border-bottom-color:rgba(15,23,42,.08);
+}
+
+[data-theme="light"] .camera-hero-metrics .metric{
+    background:#f1f5f9;
+}
+
+[data-theme="light"] .camera-hero-metrics .metric span{
+    color:#64748b;
+}
+
+[data-theme="light"] .camera-hero-metrics .metric strong{
+    color:#0f172a;
+}
+
+[data-theme="light"] .camera-hero-controls{
+    background:rgba(248,250,252,.5);
+}
+
+/* ==========================================
+   RESPONSIVE — DUAL CAMERA
+========================================== */
+
+@media(max-width:1200px){
+    .dual-camera-grid{
+        grid-template-columns:1fr;
+    }
+
+    .camera-hero-metrics{
+        grid-template-columns:repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media(max-width:768px){
+    .camera-hero-metrics{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+    }
+
+    .camera-hero-controls{
+        grid-template-columns:repeat(3, minmax(0, 1fr));
+    }
+
+    .camera-hero-header{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:12px;
+    }
+
+    .camera-hero-status{
+        flex-wrap:wrap;
+    }
+}
+
+@media(max-width:480px){
+    .camera-hero-metrics{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+        gap:8px;
+        padding:12px;
+    }
+
+    .camera-hero-controls{
+        grid-template-columns:1fr;
+        gap:8px;
+        padding:12px;
+    }
+
+    .camera-hero-metrics .metric strong{
+        font-size:13px;
+    }
 }
 
 /* ==========================================
@@ -989,4 +1323,171 @@
         padding:16px;
     }
 
+}
+
+/* ==========================================
+   MONITORING LAYOUT (DASHBOARD)
+========================================= */
+
+.command-center.monitoring-layout{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    align-items:stretch;
+}
+
+.live-cameras-band{
+    width:100%;
+}
+
+.monitoring-grid{
+    display:grid;
+    grid-template-columns:1.05fr 0.95fr;
+    gap:20px;
+    align-items:start;
+    width:100%;
+    min-width:0;
+}
+
+.monitor-col{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    min-width:0;
+}
+
+/* Evidence gallery — 2 images per row */
+.evidence-gallery-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:14px;
+    padding:16px;
+    width:100%;
+    box-sizing:border-box;
+}
+
+.evidence-gallery-grid a{
+    position:relative;
+    display:block;
+    aspect-ratio:16/10;
+    border-radius:14px;
+    overflow:hidden;
+    background:#0b1220;
+    border:1px solid rgba(255,255,255,.06);
+    transition:all .3s cubic-bezier(.4,0,.2,1);
+}
+
+.evidence-gallery-grid a::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(180deg, transparent 55%, rgba(0,0,0,.55));
+    opacity:0;
+    transition:opacity .3s ease;
+    pointer-events:none;
+}
+
+.evidence-gallery-grid a:hover{
+    transform:translateY(-3px);
+    border-color:rgba(59,130,246,.4);
+    box-shadow:0 12px 32px rgba(0,0,0,.4);
+}
+
+.evidence-gallery-grid a:hover::after{
+    opacity:1;
+}
+
+.evidence-gallery-grid img.gallery-image{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    transition:transform .45s ease;
+}
+
+.evidence-gallery-grid a:hover img.gallery-image{
+    transform:scale(1.06);
+}
+
+/* AI System status cards */
+.ai-status-cards{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:12px;
+    padding:16px;
+    width:100%;
+    box-sizing:border-box;
+}
+
+.status-card{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 14px;
+    background:rgba(17,24,39,.5);
+    border:1px solid rgba(255,255,255,.05);
+    border-radius:12px;
+    transition:all .25s ease;
+}
+
+.status-card:hover{
+    background:rgba(17,24,39,.72);
+    border-color:rgba(59,130,246,.18);
+}
+
+.status-card-dot{
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    flex:0 0 auto;
+}
+
+.status-card-dot.online{
+    background:#22c55e;
+    box-shadow:0 0 8px rgba(34,197,94,.5);
+}
+
+.status-card-dot.offline{
+    background:#ef4444;
+    box-shadow:0 0 8px rgba(239,68,68,.5);
+}
+
+.status-card-dot.connecting{
+    background:#f59e0b;
+    box-shadow:0 0 8px rgba(245,158,11,.5);
+}
+
+.status-card-label{
+    flex:1;
+    min-width:0;
+    font-size:12px;
+    font-weight:600;
+    color:#94a3b8;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.status-card-value{
+    font-size:12px;
+    font-weight:700;
+    color:#e2e8f0;
+    font-variant-numeric:tabular-nums;
+}
+
+@media(max-width:1200px){
+    .monitoring-grid{
+        grid-template-columns:1fr;
+    }
+}
+
+@media(max-width:480px){
+    .evidence-gallery-grid{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+        gap:10px;
+        padding:12px;
+    }
+    .ai-status-cards{
+        grid-template-columns:1fr;
+    }
 }

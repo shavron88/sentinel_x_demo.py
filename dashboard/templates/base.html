@@ -26,60 +26,66 @@
 
     <!-- CSS — Design tokens first, then reset, then component styles -->
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}?v=20260829">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/reset.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reset.css') }}?v=20260829">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260829">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}?v=20260829">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}?v=20260829">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}?v=20260829">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}?v=20260829">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}?v=20260829">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}?v=20260829">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/topbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/topbar.css') }}?v=20260829">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading.css') }}?v=20260829">
 
     {% if request.path == '/evidence' %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/evidence.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/evidence.css') }}?v=20260829">
 
     {% endif %}
 
     {% if request.path == '/live_wall' %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/live_wall.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/live_wall.css') }}?v=20260829">
 
     {% endif %}
 
     {% if request.path == '/security_map' %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/security_map.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/security_map.css') }}?v=20260829">
 
     {% endif %}
 
     {% if request.path == '/threat_center' %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/threat_center.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/threat_center.css') }}?v=20260829">
 
     {% endif %}
 
     {% if request.path == '/command_center' %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/command_center.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/command_center.css') }}?v=20260829">
+
+    {% endif %}
+
+    {% if request.path == '/copilot' %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/copilot.css') }}?v=20260829">
 
     {% endif %}
 
     <!-- Polish layer — visual refinements (loaded last for cascade override) -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/polish.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/polish.css') }}?v=20260829">
 
 </head>
 
@@ -89,7 +95,7 @@
 
     <div class="loading-spinner large"></div>
 
-    <p style="color:#94a3b8;font-size:14px;font-weight:500;">Loading Sentinel X...</p>
+    <p class="page-loading-text">Loading Sentinel X...</p>
 
 </div>
 
@@ -197,6 +203,26 @@
 
             </a>
 
+            <a href="/evidence" class="sidebar-nav-link {% if request.path=='/evidence' %}active{% endif %}">
+
+                <span class="sidebar-nav-icon">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+
+                        <path d="M21 15l-5-5L11 19"></path>
+
+                    </svg>
+
+                </span>
+
+                <span class="sidebar-nav-label">Evidence</span>
+
+            </a>
+
             <a href="/analytics" class="sidebar-nav-link {% if request.path=='/analytics' %}active{% endif %}">
 
                 <span class="sidebar-nav-icon">
@@ -241,6 +267,24 @@
 
             </a>
 
+            <a href="/notifications" class="sidebar-nav-link {% if request.path=='/notifications' %}active{% endif %}">
+
+                <span class="sidebar-nav-icon">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9z"></path>
+
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+
+                    </svg>
+
+                </span>
+
+                <span class="sidebar-nav-label">Notifications</span>
+
+            </a>
+
             <a href="/settings" class="sidebar-nav-link {% if request.path=='/settings' %}active{% endif %}">
 
                 <span class="sidebar-nav-icon">
@@ -282,22 +326,6 @@
     <!-- ================= MAIN CONTENT ================= -->
 
     <main class="main-content">
-
-        <!-- ===== MOBILE TOGGLE ===== -->
-
-        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" aria-label="Toggle Menu">
-
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-
-            </svg>
-
-        </button>
 
         <!-- ===== TOPBAR ===== -->
 
@@ -531,87 +559,85 @@ window._loadingQueue = [];
 
 </script>
 
-<script src="{{ url_for('static', filename='js/loading.js') }}"></script>
+<script src="{{ url_for('static', filename='js/loading.js') }}?v=20260829"></script>
 
-<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}?v=20260829"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}?v=20260829"></script>
 
-<script src="{{ url_for('static', filename='js/alerts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/alerts.js') }}?v=20260829"></script>
 
     {% if request.path == '/cameras' or request.path == '/camera_view' %}
 
-<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+<script src="{{ url_for('static', filename='js/camera.js') }}?v=20260829"></script>
 
     {% endif %}
 
 {% if request.path == '/incidents' %}
 
-<script src="{{ url_for('static', filename='js/incidents.js') }}"></script>
+<script src="{{ url_for('static', filename='js/incidents.js') }}?v=20260829"></script>
 
 {% endif %}
 
 {% if request.path == '/evidence' %}
 
-<script src="{{ url_for('static', filename='js/evidence.js') }}"></script>
+<script src="{{ url_for('static', filename='js/evidence.js') }}?v=20260829"></script>
 
 {% endif %}
 
 {% if request.path == '/live_wall' %}
 
-<script src="{{ url_for('static', filename='js/live_wall.js') }}"></script>
+<script src="{{ url_for('static', filename='js/live_wall.js') }}?v=20260829"></script>
 
 {% endif %}
 
 {% if request.path == '/security_map' %}
 
-<script src="{{ url_for('static', filename='js/security_map.js') }}"></script>
+<script src="{{ url_for('static', filename='js/security_map.js') }}?v=20260829"></script>
 
 {% endif %}
 
 {% if request.path == '/threat_center' %}
 
-<script src="{{ url_for('static', filename='js/threat_center.js') }}"></script>
+<script src="{{ url_for('static', filename='js/threat_center.js') }}?v=20260829"></script>
 
 {% endif %}
 
 {% if request.path == '/command_center' %}
 
-<script src="{{ url_for('static', filename='js/command_center.js') }}"></script>
+<script src="{{ url_for('static', filename='js/command_center.js') }}?v=20260829"></script>
 
 {% endif %}
 
 {% if request.path == '/copilot' %}
 
-<script src="{{ url_for('static', filename='js/copilot.js') }}"></script>
+<script src="{{ url_for('static', filename='js/copilot.js') }}?v=20260829"></script>
 
 {% endif %}
 
 {% if request.path == '/replay' %}
 
-<script src="{{ url_for('static', filename='js/replay.js') }}"></script>
+<script src="{{ url_for('static', filename='js/replay.js') }}?v=20260829"></script>
 
 {% endif %}
 
 {% if request.path == '/analytics' %}
 
-<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+<script src="{{ url_for('static', filename='js/analytics.js') }}?v=20260829"></script>
 
 {% endif %}
 
     {% if request.path == '/reports' %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}">
-
-    <script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/reports.js') }}?v=20260829"></script>
 
     {% endif %}
 
     {% if request.path == '/analytics' %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}?v=20260829">
 
     {% endif %}
 
@@ -619,13 +645,13 @@ window._loadingQueue = [];
 
     {% if request.path == '/settings' %}
 
-<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+<script src="{{ url_for('static', filename='js/settings.js') }}?v=20260829"></script>
 
     {% endif %}
 
     {% if request.path == '/notifications' %}
 
-<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+<script src="{{ url_for('static', filename='js/notifications.js') }}?v=20260829"></script>
 
     {% endif %}
 

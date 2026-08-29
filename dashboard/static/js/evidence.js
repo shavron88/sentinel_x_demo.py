@@ -374,7 +374,9 @@ function renderGallery(data){
 
     grid.innerHTML = "";
 
-    if(data.length === 0){
+    const latest = Array.isArray(data) ? data.slice(0, 10) : [];
+
+    if(latest.length === 0){
 
         grid.style.display = "none";
 
@@ -442,7 +444,7 @@ function renderGallery(data){
 
     empty.style.display = "none";
 
-    data.forEach((item, index) => {
+    latest.forEach((item, index) => {
 
         const card = createEvidenceCard(item, index);
 

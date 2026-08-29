@@ -5,12 +5,17 @@ from datetime import datetime
 
 logger = logging.getLogger("SentinelX.Stream")
 
-_latest_frame = None
-_frame_timestamp = 0.0
+# Per-camera frame storage for multi-camera support
+_latest_frames = {}
+_frame_timestamps = {}
 _frame_drops = 0
 _last_fps_time = time.time()
 _fps_frame_count = 0
 _current_fps = 0.0
+
+# Backward-compatible aliases
+_latest_frame = None
+_frame_timestamp = 0.0
 
 # Camera status overlay config
 STATUS_COLORS = {
@@ -26,15 +31,21 @@ STATUS_COLORS = {
 }
 
 
-def set_frame(frame):
-    global _latest_frame, _frame_timestamp
-    _latest_frame = frame
-    _frame_timestamp = time.time()
+def set_frame(frame, camera_name=None):
+    global _latest_frames, _frame_timestamps, _latest_frame, _frame_timestamp
+    if camera_name:
+        _latest_frames[camera_name] = frame
+        _frame_timestamps[camera_name] = time.time()
+    else:
+        _latest_frame = frame
+        _frame_timestamp = time.time()
     _update_fps()
 
 
-def get_frame():
-    global _latest_frame
+def get_frame(camera_name=None):
+    global _latest_frames, _latest_frame
+    if camera_name:
+        return _latest_frames.get(camera_name)
     return _latest_frame
 
 
@@ -81,14 +92,25 @@ def _draw_status_overlay(frame, camera_name="Camera", status="ONLINE", fps=0.0, 
 
 def generate(camera_name="Camera_01", camera_status="ONLINE", queue_size=0):
     """
-    Stream generator that prefers AI-annotated frames, falls back to CameraManager.
+    Stream generator that prefers AI-annotated frames (per-camera), falls back to CameraManager.
+    Refreshes live camera status from the pipeline each frame (ONLINE / ENDED / OFFLINE ...).
     """
     global _frame_drops
 
     from camera.camera_manager import camera_manager
 
     while True:
-        frame = get_frame()
+        # Live status from the pipeline (kept current: EOF → ENDED, drops → OFFLINE)
+        pipeline = camera_manager.get_pipeline(camera_name)
+        if pipeline:
+            camera_status = pipeline.stream.status
+            queue_size = pipeline.get_queue_size()
+
+        # Prefer per-camera AI-annotated frame, then global, then raw stream
+        frame = get_frame(camera_name)
+
+        if frame is None:
+            frame = get_frame()  # fallback to global
 
         if frame is None:
             stream = camera_manager.get_camera_stream(camera_name)

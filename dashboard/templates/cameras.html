@@ -19,10 +19,10 @@
     margin: 0;
     font-size: 24px;
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--ev-text, #e2e8f0);
 }
 .camera-manager-header .subtitle {
-    color: #94a3b8;
+    color: var(--ev-text-muted, #94a3b8);
     font-size: 14px;
     margin-top: 4px;
 }
@@ -39,20 +39,20 @@
     font-size: 14px;
 }
 .btn-primary {
-    background: #3b82f6;
+    background: var(--ev-primary, #3b82f6);
     color: white;
 }
 .btn-primary:hover {
-    background: #2563eb;
+    background: var(--ev-primary-hover, #2563eb);
     transform: translateY(-1px);
 }
 .btn-secondary {
-    background: rgba(255,255,255,0.08);
-    color: #e2e8f0;
-    border: 1px solid rgba(255,255,255,0.1);
+    background: var(--ev-primary-soft, rgba(255,255,255,0.08));
+    color: var(--ev-text, #e2e8f0);
+    border: 1px solid var(--ev-border, rgba(255,255,255,0.1));
 }
 .btn-secondary:hover {
-    background: rgba(255,255,255,0.12);
+    background: var(--ev-surface-2, rgba(255,255,255,0.12));
 }
 .btn-danger {
     background: rgba(239,68,68,0.15);
@@ -65,20 +65,20 @@
 .camera-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 20px;
+    gap: 24px;
 }
 .camera-card {
-    background: #1b2432;
+    background: var(--ev-surface, #1b2432);
     border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.06);
+    border: 1px solid var(--ev-border, rgba(255,255,255,0.06));
     overflow: hidden;
     transition: all 0.3s;
     animation: cardFadeIn 0.4s ease;
 }
 .camera-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
-    border-color: rgba(59,130,246,0.2);
+    box-shadow: var(--ev-shadow-lg, 0 12px 40px rgba(0,0,0,0.3));
+    border-color: var(--ev-primary, rgba(59,130,246,0.2));
 }
 @keyframes cardFadeIn {
     from { opacity: 0; transform: translateY(12px); }
@@ -89,13 +89,13 @@
     justify-content: space-between;
     align-items: flex-start;
     padding: 16px 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid var(--ev-border-subtle, rgba(255,255,255,0.06));
 }
 .camera-card-header h3 {
     margin: 0;
     font-size: 16px;
     font-weight: 700;
-    color: white;
+    color: var(--ev-text, white);
 }
 .camera-card-header .camera-type {
     font-size: 11px;
@@ -131,11 +131,11 @@
     font-size: 13px;
 }
 .camera-card-body .meta-label {
-    color: #64748b;
+    color: var(--ev-text-dark, #64748b);
     font-weight: 500;
 }
 .camera-card-body .meta-value {
-    color: #e2e8f0;
+    color: var(--ev-text, #e2e8f0);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
 }
@@ -143,8 +143,8 @@
     display: flex;
     gap: 8px;
     padding: 12px 20px;
-    border-top: 1px solid rgba(255,255,255,0.06);
-    background: rgba(15,23,42,0.3);
+    border-top: 1px solid var(--ev-border-subtle, rgba(255,255,255,0.06));
+    background: var(--ev-surface-2, rgba(15,23,42,0.3));
 }
 .camera-card-footer .btn {
     flex: 1;
@@ -173,8 +173,8 @@
     display: flex;
 }
 .modal {
-    background: #1b2432;
-    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--ev-surface, #1b2432);
+    border: 1px solid var(--ev-border, rgba(255,255,255,0.08));
     border-radius: 20px;
     width: 100%;
     max-width: 520px;
@@ -192,18 +192,18 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px 24px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid var(--ev-border-subtle, rgba(255,255,255,0.06));
 }
 .modal-header h3 {
     margin: 0;
     font-size: 18px;
     font-weight: 700;
-    color: white;
+    color: var(--ev-text, white);
 }
 .modal-close {
     background: none;
     border: none;
-    color: #64748b;
+    color: var(--ev-text-dark, #64748b);
     font-size: 24px;
     cursor: pointer;
     line-height: 1;
@@ -216,8 +216,8 @@
     border-radius: 8px;
 }
 .modal-close:hover {
-    background: rgba(255,255,255,0.08);
-    color: white;
+    background: var(--ev-primary-soft, rgba(255,255,255,0.08));
+    color: var(--ev-text, white);
 }
 .modal-body {
     padding: 24px;
@@ -230,7 +230,7 @@
     margin-bottom: 6px;
     font-size: 13px;
     font-weight: 600;
-    color: #94a3b8;
+    color: var(--ev-text-muted, #94a3b8);
     text-transform: uppercase;
     letter-spacing: 0.3px;
 }
@@ -239,9 +239,9 @@
     width: 100%;
     padding: 10px 14px;
     border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: #0f172a;
-    color: white;
+    border: 1px solid var(--ev-border, rgba(255,255,255,0.1));
+    background: var(--ev-bg, #0f172a);
+    color: var(--ev-text, white);
     font-size: 14px;
     transition: all 0.2s;
     box-sizing: border-box;
@@ -249,12 +249,12 @@
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: var(--ev-primary, #3b82f6);
     box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
 }
 .form-group .help-text {
     font-size: 12px;
-    color: #64748b;
+    color: var(--ev-text-dark, #64748b);
     margin-top: 4px;
 }
 .form-row {
@@ -266,7 +266,7 @@
     display: flex;
     gap: 10px;
     padding: 16px 24px;
-    border-top: 1px solid rgba(255,255,255,0.06);
+    border-top: 1px solid var(--ev-border-subtle, rgba(255,255,255,0.06));
     justify-content: flex-end;
 }
 .modal-footer .btn {
@@ -295,15 +295,18 @@
 .empty-state {
     text-align: center;
     padding: 60px 20px;
-    color: #64748b;
+    color: var(--ev-text-muted, #64748b);
 }
 .empty-state svg {
     margin-bottom: 16px;
     opacity: 0.5;
 }
 .empty-state h3 {
-    color: #e2e8f0;
+    color: var(--ev-text, #e2e8f0);
     margin: 0 0 8px 0;
+}
+.camera-manager {
+    padding: 24px;
 }
 </style>
 
