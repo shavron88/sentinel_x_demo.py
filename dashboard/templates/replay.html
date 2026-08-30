@@ -124,7 +124,14 @@
 
     showSkeletonCards("timelineControls", 3);
 
-    loadReplay();
+    if (typeof loadReplay === 'function') {
+        loadReplay();
+    } else {
+        // replay.js loads after content block; wait for it
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof loadReplay === 'function') loadReplay();
+        });
+    }
 
 })();
 

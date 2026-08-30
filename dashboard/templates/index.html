@@ -36,17 +36,17 @@
 
         <div class="kpi-value">
 
-            <span id="kpi-cameras">4</span>
+            <span id="kpi-cameras">--</span>
 
-            <span class="kpi-total">/4</span>
+            <span class="kpi-total" id="kpi-cameras-total">/--</span>
 
         </div>
 
         <div class="kpi-indicator">
 
-            <span class="kpi-dot online"></span>
+            <span class="kpi-dot" id="kpi-cameras-dot"></span>
 
-            <span class="kpi-text">All Online</span>
+            <span class="kpi-text" id="kpi-cameras-text">Checking</span>
 
         </div>
 
@@ -58,7 +58,7 @@
 
         <div class="kpi-value">
 
-            <span id="kpi-accuracy">98.7</span>
+            <span id="kpi-accuracy">--</span>
 
             <span class="kpi-percent">%</span>
 
@@ -66,9 +66,9 @@
 
         <div class="kpi-indicator">
 
-            <span class="kpi-dot high"></span>
+            <span class="kpi-dot" id="kpi-accuracy-dot"></span>
 
-            <span class="kpi-text">Excellent</span>
+            <span class="kpi-text" id="kpi-accuracy-text">Loading</span>
 
         </div>
 
@@ -78,13 +78,13 @@
 
         <div class="kpi-label">Alerts</div>
 
-        <div class="kpi-value" id="kpi-alerts">02</div>
+        <div class="kpi-value" id="kpi-alerts">--</div>
 
         <div class="kpi-indicator">
 
-            <span class="kpi-dot"></span>
+            <span class="kpi-dot" id="kpi-alerts-dot"></span>
 
-            <span class="kpi-text">Today</span>
+            <span class="kpi-text" id="kpi-alerts-text">Loading</span>
 
         </div>
 
@@ -469,40 +469,40 @@
 
             <div class="ai-status-cards">
 
-                <div class="status-card">
-                    <span class="status-card-dot online"></span>
+                <div class="status-card" id="sys-status-ai">
+                    <span class="status-card-dot" id="sys-dot-ai"></span>
                     <span class="status-card-label">AI Engine</span>
-                    <span class="status-card-value">ONLINE</span>
+                    <span id="sys-val-ai" class="status-card-value">Checking...</span>
                 </div>
 
-                <div class="status-card">
-                    <span class="status-card-dot online"></span>
+                <div class="status-card" id="sys-status-camera">
+                    <span class="status-card-dot" id="sys-dot-camera"></span>
                     <span class="status-card-label">Camera</span>
-                    <span id="camera-status" class="status-card-value">CONNECTED</span>
+                    <span id="sys-val-camera" class="status-card-value">Checking...</span>
                 </div>
 
-                <div class="status-card">
-                    <span class="status-card-dot online"></span>
+                <div class="status-card" id="sys-status-yolo">
+                    <span class="status-card-dot" id="sys-dot-yolo"></span>
                     <span class="status-card-label">YOLO Model</span>
-                    <span class="status-card-value">LOADED</span>
+                    <span id="sys-val-yolo" class="status-card-value">Checking...</span>
                 </div>
 
-                <div class="status-card">
-                    <span class="status-card-dot online"></span>
+                <div class="status-card" id="sys-status-db">
+                    <span class="status-card-dot" id="sys-dot-db"></span>
                     <span class="status-card-label">Database</span>
-                    <span class="status-card-value">CONNECTED</span>
+                    <span id="sys-val-db" class="status-card-value">Checking...</span>
                 </div>
 
-                <div class="status-card">
-                    <span class="status-card-dot online"></span>
+                <div class="status-card" id="sys-status-detection">
+                    <span class="status-card-dot" id="sys-dot-detection"></span>
                     <span class="status-card-label">Detection Engine</span>
-                    <span class="status-card-value">ACTIVE</span>
+                    <span id="sys-val-detection" class="status-card-value">Checking...</span>
                 </div>
 
-                <div class="status-card">
-                    <span class="status-card-dot online"></span>
+                <div class="status-card" id="sys-status-dashboard">
+                    <span class="status-card-dot online" id="sys-dot-dashboard"></span>
                     <span class="status-card-label">Dashboard</span>
-                    <span class="status-card-value">RUNNING</span>
+                    <span id="sys-val-dashboard" class="status-card-value">Active</span>
                 </div>
 
             </div>

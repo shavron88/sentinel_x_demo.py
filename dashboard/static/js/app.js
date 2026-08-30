@@ -21,6 +21,81 @@ function restoreTheme() {
 }
 
 /* ==========================================
+   CHART THEME HELPER
+   Returns colors adapted to current theme.
+   Shared by dashboard.js and analytics.js.
+========================================== */
+
+window.getChartTheme = function() {
+    var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    return {
+        tooltipBg:     isLight ? 'rgba(255,255,255,0.97)'   : 'rgba(15,23,42,0.92)',
+        tooltipBorder: isLight ? 'rgba(0,0,0,0.08)'         : 'rgba(120,150,190,0.2)',
+        tooltipTitle:  isLight ? '#0f172a'                   : '#e2e8f0',
+        tooltipBody:   isLight ? '#475569'                   : '#94a3b8',
+        gridColor:     isLight ? 'rgba(0,0,0,0.06)'         : 'rgba(255,255,255,0.05)',
+        tickColor:     isLight ? '#475569'                   : '#64748b',
+        centerText:    isLight ? '#0f172a'                   : '#e2e8f0',
+        centerLabel:   isLight ? '#64748b'                   : '#64748b',
+        donutBorder:   isLight ? 'rgba(255,255,255,0.9)'    : 'rgba(10,17,32,0.8)',
+        pointBorder:   isLight ? '#ffffff'                   : '#0f172a'
+    };
+};
+
+/* ==========================================
+   AUTO-REFRESH CHARTS ON THEME CHANGE
+   Watches for data-theme attribute changes
+   and re-applies chart colors.
+========================================== */
+
+window.refreshChartsOnThemeChange = function() {
+    new MutationObserver(function(mutations) {
+        mutations.forEach(function(m) {
+            if (m.attributeName !== 'data-theme') return;
+            var t = window.getChartTheme();
+
+            // Standard line charts (dashboard + analytics)
+            [window.detectionChart, window.performanceChart, window.incidentChart].forEach(function(chart) {
+                if (!chart || !chart.options) return;
+                var tip = chart.options.plugins.tooltip;
+                if (tip) {
+                    tip.backgroundColor = t.tooltipBg;
+                    tip.borderColor     = t.tooltipBorder;
+                    tip.titleColor      = t.tooltipTitle;
+                    tip.bodyColor       = t.tooltipBody;
+                }
+                if (chart.options.scales) {
+                    ['x','y'].forEach(function(axis) {
+                        var s = chart.options.scales[axis];
+                        if (s && s.grid) s.grid.color = t.gridColor;
+                        if (s && s.ticks) s.ticks.color = t.tickColor;
+                    });
+                }
+                chart.update('none');
+            });
+
+            // Donut chart needs special centerText plugin handling
+            if (window.donutChart && window.donutChart.options) {
+                var dTip = window.donutChart.options.plugins.tooltip;
+                if (dTip) {
+                    dTip.backgroundColor = t.tooltipBg;
+                    dTip.borderColor     = t.tooltipBorder;
+                    dTip.titleColor      = t.tooltipTitle;
+                    dTip.bodyColor       = t.tooltipBody;
+                }
+                // Update donut border color
+                var ds = window.donutChart.data.datasets[0];
+                if (ds) {
+                    ds.borderColor = t.donutBorder;
+                    ds.hoverBorderColor = t.donutBorder;
+                }
+                window.donutChart.update('none');
+            }
+        });
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+};
+
+/* ==========================================
     AUDIO ENGINE
 ========================================== */
 
@@ -294,15 +369,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btn && panel) {
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
-            panel.style.display = panel.style.display === "block" ? "none" : "block";
-            if (panel.style.display === "block") {
+            panel.classList.toggle("active");
+            if (panel.classList.contains("active")) {
                 updateNotificationPanel();
             }
         });
 
         document.addEventListener("click", (e) => {
-            if (!panel.contains(e.target) && e.target !== btn) {
-                panel.style.display = "none";
+            if (!panel.contains(e.target) && !btn.contains(e.target)) {
+                panel.classList.remove("active");
             }
         });
     }

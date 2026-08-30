@@ -178,6 +178,12 @@ function renderTrendChart(trendData, events) {
 
     let labels, values;
 
+    const t = (typeof getChartTheme === 'function') ? getChartTheme() : {
+        tooltipBg:'rgba(15,23,42,0.92)', tooltipBorder:'rgba(120,150,190,0.2)',
+        tooltipTitle:'#e2e8f0', tooltipBody:'#b8c4d5', gridColor:'rgba(120,150,190,0.06)',
+        tickColor:'#64748b', pointBorder:'#0f172a'
+    };
+
     if (trendData && trendData.labels) {
         // Use mock data directly
         labels = trendData.labels;
@@ -221,7 +227,7 @@ function renderTrendChart(trendData, events) {
                 tension: 0.4,
                 pointRadius: 5,
                 pointBackgroundColor: "#3b82f6",
-                pointBorderColor: "#0f172a",
+                pointBorderColor: (typeof getChartTheme === 'function') ? getChartTheme().pointBorder : "#0f172a",
                 pointBorderWidth: 2,
                 pointHoverRadius: 7,
                 fill: true
@@ -234,10 +240,10 @@ function renderTrendChart(trendData, events) {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: "rgba(15, 23, 42, 0.92)",
-                    titleColor: "#e2e8f0",
-                    bodyColor: "#b8c4d5",
-                    borderColor: "rgba(120, 150, 190, 0.2)",
+                    backgroundColor: t.tooltipBg,
+                    titleColor: t.tooltipTitle,
+                    bodyColor: t.tooltipBody,
+                    borderColor: t.tooltipBorder,
                     borderWidth: 1,
                     cornerRadius: 8,
                     padding: 12,
@@ -246,17 +252,20 @@ function renderTrendChart(trendData, events) {
             },
             scales: {
                 x: {
-                    grid: { color: "rgba(120, 150, 190, 0.06)", drawBorder: false },
-                    ticks: { color: "#64748b", font: { size: 11, family: "Inter, system-ui, sans-serif" } }
+                    grid: { color: t.gridColor, drawBorder: false },
+                    ticks: { color: t.tickColor, font: { size: 11, family: "Inter, system-ui, sans-serif" } }
                 },
                 y: {
-                    grid: { color: "rgba(120, 150, 190, 0.06)", drawBorder: false },
-                    ticks: { color: "#64748b", font: { size: 11, family: "Inter, system-ui, sans-serif" }, stepSize: 5 },
+                    grid: { color: t.gridColor, drawBorder: false },
+                    ticks: { color: t.tickColor, font: { size: 11, family: "Inter, system-ui, sans-serif" }, stepSize: 5 },
                     beginAtZero: true
                 }
             }
         }
     });
+
+    // Expose globally for theme refresh
+    window.incidentChart = incidentChart;
 }
 
 function renderDonutChart(stats, mockCategories) {
@@ -285,6 +294,12 @@ function renderDonutChart(stats, mockCategories) {
 
     const total = categories.reduce((sum, c) => sum + c.value, 0);
 
+    const dt = (typeof getChartTheme === 'function') ? getChartTheme() : {
+        tooltipBg:'rgba(15,23,42,0.92)', tooltipBorder:'rgba(120,150,190,0.2)',
+        tooltipTitle:'#e2e8f0', tooltipBody:'#b8c4d5', centerText:'#e2e8f0',
+        centerLabel:'#64748b', donutBorder:'rgba(10,17,32,0.8)'
+    };
+
     donutChart = new Chart(ctx, {
         type: "doughnut",
         data: {
@@ -292,9 +307,9 @@ function renderDonutChart(stats, mockCategories) {
             datasets: [{
                 data: categories.map(c => c.value),
                 backgroundColor: categories.map(c => c.color),
-                borderColor: "rgba(10, 17, 32, 0.8)",
+                borderColor: dt.donutBorder,
                 borderWidth: 3,
-                hoverBorderColor: "rgba(10, 17, 32, 0.8)",
+                hoverBorderColor: dt.donutBorder,
                 hoverBorderWidth: 3
             }]
         },
@@ -305,10 +320,10 @@ function renderDonutChart(stats, mockCategories) {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: "rgba(15, 23, 42, 0.92)",
-                    titleColor: "#e2e8f0",
-                    bodyColor: "#b8c4d5",
-                    borderColor: "rgba(120, 150, 190, 0.2)",
+                    backgroundColor: dt.tooltipBg,
+                    titleColor: dt.tooltipTitle,
+                    bodyColor: dt.tooltipBody,
+                    borderColor: dt.tooltipBorder,
                     borderWidth: 1,
                     cornerRadius: 8,
                     padding: 10
@@ -321,17 +336,20 @@ function renderDonutChart(stats, mockCategories) {
                 const { width, height, ctx: c } = chart;
                 c.save();
                 c.font = "700 28px Inter, system-ui, sans-serif";
-                c.fillStyle = "#e2e8f0";
+                c.fillStyle = dt.centerText;
                 c.textAlign = "center";
                 c.textBaseline = "middle";
                 c.fillText(total, width / 2, height / 2 - 6);
                 c.font = "500 11px Inter, system-ui, sans-serif";
-                c.fillStyle = "#64748b";
+                c.fillStyle = dt.centerLabel;
                 c.fillText("Total Incidents", width / 2, height / 2 + 16);
                 c.restore();
             }
         }]
     });
+
+    // Expose globally for theme refresh
+    window.donutChart = donutChart;
 
     // Render legend
     legendEl.innerHTML = categories.map(c => `
@@ -576,5 +594,8 @@ function cleanupAnalytics() {
 window.addEventListener("beforeunload", cleanupAnalytics);
 
 loadAnalytics();
+
+// Watch for theme changes and re-apply chart colors for analytics charts
+if (typeof refreshChartsOnThemeChange === 'function') refreshChartsOnThemeChange();
 
 window._analyticsInterval = setInterval(loadAnalytics, 30000);

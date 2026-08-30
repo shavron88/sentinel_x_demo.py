@@ -188,7 +188,11 @@ async function loadAIFeed() {
 
             const timestamp = item.timestamp || item.time || "";
 
-            const timeStr = timestamp ? new Date(timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }) : "--:--";
+            const timeStr = (function() {
+                if (!timestamp) return "--:--";
+                var d = new Date(timestamp);
+                return isNaN(d.getTime()) ? "--:--" : d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+            })();
 
             const div = document.createElement("div");
 
@@ -333,35 +337,69 @@ loadGallery();
 async function updateKPIBar(stats){
     const threatEl = document.getElementById("kpi-threat");
     const camerasEl = document.getElementById("kpi-cameras");
+    const camerasTotalEl = document.getElementById("kpi-cameras-total");
+    const camerasDotEl = document.getElementById("kpi-cameras-dot");
+    const camerasTextEl = document.getElementById("kpi-cameras-text");
     const accuracyEl = document.getElementById("kpi-accuracy");
+    const accuracyDotEl = document.getElementById("kpi-accuracy-dot");
+    const accuracyTextEl = document.getElementById("kpi-accuracy-text");
     const alertsEl = document.getElementById("kpi-alerts");
+    const alertsDotEl = document.getElementById("kpi-alerts-dot");
+    const alertsTextEl = document.getElementById("kpi-alerts-text");
 
+    // Threat level
     if(threatEl){
-        threatEl.innerText = stats.threat || "LOW";
+        const threat = stats.threat || "LOW";
+        threatEl.innerText = threat;
+        const threatIndicator = threatEl.closest('.kpi-card')?.querySelector('.kpi-dot');
+        const threatText = threatEl.closest('.kpi-card')?.querySelector('.kpi-text');
+        if(threatIndicator){
+            threatIndicator.className = 'kpi-dot ' + (threat === 'LOW' ? 'online' : threat === 'MEDIUM' ? 'warning' : 'error');
+        }
+        if(threatText) threatText.innerText = threat === 'LOW' ? 'Secure' : threat === 'MEDIUM' ? 'Caution' : 'Alert';
     }
 
+    // Alerts
     if(alertsEl){
-        alertsEl.innerText = String(stats.alerts || 0).padStart(2, "0");
+        const alertCount = stats.alerts || 0;
+        alertsEl.innerText = String(alertCount).padStart(2, "0");
+        if(alertsDotEl) alertsDotEl.className = 'kpi-dot ' + (alertCount > 5 ? 'error' : alertCount > 0 ? 'warning' : 'online');
+        if(alertsTextEl) alertsTextEl.innerText = 'Today';
     }
+
+    // Cameras - fetch from health endpoint
     if(camerasEl){
         try {
-            const res = await fetch("/api/cameras");
+            const res = await fetch("/api/health");
             const data = await res.json();
-            const cameras = (data && data.cameras) ? data.cameras : (Array.isArray(data) ? data : []);
-            const active = cameras.filter(c => c.status === "ONLINE").length;
-            camerasEl.innerText = active;
+            const camData = data.services?.cameras || {};
+            const online = camData.online || 0;
+            const total = camData.total || 0;
+            camerasEl.innerText = online;
+            if(camerasTotalEl) camerasTotalEl.innerText = '/' + total;
+            if(camerasDotEl) camerasDotEl.className = 'kpi-dot ' + (online === total && total > 0 ? 'online' : online > 0 ? 'warning' : 'offline');
+            if(camerasTextEl) camerasTextEl.innerText = online === total && total > 0 ? 'All Online' : online > 0 ? 'Partial' : 'Offline';
         } catch(e) {
-            camerasEl.innerText = "4";
+            camerasEl.innerText = "--";
+            if(camerasTotalEl) camerasTotalEl.innerText = '/--';
+            if(camerasTextEl) camerasTextEl.innerText = 'Unknown';
         }
     }
 
+    // Accuracy - from AI summary
     if(accuracyEl){
         try {
             const aiRes = await fetch("/ai_summary");
             const aiData = await aiRes.json();
-            accuracyEl.innerText = aiData.confidence || "98.7";
+            const conf = aiData.confidence || "--";
+            accuracyEl.innerText = conf.replace('%', '');
+            const confNum = parseFloat(conf) || 0;
+            if(accuracyDotEl) accuracyDotEl.className = 'kpi-dot ' + (confNum >= 90 ? 'high' : confNum >= 70 ? 'warning' : 'offline');
+            if(accuracyTextEl) accuracyTextEl.innerText = confNum >= 90 ? 'Excellent' : confNum >= 70 ? 'Good' : confNum > 0 ? 'Fair' : 'No Data';
         } catch(e) {
-            accuracyEl.innerText = "98.7";
+            accuracyEl.innerText = "--";
+            if(accuracyDotEl) accuracyDotEl.className = 'kpi-dot';
+            if(accuracyTextEl) accuracyTextEl.innerText = 'Unavailable';
         }
     }
 }
@@ -391,9 +429,10 @@ async function loadAISummary(){
             const width = data.risk === "HIGH" ? "90%" : data.risk === "MEDIUM" ? "60%" : "25%";
             riskFill.style.width = width;
         }
-        if(detectionsEl) detectionsEl.innerText = data.detections || "3 Persons";
-        if(confidenceEl) confidenceEl.innerText = data.confidence || "98.4%";
-        if(recommendationEl) recommendationEl.innerText = data.recommendation || "Continue Monitoring";
+        const detCount = data.detections;
+        if(detectionsEl) detectionsEl.innerText = detCount != null ? (detCount + " Detections") : "-- Persons";
+        if(confidenceEl) confidenceEl.innerText = data.confidence || "--%";
+        if(recommendationEl) recommendationEl.innerText = data.recommendation || "--";
 
     }
     catch(e){
@@ -403,6 +442,80 @@ async function loadAISummary(){
     }
 
 }
+
+/* ==========================================
+   SYSTEM HEALTH STATUS CARDS
+========================================== */
+
+function setSystemDot(dotId, isOnline) {
+    const dot = document.getElementById(dotId);
+    if (!dot) return;
+    dot.className = 'status-card-dot ' + (isOnline ? 'online' : 'offline');
+}
+
+async function updateSystemHealthCards() {
+    // Dashboard is always active when page loads
+    setSystemDot('sys-dot-dashboard', true);
+    const dashVal = document.getElementById('sys-val-dashboard');
+    if (dashVal) dashVal.textContent = 'Active';
+
+    try {
+        // Fetch both health endpoints for comprehensive data
+        const [v1Res, healthRes] = await Promise.all([
+            fetch('/api/v1/health').then(r => r.json()).catch(() => ({})),
+            fetch('/api/health').then(r => r.json()).catch(() => ({}))
+        ]);
+
+        const aiEngine = v1Res.ai_engine || {};
+        const services = healthRes.services || {};
+
+        // AI Engine
+        const aiStatus = (aiEngine.status || '').toLowerCase();
+        const aiOk = aiStatus === 'healthy' || aiStatus === 'degraded';
+        setSystemDot('sys-dot-ai', aiOk);
+        const aiVal = document.getElementById('sys-val-ai');
+        if (aiVal) aiVal.textContent = aiOk ? (aiStatus === 'healthy' ? 'Running' : 'Degraded') : 'Stopped';
+
+        // YOLO Model
+        const yoloStatus = (aiEngine.yolo_status || '').toLowerCase();
+        const yoloOk = yoloStatus === 'loaded' || yoloStatus === 'running';
+        setSystemDot('sys-dot-yolo', yoloOk);
+        const yoloVal = document.getElementById('sys-val-yolo');
+        if (yoloVal) yoloVal.textContent = yoloOk ? 'Loaded' : (yoloStatus || 'Unknown');
+
+        // Detection Engine (tracker/worker)
+        const trackerStatus = (aiEngine.tracker_status || '').toLowerCase();
+        const trackerOk = trackerStatus === 'active' || trackerStatus === 'running';
+        setSystemDot('sys-dot-detection', trackerOk);
+        const detVal = document.getElementById('sys-val-detection');
+        if (detVal) detVal.textContent = trackerOk ? 'Active' : (trackerStatus || 'Inactive');
+
+        // Database
+        const dbStatus = services.database?.status;
+        const dbOk = dbStatus === 'HEALTHY';
+        setSystemDot('sys-dot-db', dbOk);
+        const dbVal = document.getElementById('sys-val-db');
+        if (dbVal) dbVal.textContent = dbOk ? 'Connected' : (dbStatus ? 'Error' : 'Unknown');
+
+        // Camera
+        const camData = services.cameras || {};
+        const camOnline = (camData.online || 0) > 0;
+        setSystemDot('sys-dot-camera', camOnline);
+        const camVal = document.getElementById('sys-val-camera');
+        if (camVal) camVal.textContent = camOnline ? (camData.online + '/' + camData.total + ' Online') : 'No Cameras';
+
+    } catch (e) {
+        console.log('System health fetch error:', e);
+        ['sys-dot-ai', 'sys-dot-yolo', 'sys-dot-detection', 'sys-dot-db', 'sys-dot-camera'].forEach(id => setSystemDot(id, false));
+        ['sys-val-ai', 'sys-val-yolo', 'sys-val-detection', 'sys-val-db', 'sys-val-camera'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = 'Unknown';
+        });
+    }
+}
+
+window._dashboardIntervals.push(setInterval(updateSystemHealthCards, 5000));
+updateSystemHealthCards();
 
 window._dashboardIntervals.push(setInterval(loadAISummary, 5000));
 loadAISummary();
@@ -633,6 +746,11 @@ function initDetectionChart(){
         labels.push(d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }));
     }
 
+    const t = (typeof getChartTheme === 'function') ? getChartTheme() : {
+        tooltipBg:'rgba(15,23,42,.9)', tooltipBorder:'rgba(255,255,255,.1)',
+        tooltipTitle:'#e2e8f0', tooltipBody:'#94a3b8', gridColor:'rgba(255,255,255,.05)', tickColor:'#64748b'
+    };
+
     detectionChart = new Chart(ctx, {
         type: "line",
         data: {
@@ -685,13 +803,13 @@ function initDetectionChart(){
                     display: false
                 },
                 tooltip: {
-                    backgroundColor: "rgba(15,23,42,.9)",
-                    borderColor: "rgba(255,255,255,.1)",
+                    backgroundColor: t.tooltipBg,
+                    borderColor: t.tooltipBorder,
                     borderWidth: 1,
                     padding: 12,
                     cornerRadius: 8,
-                    titleColor: "#e2e8f0",
-                    bodyColor: "#94a3b8",
+                    titleColor: t.tooltipTitle,
+                    bodyColor: t.tooltipBody,
                     bodyFont: {
                         size: 12
                     }
@@ -700,11 +818,11 @@ function initDetectionChart(){
             scales: {
                 x: {
                     grid: {
-                        color: "rgba(255,255,255,.05)",
+                        color: t.gridColor,
                         drawBorder: false
                     },
                     ticks: {
-                        color: "#64748b",
+                        color: t.tickColor,
                         font: {
                             size: 11
                         },
@@ -715,11 +833,11 @@ function initDetectionChart(){
                 },
                 y: {
                     grid: {
-                        color: "rgba(255,255,255,.05)",
+                        color: t.gridColor,
                         drawBorder: false
                     },
                     ticks: {
-                        color: "#64748b",
+                        color: t.tickColor,
                         font: {
                             size: 11
                         },
@@ -734,6 +852,9 @@ function initDetectionChart(){
             }
         }
     });
+
+    // Expose globally for theme refresh
+    window.detectionChart = detectionChart;
 
     // Hide detection spinner once chart is ready
     const detSpinner = document.getElementById('detectionSpinner');
@@ -962,6 +1083,11 @@ async function updateAIPerformance() {
 
             if (!performanceChart) {
 
+                const pt = (typeof getChartTheme === 'function') ? getChartTheme() : {
+                    tooltipBg:'rgba(15,23,42,0.96)', tooltipBorder:'rgba(59,130,246,0.25)',
+                    tooltipTitle:'#e5e7eb', tooltipBody:'#94a3b8'
+                };
+
                 performanceChart = new Chart(
                     canvas,
                     {
@@ -1021,16 +1147,16 @@ async function updateAIPerformance() {
                                     enabled: true,
 
                                     backgroundColor:
-                                        "rgba(15,23,42,0.96)",
+                                        pt.tooltipBg,
 
                                     borderColor:
-                                        "rgba(59,130,246,0.25)",
+                                        pt.tooltipBorder,
 
                                     borderWidth: 1,
 
-                                    titleColor: "#e5e7eb",
+                                    titleColor: pt.tooltipTitle,
 
-                                    bodyColor: "#94a3b8",
+                                    bodyColor: pt.tooltipBody,
 
                                     padding: 9,
 
@@ -1076,6 +1202,9 @@ async function updateAIPerformance() {
                         }
                     }
                 );
+
+                // Expose globally for theme refresh
+                window.performanceChart = performanceChart;
 
             } else {
 
@@ -1137,6 +1266,9 @@ initDetectionChart();
 updateDetectionChart();
 window._dashboardIntervals.push(setInterval(updateAIPerformance, 5000));
 updateAIPerformance();
+
+// Watch for theme changes and re-apply chart colors
+if (typeof refreshChartsOnThemeChange === 'function') refreshChartsOnThemeChange();
 /* ==========================================
    CLEANUP ON PAGE LEAVE
 ========================================== */

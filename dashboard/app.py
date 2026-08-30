@@ -18,7 +18,7 @@ from core.recovery import AutoRecoveryManager
 
 # --- Authentication ---
 from api.auth import (
-    is_authenticated, login, logout,
+    is_authenticated, login, logout, signup,
     get_csrf_token, validate_csrf_token,
     require_auth, require_csrf, rate_limit
 )
@@ -120,19 +120,23 @@ if not app.debug:
 
 @app.errorhandler(404)
 def not_found_error(error):
-    return jsonify({"error": "Resource not found"}), 404
+    if request.path.startswith('/api/') or request.is_json or request.headers.get('Accept') == 'application/json':
+        return jsonify({"error": "Resource not found"}), 404
+    return render_template('base.html', error_page=True, error_code=404, error_message='Page not found'), 404
 
 @app.errorhandler(500)
 def internal_error(error):
     app.logger.error(f"Server Error: {error}", exc_info=True)
-    return jsonify({"error": "Internal server error"}), 500
+    if request.path.startswith('/api/') or request.is_json or request.headers.get('Accept') == 'application/json':
+        return jsonify({"error": "Internal server error"}), 500
+    return render_template('base.html', error_page=True, error_code=500, error_message='Internal server error'), 500
 
 @app.errorhandler(Exception)
 def handle_exception(e):
     app.logger.error(f"Unhandled Exception: {e}", exc_info=True)
-    if request.is_json:
+    if request.path.startswith('/api/') or request.is_json or request.headers.get('Accept') == 'application/json':
         return jsonify({"error": "An unexpected error occurred"}), 500
-    return jsonify({"error": "An unexpected error occurred"}), 500
+    return render_template('base.html', error_page=True, error_code=500, error_message='An unexpected error occurred'), 500
 
 
 # ==========================
@@ -164,6 +168,26 @@ def api_login():
         }), 200
     
     return jsonify({"status": "error", "message": message}), 401
+
+
+@app.route("/api/auth/signup", methods=["POST"])
+@rate_limit
+def api_signup():
+    """Register a new user account."""
+    data = request.get_json(silent=True) or {}
+    username = data.get("username", "")
+    password = data.get("password", "")
+    email = data.get("email", "")
+
+    if not isinstance(username, str) or not isinstance(password, str):
+        return jsonify({"status": "error", "message": "Invalid request format"}), 400
+    if len(username) > 100 or len(password) > 100:
+        return jsonify({"status": "error", "message": "Request too large"}), 400
+
+    success, message = signup(username, password, email)
+    if success:
+        return jsonify({"status": "success", "message": message}), 201
+    return jsonify({"status": "error", "message": message}), 400
 
 
 @app.route("/api/auth/logout", methods=["POST"])
@@ -203,7 +227,8 @@ def api_csrf_token():
 
 # Endpoints that do NOT require authentication
 _PUBLIC_ENDPOINTS = frozenset({
-    "login_page", "static", "api_login", "api_auth_status",
+    "landing_page", "login_page", "signup_page", "static",
+    "api_login", "api_signup", "api_auth_status",
     "api_logout", "api_csrf_token",
     "not_found_error", "internal_error", "handle_exception",
     "health_bp.get_system_health",
@@ -251,15 +276,31 @@ def login_page():
     """Render the authentication landing page.
     Already-authenticated users are sent to the dashboard."""
     if is_authenticated():
-        return redirect(url_for("home"))
+        return redirect(url_for("dashboard_page"))
     return render_template("login.html")
+
+
+@app.route("/signup")
+def signup_page():
+    """Render the sign-up page.
+    Already-authenticated users are sent to the dashboard."""
+    if is_authenticated():
+        return redirect(url_for("dashboard_page"))
+    return render_template("signup.html")
 
 
 # ==========================
 # PAGE ROUTES (UI VIEWS)
 # ==========================
 @app.route("/")
-def home():
+def landing_page():
+    """Public landing page — no authentication required."""
+    return render_template("landing.html")
+
+
+@app.route("/dashboard")
+def dashboard_page():
+    """Protected dashboard — requires authentication."""
     return render_template("index.html")
 
 @app.route("/cameras")
@@ -419,7 +460,7 @@ def ai_summary_endpoint():
         return jsonify({
             "risk": risk,
             "detections": stats.get("total_incidents", 0),
-            "confidence": f"{stats.get('online_cameras', 0) * 20 + 75:.1f}%",
+            "confidence": f"{min(stats.get('accuracy', stats.get('avg_confidence', 92.5)), 100):.1f}%",
             "recommendation": "Review high-risk alerts" if risk != "LOW" else "Continue Monitoring"
         }), 200
     except Exception as e:

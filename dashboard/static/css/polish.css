@@ -2409,3 +2409,165 @@ h1, h2, h3, h4, h5, h6 {
         flex-direction: column;
     }
 }
+
+/* ==========================================
+   MISSING LAYOUT — bottom-grid
+   layout.css is not loaded; provide the rule
+   here so the dashboard bottom section uses
+   a proper two-column grid.
+========================================== */
+
+.bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .bottom-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==========================================
+   PREMIUM ANIMATION POLISH LAYER
+========================================== */
+
+/* ═══ Card entry animation ═══ */
+@keyframes cardSlideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.kpi-card,
+.camera-card,
+.incident-card,
+.alert-item,
+.evidence-card {
+    animation: cardSlideUp 400ms cubic-bezier(.16,1,.3,1) both;
+}
+.kpi-card:nth-child(1) { animation-delay: 50ms; }
+.kpi-card:nth-child(2) { animation-delay: 100ms; }
+.kpi-card:nth-child(3) { animation-delay: 150ms; }
+.kpi-card:nth-child(4) { animation-delay: 200ms; }
+.camera-card:nth-child(1) { animation-delay: 80ms; }
+.camera-card:nth-child(2) { animation-delay: 140ms; }
+.camera-card:nth-child(3) { animation-delay: 200ms; }
+.camera-card:nth-child(4) { animation-delay: 260ms; }
+
+/* ═══ Premium empty states ═══ */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    text-align: center;
+    animation: cardSlideUp 500ms cubic-bezier(.16,1,.3,1) both;
+}
+.empty-state-icon {
+    width: 64px; height: 64px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: var(--ev-surface-2);
+    color: var(--ev-text-muted);
+    margin-bottom: 20px;
+    font-size: 28px;
+}
+.empty-state-icon svg {
+    width: 28px; height: 28px;
+    stroke: var(--ev-text-muted);
+    opacity: 0.6;
+}
+.empty-state-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ev-text);
+    margin-bottom: 6px;
+}
+.empty-state-desc {
+    font-size: 13px;
+    color: var(--ev-text-muted);
+    max-width: 320px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+.empty-state .btn-sm {
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--ev-primary);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background 200ms, transform 150ms;
+}
+.empty-state .btn-sm:hover {
+    background: var(--ev-primary-hover);
+    transform: translateY(-1px);
+}
+
+/* ═══ Premium error states ═══ */
+.error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 24px;
+    text-align: center;
+    border: 1px solid var(--ev-border);
+    border-radius: var(--ev-radius-sm);
+    background: var(--ev-surface);
+    animation: cardSlideUp 400ms cubic-bezier(.16,1,.3,1) both;
+}
+.error-state-icon {
+    width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: rgba(239,68,68,.1);
+    color: var(--ev-danger);
+    margin-bottom: 16px;
+    font-size: 22px;
+}
+.error-state-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ev-text);
+    margin-bottom: 4px;
+}
+.error-state-desc {
+    font-size: 13px;
+    color: var(--ev-text-muted);
+    max-width: 300px;
+    line-height: 1.5;
+    margin-bottom: 16px;
+}
+.error-state .btn-retry {
+    padding: 7px 18px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    background: transparent;
+    color: var(--ev-primary);
+    border: 1px solid var(--ev-primary);
+    cursor: pointer;
+    transition: all 200ms;
+}
+.error-state .btn-retry:hover {
+    background: var(--ev-primary);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+/* ═══ Enhanced sidebar nav link hover ═══ */
+.sidebar-nav-link {
+    position: relative;
+    transition: background 200ms cubic-bezier(.4,0,.2,1),
+                color 200ms cubic-bezier(.4,0,.2,1);
+}
+.sidebar-nav-link:hover .sidebar-nav-icon {
+    transform: translateX(2px);
+    transition: transform 200ms cubic-bezier(.4,0,.2,1);
+}
+.sidebar-nav-icon {
+    transition: transform 200ms cubic-bezier(.4,0,.2,1);
+}

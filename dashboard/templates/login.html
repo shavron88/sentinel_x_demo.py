@@ -15,6 +15,19 @@
     <!-- Tabler Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 
+    <script>
+        try {
+            var savedTheme = localStorage.getItem('sentinelx-theme');
+            if (savedTheme && ['dark', 'light', 'midnight'].indexOf(savedTheme) !== -1) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else {
+                document.documentElement.setAttribute('data-theme', 'midnight');
+            }
+        } catch (e) {
+            document.documentElement.setAttribute('data-theme', 'midnight');
+        }
+    </script>
+
     <style>
         /* ==========================================
            CSS CUSTOM PROPERTIES
@@ -35,6 +48,79 @@
             --success-dim: rgba(34,199,122,0.12);
             --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
             --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+
+        /* ==========================================
+           LIGHT THEME OVERRIDES
+        ========================================== */
+        [data-theme="light"] {
+            --page-bg: #f1f5f9;
+            --card-surface: #ffffff;
+            --input-surface: #f8fafc;
+            --border-default: rgba(0,0,0,0.08);
+            --border-strong: rgba(0,0,0,0.15);
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #94a3b8;
+            --accent-blue: #2563eb;
+            --accent-text: #2563eb;
+            --accent-dim: rgba(37,99,235,0.1);
+            --success-green: #16a34a;
+            --success-dim: rgba(22,163,74,0.1);
+        }
+
+        [data-theme="light"] body {
+            background: var(--page-bg);
+            color: var(--text-primary);
+        }
+
+        [data-theme="light"] .card {
+            box-shadow: 0 8px 32px rgba(15,23,42,0.08), 0 1px 3px rgba(15,23,42,0.06);
+            border-color: rgba(0,0,0,0.08);
+        }
+
+        [data-theme="light"] .input-wrap input:focus {
+            background: #ffffff;
+        }
+
+        [data-theme="light"] .scene::before {
+            background:
+                linear-gradient(to right, rgba(37,99,235,0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(37,99,235,0.04) 1px, transparent 1px);
+        }
+
+        [data-theme="light"] .glow--blue {
+            opacity: 0.15;
+        }
+
+        [data-theme="light"] .glow--green {
+            opacity: 0.12;
+        }
+
+        [data-theme="light"] .scanline {
+            background: linear-gradient(to bottom, transparent, rgba(37,99,235,0.04), transparent);
+        }
+
+        [data-theme="light"] ::-webkit-scrollbar-track {
+            background: rgba(241,245,249,0.6);
+        }
+
+        [data-theme="light"] ::-webkit-scrollbar-thumb {
+            background: rgba(37,99,235,0.25);
+            border-color: rgba(37,99,235,0.1);
+        }
+
+        [data-theme="light"] * {
+            scrollbar-color: rgba(37,99,235,0.25) rgba(241,245,249,0.6);
+        }
+
+        [data-theme="light"] .status-bar {
+            background: rgba(0,0,0,0.03);
+            border-color: rgba(0,0,0,0.06);
+        }
+
+        [data-theme="light"] .status-bar span {
+            color: var(--text-secondary);
         }
 
         /* ==========================================
@@ -516,10 +602,13 @@
 
         .btn-login:hover {
             background: #2B63E0;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(59,130,246,.25);
         }
 
         .btn-login:active {
-            transform: scale(0.97);
+            transform: translateY(0) scale(0.97);
+            box-shadow: none;
         }
 
         .btn-login:disabled {
@@ -664,12 +753,38 @@
             color: var(--accent-blue);
         }
 
+        .auth-footer a {
+            color: var(--accent-text);
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
         /* ==========================================
            ANIMATIONS
         ========================================== */
         @keyframes fieldIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Input validation feedback */
+        .input-wrap input.is-invalid {
+            border-color: var(--danger, #ef4444) !important;
+            animation: inputShake 0.3s ease;
+        }
+        .input-wrap input.is-valid {
+            border-color: var(--success, #22c55e) !important;
+            transition: border-color 0.2s;
+        }
+        @keyframes inputShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
         }
 
         /* ==========================================
@@ -995,8 +1110,8 @@
         <!-- Card -->
         <div class="card" id="loginCard">
             <div class="card-header">
-                <h2>Secure access</h2>
-                <p>Sign in to the operations center.</p>
+                <h2 data-i18n="login.secureAccess">Secure access</h2>
+                <p data-i18n="login.signInDesc">Sign in to the operations center.</p>
             </div>
 
             <div class="alert-error" id="loginError" role="alert" aria-live="assertive">
@@ -1009,11 +1124,11 @@
                 <div class="field">
                     <label for="username">
                         <i class="ti ti-user"></i>
-                        Username
+                        <span data-i18n="login.username">Username</span>
                     </label>
                     <div class="input-wrap">
                         <input type="text" id="username" name="username"
-                               placeholder="Enter your username" required
+                               placeholder="Enter your username" data-i18n="login.usernamePh" required
                                autocomplete="username" autofocus>
                     </div>
                 </div>
@@ -1022,12 +1137,12 @@
                 <div class="field">
                     <label for="password">
                         <i class="ti ti-lock"></i>
-                        Password
+                        <span data-i18n="login.password">Password</span>
                     </label>
                     <div class="pw-wrap">
                         <div class="input-wrap">
                             <input type="password" id="password" name="password"
-                                   placeholder="Enter your password" required
+                                   placeholder="Enter your password" data-i18n="login.passwordPh" required
                                    autocomplete="current-password">
                         </div>
                         <button type="button" class="pw-toggle" id="pwToggle"
@@ -1044,16 +1159,16 @@
                         <span class="check-box">
                             <i class="ti ti-check"></i>
                         </span>
-                        Remember me
+                        <span data-i18n="login.remember">Remember me</span>
                     </label>
-                    <a href="#" class="forgot-link">Forgot password?</a>
+                    <a href="#" class="forgot-link" data-i18n="login.forgot">Forgot password?</a>
                 </div>
 
                 <!-- Submit -->
                 <button type="submit" class="btn-login" id="loginBtn">
                     <span class="btn-text">
                         <i class="ti ti-shield-lock"></i>
-                        Authorize access
+                        <span data-i18n="login.submit">Authorize access</span>
                     </span>
                     <span class="btn-loader" aria-hidden="true">
                         <i class="ti ti-loader-2"></i>
@@ -1063,22 +1178,28 @@
 
             <!-- Divider -->
             <div class="divider">
-                <span>Connection status</span>
+                <span data-i18n="login.connectionStatus">Connection status</span>
             </div>
 
             <!-- Status pill -->
             <div class="status-pill">
                 <span class="status-dot"></span>
-                Secure connection
+                <span data-i18n="login.secureConn">Secure connection</span>
                 <span class="sep">&middot;</span>
-                AES-256 encrypted
+                <span data-i18n="login.encrypted">AES-256 encrypted</span>
             </div>
         </div>
 
         <!-- Footer -->
         <footer class="auth-footer">
-            <p>Need an operator account? <strong>Contact your administrator</strong></p>
+            <p><span data-i18n="login.noAccount">Need an operator account?</span> <a href="/signup" data-i18n="login.createOne">Create one now</a></p>
         </footer>
+
+        <div style="text-align:center;margin-top:8px;opacity:0;animation:fieldIn 0.45s ease 0.58s forwards;">
+            <a href="/" style="font-size:12px;color:var(--text-muted);text-decoration:none;transition:color 0.2s;">
+                <i class="ti ti-arrow-left" style="font-size:12px"></i> <span data-i18n="login.back">Back to Sentinel-X</span>
+            </a>
+        </div>
     </main>
 
     <script>
@@ -1119,7 +1240,9 @@
             var password = passEl.value;
 
             if (!username || !password) {
-                showError("Please enter both username and password.");
+                showError(SentinelI18N.t("login.errorRequired"));
+                if (!username) { userEl.classList.add('is-invalid'); setTimeout(function(){userEl.classList.remove('is-invalid');}, 800); }
+                if (!password) { passEl.classList.add('is-invalid'); setTimeout(function(){passEl.classList.remove('is-invalid');}, 800); }
                 setLoading(false);
                 return;
             }
@@ -1136,16 +1259,16 @@
                         try { sessionStorage.setItem("sentinelx_csrf", result.data.csrf_token); } catch(e) {}
                     }
                     document.getElementById("authMain").classList.add("auth-exit");
-                    setTimeout(function() { window.location.href = "/"; }, 500);
+                    setTimeout(function() { window.location.href = "/dashboard"; }, 500);
                 } else {
-                    showError(result.data.message || "Authentication failed. Please try again.");
+                    showError(result.data.message || SentinelI18N.t("login.errorFailed"));
                     setLoading(false);
                     passEl.value = "";
                     passEl.focus();
                 }
             })
             .catch(function(err) {
-                showError("Connection error. Please check the server and try again.");
+                showError(SentinelI18N.t("login.errorConnection"));
                 setLoading(false);
             });
         });
@@ -1254,5 +1377,6 @@
 
     })();
     </script>
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
 </body>
 </html>

@@ -116,6 +116,49 @@ def logout():
     session.clear()
 
 
+def signup(username, password, email=""):
+    """Register a new user account.
+    Returns (success, message) tuple."""
+    import re
+    if not username or not password:
+        return False, "Username and password are required"
+    if len(username) < 3 or len(username) > 50:
+        return False, "Username must be between 3 and 50 characters"
+    if len(password) < 4 or len(password) > 100:
+        return False, "Password must be at least 4 characters"
+    if not re.match(r'^[a-zA-Z0-9_.-]+$', username):
+        return False, "Username may only contain letters, numbers, dots, hyphens and underscores"
+    password_hash = hashlib.sha256(password.encode()).hexdigest()
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        # Ensure table exists
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS admin_users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                email TEXT,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        # Check for existing user
+        cursor.execute("SELECT id FROM admin_users WHERE username = ?", (username,))
+        if cursor.fetchone():
+            conn.close()
+            return False, "Username already exists"
+        cursor.execute(
+            "INSERT INTO admin_users (username, password_hash, email) VALUES (?, ?, ?)",
+            (username, password_hash, email or f"{username}@sentinelx.ai")
+        )
+        conn.commit()
+        conn.close()
+        return True, "Account created successfully"
+    except Exception as e:
+        print(f"Signup database error: {e}")
+        return False, "Registration failed. Please try again."
+
+
 def get_csrf_token():
     """Get the current CSRF token, or generate one if missing."""
     if "csrf_token" not in session:
