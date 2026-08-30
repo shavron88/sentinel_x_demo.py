@@ -249,7 +249,7 @@ def test_api_endpoints_available():
         with app.test_client() as client:
             # First authenticate
             login_response = client.post("/api/auth/login",
-                data=json.dumps({"username": "admin", "password": "sentinelx"}),
+                data=json.dumps({"username": "sentinelx_admin", "password": "SentinelX_SecurePassword2026!"}),
                 content_type="application/json")
             
             if login_response.status_code != 200:

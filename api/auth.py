@@ -13,9 +13,9 @@ from flask import session, request, jsonify
 
 DB_PATH = "sentinelx.db"
 # Demo credentials (in production, use a proper database)
-DEMO_USERNAME = os.getenv("SENTINELX_USER", "sentinelx")
+DEMO_USERNAME = os.getenv("SENTINELX_USER", "sentinelx_admin")
 DEMO_PASSWORD_HASH = hashlib.sha256(
-    os.getenv("SENTINELX_PASSWORD", "auth").encode()
+    os.getenv("SENTINELX_PASSWORD", "SentinelX_SecurePassword2026!").encode()
 ).hexdigest()
 
 # Session settings

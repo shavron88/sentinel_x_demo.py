@@ -40,7 +40,7 @@ def test_path_traversal_blocked():
         with app.test_client() as client:
             # Login first
             login_response = client.post("/api/auth/login",
-                data=json.dumps({"username": "admin", "password": "sentinelx"}),
+                data=json.dumps({"username": "sentinelx_admin", "password": "SentinelX_SecurePassword2026!"}),
                 content_type="application/json")
             
             if login_response.status_code != 200:
@@ -129,7 +129,7 @@ def test_login_logout():
             
             # Test login with valid credentials
             response = client.post("/api/auth/login",
-                data=json.dumps({"username": "admin", "password": "sentinelx"}),
+                data=json.dumps({"username": "sentinelx_admin", "password": "SentinelX_SecurePassword2026!"}),
                 content_type="application/json")
             passed &= run_test("Valid login accepted", 200, response.status_code)
             
@@ -172,7 +172,7 @@ def test_csrf_protection():
         with app.test_client() as client:
             # Login
             login_response = client.post("/api/auth/login",
-                data=json.dumps({"username": "admin", "password": "sentinelx"}),
+                data=json.dumps({"username": "sentinelx_admin", "password": "SentinelX_SecurePassword2026!"}),
                 content_type="application/json")
             
             if login_response.status_code != 200:
@@ -217,7 +217,7 @@ def test_rate_limiting():
         with app.test_client() as client:
             # Login once
             client.post("/api/auth/login",
-                data=json.dumps({"username": "admin", "password": "sentinelx"}),
+                data=json.dumps({"username": "sentinelx_admin", "password": "SentinelX_SecurePassword2026!"}),
                 content_type="application/json")
             
             # Send many requests rapidly
@@ -247,7 +247,7 @@ def test_input_validation():
         with app.test_client() as client:
             # Login and get CSRF token
             login_response = client.post("/api/auth/login",
-                data=json.dumps({"username": "admin", "password": "sentinelx"}),
+                data=json.dumps({"username": "sentinelx_admin", "password": "SentinelX_SecurePassword2026!"}),
                 content_type="application/json")
             
             if login_response.status_code != 200:

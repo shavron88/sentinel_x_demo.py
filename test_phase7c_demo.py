@@ -242,7 +242,7 @@ def test_settings_api():
         with app.test_client() as client:
             # First authenticate
             login_response = client.post("/api/auth/login",
-                data=json.dumps({"username": "admin", "password": "sentinelx"}),
+                data=json.dumps({"username": "sentinelx_admin", "password": "SentinelX_SecurePassword2026!"}),
                 content_type="application/json")
             
             if login_response.status_code != 200:
@@ -295,7 +295,7 @@ def test_system_restart_api():
         with app.test_client() as client:
             # First authenticate
             login_response = client.post("/api/auth/login",
-                data=json.dumps({"username": "admin", "password": "sentinelx"}),
+                data=json.dumps({"username": "sentinelx_admin", "password": "SentinelX_SecurePassword2026!"}),
                 content_type="application/json")
             
             if login_response.status_code != 200:
@@ -333,7 +333,7 @@ def test_backup_api():
         with app.test_client() as client:
             # First authenticate
             login_response = client.post("/api/auth/login",
-                data=json.dumps({"username": "admin", "password": "sentinelx"}),
+                data=json.dumps({"username": "sentinelx_admin", "password": "SentinelX_SecurePassword2026!"}),
                 content_type="application/json")
             
             if login_response.status_code != 200:
