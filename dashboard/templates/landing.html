@@ -320,7 +320,9 @@ section { padding: var(--section-pad); position: relative; }
 .pipeline-track {
   display: flex; align-items: center; gap: 0; margin-top: 48px;
   overflow-x: auto; padding-bottom: 16px; scroll-snap-type: x mandatory;
+  scrollbar-width: none;
 }
+.pipeline-track::-webkit-scrollbar { display: none; }
 .pipeline-step {
   flex: 0 0 auto; display: flex; flex-direction: column; align-items: center;
   text-align: center; padding: 0 12px; scroll-snap-align: center;
@@ -679,7 +681,7 @@ body.theme-transitioning::before {
         <div class="hero-buttons reveal reveal-delay-3">
           <a href="/signup" class="btn-lg btn-lg-primary" data-i18n="hero.getStarted">Get Started <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
           <a href="/login" class="btn-lg btn-lg-outline" data-i18n="hero.signIn">Sign In</a>
-          <a href="#problem" class="btn-lg btn-lg-ghost" data-i18n="hero.explore">Explore Sentinel-X ↓</a>
+          <a href="#problem" class="btn-lg btn-lg-ghost" data-i18n="hero.explore">Explore Sentinel-X <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></a>
         </div>
       </div>
       <div class="reveal reveal-delay-2">
@@ -707,11 +709,11 @@ body.theme-transitioning::before {
     <h2 class="section-title reveal" data-i18n="problem.title">Traditional CCTV Has Limits</h2>
     <p class="section-desc reveal" data-i18n="problem.desc">Most surveillance systems record footage but don't understand what they see. Security teams face challenges that technology should help solve.</p>
     <div class="problem-grid">
-      <div class="problem-card reveal"><div class="problem-icon">👁️</div><h3 data-i18n="problem.1.title">Continuous Monitoring Is Impossible</h3><p data-i18n="problem.1.desc">Humans cannot effectively watch every camera feed simultaneously. Attention fatigue leads to missed events.</p></div>
-      <div class="problem-card reveal reveal-delay-1"><div class="problem-icon">⏱️</div><h3 data-i18n="problem.2.title">Critical Events Get Missed</h3><p data-i18n="problem.2.desc">Important security events can go unnoticed in real time, only discovered after damage has already occurred.</p></div>
-      <div class="problem-card reveal reveal-delay-2"><div class="problem-icon">📼</div><h3 data-i18n="problem.3.title">Footage Review Is Inefficient</h3><p data-i18n="problem.3.desc">Reviewing hours of recorded video to find a specific incident is time-consuming and resource-intensive.</p></div>
-      <div class="problem-card reveal reveal-delay-3"><div class="problem-icon">📹</div><h3 data-i18n="problem.4.title">Information Overload</h3><p data-i18n="problem.4.desc">Multiple cameras generate overwhelming amounts of data. Without AI, correlating events across feeds is difficult.</p></div>
-      <div class="problem-card reveal reveal-delay-4"><div class="problem-icon">🔇</div><h3 data-i18n="problem.5.title">Reactive, Not Proactive</h3><p data-i18n="problem.5.desc">Traditional CCTV primarily records rather than understands — it captures what happened, but doesn't alert you while it's happening.</p></div>
+      <div class="problem-card reveal"><div class="problem-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div><h3 data-i18n="problem.1.title">Continuous Monitoring Is Impossible</h3><p data-i18n="problem.1.desc">Humans cannot effectively watch every camera feed simultaneously. Attention fatigue leads to missed events.</p></div>
+      <div class="problem-card reveal reveal-delay-1"><div class="problem-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5"/><path d="M9 2h6"/></svg></div><h3 data-i18n="problem.2.title">Critical Events Get Missed</h3><p data-i18n="problem.2.desc">Important security events can go unnoticed in real time, only discovered after damage has already occurred.</p></div>
+      <div class="problem-card reveal reveal-delay-2"><div class="problem-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M10 4v4"/><path d="M14 4v4"/><path d="M2 10h20"/></svg></div><h3 data-i18n="problem.3.title">Footage Review Is Inefficient</h3><p data-i18n="problem.3.desc">Reviewing hours of recorded video to find a specific incident is time-consuming and resource-intensive.</p></div>
+      <div class="problem-card reveal reveal-delay-3"><div class="problem-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div><h3 data-i18n="problem.4.title">Information Overload</h3><p data-i18n="problem.4.desc">Multiple cameras generate overwhelming amounts of data. Without AI, correlating events across feeds is difficult.</p></div>
+      <div class="problem-card reveal reveal-delay-4"><div class="problem-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></div><h3 data-i18n="problem.5.title">Reactive, Not Proactive</h3><p data-i18n="problem.5.desc">Traditional CCTV primarily records rather than understands — it captures what happened, but doesn't alert you while it's happening.</p></div>
     </div>
   </div>
 </section>
@@ -724,20 +726,20 @@ body.theme-transitioning::before {
     <p class="section-desc reveal" data-i18n="solution.desc">Sentinel-X processes camera streams through a multi-stage AI pipeline that transforms raw footage into structured, actionable security events.</p>
     <div class="pipeline-track reveal">
       <div class="pipeline-step"><div class="pipeline-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div><span class="pipeline-label" data-i18n="solution.pipe.camera">Camera Feed</span></div>
-      <div class="pipeline-arrow">→</div>
-      <div class="pipeline-step"><div class="pipeline-icon">🧠</div><span class="pipeline-label" data-i18n="solution.pipe.vision">AI Vision</span></div>
-      <div class="pipeline-arrow">→</div>
-      <div class="pipeline-step"><div class="pipeline-icon">🔍</div><span class="pipeline-label" data-i18n="solution.pipe.detection">Detection</span></div>
-      <div class="pipeline-arrow">→</div>
-      <div class="pipeline-step"><div class="pipeline-icon">🎯</div><span class="pipeline-label" data-i18n="solution.pipe.tracking">Tracking</span></div>
-      <div class="pipeline-arrow">→</div>
-      <div class="pipeline-step"><div class="pipeline-icon">📊</div><span class="pipeline-label" data-i18n="solution.pipe.analysis">Analysis</span></div>
-      <div class="pipeline-arrow">→</div>
-      <div class="pipeline-step"><div class="pipeline-icon">🔔</div><span class="pipeline-label" data-i18n="solution.pipe.alert">Alert</span></div>
-      <div class="pipeline-arrow">→</div>
-      <div class="pipeline-step"><div class="pipeline-icon">📸</div><span class="pipeline-label" data-i18n="solution.pipe.evidence">Evidence</span></div>
-      <div class="pipeline-arrow">→</div>
-      <div class="pipeline-step"><div class="pipeline-icon">📋</div><span class="pipeline-label" data-i18n="solution.pipe.dashboard">Dashboard</span></div>
+      <div class="pipeline-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="pipeline-step"><div class="pipeline-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.5 18A2.5 2.5 0 0 1 7 15.5V11a2.5 2.5 0 0 1 5 0v4.5a2.5 2.5 0 0 1-2.5 2.5z"/><path d="M14.5 18A2.5 2.5 0 0 1 12 15.5V11a2.5 2.5 0 0 1 5 0v4.5a2.5 2.5 0 0 1-2.5 2.5z"/><path d="M12 2v4"/><path d="M8 4h8"/></svg></div><span class="pipeline-label" data-i18n="solution.pipe.vision">AI Vision</span></div>
+      <div class="pipeline-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="pipeline-step"><div class="pipeline-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><span class="pipeline-label" data-i18n="solution.pipe.detection">Detection</span></div>
+      <div class="pipeline-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="pipeline-step"><div class="pipeline-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><span class="pipeline-label" data-i18n="solution.pipe.tracking">Tracking</span></div>
+      <div class="pipeline-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="pipeline-step"><div class="pipeline-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg></div><span class="pipeline-label" data-i18n="solution.pipe.analysis">Analysis</span></div>
+      <div class="pipeline-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="pipeline-step"><div class="pipeline-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><span class="pipeline-label" data-i18n="solution.pipe.alert">Alert</span></div>
+      <div class="pipeline-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="pipeline-step"><div class="pipeline-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div><span class="pipeline-label" data-i18n="solution.pipe.evidence">Evidence</span></div>
+      <div class="pipeline-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="pipeline-step"><div class="pipeline-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></div><span class="pipeline-label" data-i18n="solution.pipe.dashboard">Dashboard</span></div>
     </div>
   </div>
 </section>
@@ -749,18 +751,18 @@ body.theme-transitioning::before {
     <h2 class="section-title reveal" data-i18n="cap.title">What Sentinel-X Detects</h2>
     <p class="section-desc reveal" data-i18n="cap.desc">Powered by YOLOv8 object detection and ByteTrack multi-object tracking, Sentinel-X supports a range of security-relevant detection scenarios.</p>
     <div class="capabilities-grid">
-      <div class="cap-card reveal"><div class="cap-icon">👁️</div><h3 data-i18n="cap.person.title">Person Detection</h3><p data-i18n="cap.person.desc">Identifies and tracks individual persons across camera feeds in real time.</p></div>
-      <div class="cap-card reveal reveal-delay-1"><div class="cap-icon">👥</div><h3 data-i18n="cap.crowd.title">Crowd Detection</h3><p data-i18n="cap.crowd.desc">Monitors crowd density and triggers alerts when groups form in designated areas.</p></div>
-      <div class="cap-card reveal reveal-delay-2"><div class="cap-icon">🚨</div><h3 data-i18n="cap.restricted.title">Restricted Area Monitoring</h3><p data-i18n="cap.restricted.desc">Detects unauthorized entry into restricted zones and generates immediate alerts.</p></div>
-      <div class="cap-card reveal reveal-delay-3"><div class="cap-icon">📦</div><h3 data-i18n="cap.abandoned.title">Abandoned Object Detection</h3><p data-i18n="cap.abandoned.desc">Flags stationary objects that appear in monitored areas and persist beyond a threshold.</p></div>
-      <div class="cap-card reveal"><div class="cap-icon">🧍</div><h3 data-i18n="cap.fall.title">Fall Detection</h3><p data-i18n="cap.fall.desc">Recognizes fallen persons using pose analysis and generates high-priority alerts.</p></div>
-      <div class="cap-card reveal reveal-delay-1"><div class="cap-icon">⚠️</div><h3 data-i18n="cap.weapon.title">Weapon Detection</h3><p data-i18n="cap.weapon.desc">Attempts to identify visible weapons in camera frames and escalates threat level.</p></div>
-      <div class="cap-card reveal reveal-delay-2"><div class="cap-icon">🚧</div><h3 data-i18n="cap.line.title">Line Crossing</h3><p data-i18n="cap.line.desc">Detects when objects cross virtual boundary lines defined in the monitoring configuration.</p></div>
-      <div class="cap-card reveal reveal-delay-3"><div class="cap-icon">📹</div><h3 data-i18n="cap.multi.title">Multi-Camera Monitoring</h3><p data-i18n="cap.multi.desc">Centralized view and processing of multiple camera feeds from a single dashboard.</p></div>
-      <div class="cap-card reveal"><div class="cap-icon">🎯</div><h3 data-i18n="cap.track.title">Object Tracking</h3><p data-i18n="cap.track.desc">ByteTrack-based multi-object tracking maintains consistent IDs across frames.</p></div>
-      <div class="cap-card reveal reveal-delay-1"><div class="cap-icon">📸</div><h3 data-i18n="cap.evidence.title">Automated Evidence Capture</h3><p data-i18n="cap.evidence.desc">Automatically captures screenshots and metadata when security events are detected.</p></div>
-      <div class="cap-card reveal reveal-delay-2"><div class="cap-icon">🔔</div><h3 data-i18n="cap.alerts.title">Intelligent Alerts</h3><p data-i18n="cap.alerts.desc">Severity-based alerting system classifies events as Low, Medium, High, or Critical.</p></div>
-      <div class="cap-card reveal reveal-delay-3"><div class="cap-icon">📊</div><h3 data-i18n="cap.analytics.title">Security Analytics</h3><p data-i18n="cap.analytics.desc">Historical trend analysis, zone heatmaps, and detection summaries for operational insight.</p></div>
+      <div class="cap-card reveal"><div class="cap-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div><h3 data-i18n="cap.person.title">Person Detection</h3><p data-i18n="cap.person.desc">Identifies and tracks individual persons across camera feeds in real time.</p></div>
+      <div class="cap-card reveal reveal-delay-1"><div class="cap-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><h3 data-i18n="cap.crowd.title">Crowd Detection</h3><p data-i18n="cap.crowd.desc">Monitors crowd density and triggers alerts when groups form in designated areas.</p></div>
+      <div class="cap-card reveal reveal-delay-2"><div class="cap-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><h3 data-i18n="cap.restricted.title">Restricted Area Monitoring</h3><p data-i18n="cap.restricted.desc">Detects unauthorized entry into restricted zones and generates immediate alerts.</p></div>
+      <div class="cap-card reveal reveal-delay-3"><div class="cap-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div><h3 data-i18n="cap.abandoned.title">Abandoned Object Detection</h3><p data-i18n="cap.abandoned.desc">Flags stationary objects that appear in monitored areas and persist beyond a threshold.</p></div>
+      <div class="cap-card reveal"><div class="cap-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><h3 data-i18n="cap.fall.title">Fall Detection</h3><p data-i18n="cap.fall.desc">Recognizes fallen persons using pose analysis and generates high-priority alerts.</p></div>
+      <div class="cap-card reveal reveal-delay-1"><div class="cap-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><h3 data-i18n="cap.weapon.title">Weapon Detection</h3><p data-i18n="cap.weapon.desc">Attempts to identify visible weapons in camera frames and escalates threat level.</p></div>
+      <div class="cap-card reveal reveal-delay-2"><div class="cap-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20"/><path d="M6 8v8"/><path d="M18 8v8"/><path d="M2 16h20"/></svg></div><h3 data-i18n="cap.line.title">Line Crossing</h3><p data-i18n="cap.line.desc">Detects when objects cross virtual boundary lines defined in the monitoring configuration.</p></div>
+      <div class="cap-card reveal reveal-delay-3"><div class="cap-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div><h3 data-i18n="cap.multi.title">Multi-Camera Monitoring</h3><p data-i18n="cap.multi.desc">Centralized view and processing of multiple camera feeds from a single dashboard.</p></div>
+      <div class="cap-card reveal"><div class="cap-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><h3 data-i18n="cap.track.title">Object Tracking</h3><p data-i18n="cap.track.desc">ByteTrack-based multi-object tracking maintains consistent IDs across frames.</p></div>
+      <div class="cap-card reveal reveal-delay-1"><div class="cap-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div><h3 data-i18n="cap.evidence.title">Automated Evidence Capture</h3><p data-i18n="cap.evidence.desc">Automatically captures screenshots and metadata when security events are detected.</p></div>
+      <div class="cap-card reveal reveal-delay-2"><div class="cap-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><h3 data-i18n="cap.alerts.title">Intelligent Alerts</h3><p data-i18n="cap.alerts.desc">Severity-based alerting system classifies events as Low, Medium, High, or Critical.</p></div>
+      <div class="cap-card reveal reveal-delay-3"><div class="cap-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg></div><h3 data-i18n="cap.analytics.title">Security Analytics</h3><p data-i18n="cap.analytics.desc">Historical trend analysis, zone heatmaps, and detection summaries for operational insight.</p></div>
     </div>
   </div>
 </section>
@@ -813,13 +815,13 @@ body.theme-transitioning::before {
     <h2 class="section-title reveal" data-i18n="lim.title">Limitations & Responsible Use</h2>
     <p class="section-desc reveal" data-i18n="lim.desc">Transparency about what Sentinel-X can and cannot do. Understanding these limitations is important for effective deployment.</p>
     <div class="limit-grid">
-      <div class="limit-card reveal"><div class="limit-icon">⚠</div><p data-i18n="lim.1">AI detection can produce false positives and false negatives. No AI system is infallible.</p></div>
-      <div class="limit-card reveal reveal-delay-1"><div class="limit-icon">⚠</div><p data-i18n="lim.2">Camera quality, resolution, angle, and lighting conditions significantly affect detection accuracy.</p></div>
-      <div class="limit-card reveal reveal-delay-2"><div class="limit-icon">⚠</div><p data-i18n="lim.3">Processing performance depends on available hardware — GPU acceleration improves throughput substantially.</p></div>
-      <div class="limit-card reveal reveal-delay-3"><div class="limit-icon">⚠</div><p data-i18n="lim.4">Network cameras require reliable connectivity. Packet loss or latency can affect real-time performance.</p></div>
-      <div class="limit-card reveal"><div class="limit-icon">⚠</div><p data-i18n="lim.5">AI surveillance should be deployed responsibly with appropriate signage and stakeholder awareness.</p></div>
-      <div class="limit-card reveal reveal-delay-1"><div class="limit-icon">⚠</div><p data-i18n="lim.6">Human verification should remain the standard for serious incidents and disciplinary decisions.</p></div>
-      <div class="limit-card reveal reveal-delay-2"><div class="limit-icon">⚠</div><p data-i18n="lim.7">Privacy, authorization, and applicable local laws must be respected when deploying surveillance systems.</p></div>
+      <div class="limit-card reveal"><div class="limit-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><p data-i18n="lim.1">AI detection can produce false positives and false negatives. No AI system is infallible.</p></div>
+      <div class="limit-card reveal reveal-delay-1"><div class="limit-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><p data-i18n="lim.2">Camera quality, resolution, angle, and lighting conditions significantly affect detection accuracy.</p></div>
+      <div class="limit-card reveal reveal-delay-2"><div class="limit-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><p data-i18n="lim.3">Processing performance depends on available hardware — GPU acceleration improves throughput substantially.</p></div>
+      <div class="limit-card reveal reveal-delay-3"><div class="limit-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><p data-i18n="lim.4">Network cameras require reliable connectivity. Packet loss or latency can affect real-time performance.</p></div>
+      <div class="limit-card reveal"><div class="limit-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><p data-i18n="lim.5">AI surveillance should be deployed responsibly with appropriate signage and stakeholder awareness.</p></div>
+      <div class="limit-card reveal reveal-delay-1"><div class="limit-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><p data-i18n="lim.6">Human verification should remain the standard for serious incidents and disciplinary decisions.</p></div>
+      <div class="limit-card reveal reveal-delay-2"><div class="limit-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><p data-i18n="lim.7">Privacy, authorization, and applicable local laws must be respected when deploying surveillance systems.</p></div>
     </div>
   </div>
 </section>
@@ -831,14 +833,14 @@ body.theme-transitioning::before {
     <h2 class="section-title reveal" data-i18n="use.title">Who Can Use Sentinel-X?</h2>
     <p class="section-desc reveal" data-i18n="use.desc">Sentinel-X is designed for environments where continuous camera monitoring adds security value.</p>
     <div class="use-grid">
-      <div class="use-card reveal"><div class="use-icon">🏢</div><h3 data-i18n="use.offices">Offices</h3></div>
-      <div class="use-card reveal reveal-delay-1"><div class="use-icon">🏭</div><h3 data-i18n="use.industrial">Industrial Facilities</h3></div>
-      <div class="use-card reveal reveal-delay-2"><div class="use-icon">🏫</div><h3 data-i18n="use.education">Educational Institutions</h3></div>
-      <div class="use-card reveal reveal-delay-3"><div class="use-icon">🏥</div><h3 data-i18n="use.hospitals">Hospitals</h3></div>
-      <div class="use-card reveal"><div class="use-icon">🏬</div><h3 data-i18n="use.retail">Retail Environments</h3></div>
-      <div class="use-card reveal reveal-delay-1"><div class="use-icon">🅿️</div><h3 data-i18n="use.parking">Parking & Security Areas</h3></div>
-      <div class="use-card reveal reveal-delay-2"><div class="use-icon">🏘️</div><h3 data-i18n="use.residential">Residential Complexes</h3></div>
-      <div class="use-card reveal reveal-delay-3"><div class="use-icon">🏛️</div><h3 data-i18n="use.public">Public Facilities</h3></div>
+      <div class="use-card reveal"><div class="use-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg></div><h3 data-i18n="use.offices">Offices</h3></div>
+      <div class="use-card reveal reveal-delay-1"><div class="use-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20"/><path d="M5 20V10l7-5 7 5v10"/><path d="M9 20v-4h6v4"/></svg></div><h3 data-i18n="use.industrial">Industrial Facilities</h3></div>
+      <div class="use-card reveal reveal-delay-2"><div class="use-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20"/><path d="M4 20V10l8-6 8 6v10"/><path d="M9 20v-4h6v4"/><path d="M12 8v4"/></svg></div><h3 data-i18n="use.education">Educational Institutions</h3></div>
+      <div class="use-card reveal reveal-delay-3"><div class="use-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20"/><path d="M5 20V10l7-5 8 5v10"/><path d="M12 10v6"/><path d="M9 13h6"/></svg></div><h3 data-i18n="use.hospitals">Hospitals</h3></div>
+      <div class="use-card reveal"><div class="use-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20"/><path d="M5 20V8l7-5 7 5v12"/><path d="M9 20v-4h6v4"/></svg></div><h3 data-i18n="use.retail">Retail Environments</h3></div>
+      <div class="use-card reveal reveal-delay-1"><div class="use-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><text x="12" y="16" text-anchor="middle" font-size="12" font-weight="bold" fill="currentColor" stroke="none">P</text></svg></div><h3 data-i18n="use.parking">Parking & Security Areas</h3></div>
+      <div class="use-card reveal reveal-delay-2"><div class="use-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg></div><h3 data-i18n="use.residential">Residential Complexes</h3></div>
+      <div class="use-card reveal reveal-delay-3"><div class="use-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20"/><path d="M4 20V10l7-6 7 6v10"/><path d="M12 4v4"/><path d="M8 8h8"/><path d="M12 20v-4"/></svg></div><h3 data-i18n="use.public">Public Facilities</h3></div>
     </div>
   </div>
 </section>
@@ -858,14 +860,14 @@ body.theme-transitioning::before {
       </div>
       <div class="preview-body">
         <div class="preview-sidebar">
-          <div class="preview-nav-item active">📊 Dashboard</div>
-          <div class="preview-nav-item">📹 Cameras</div>
-          <div class="preview-nav-item">🚨 Incidents</div>
-          <div class="preview-nav-item">📸 Evidence</div>
-          <div class="preview-nav-item">📈 Analytics</div>
-          <div class="preview-nav-item">📋 Reports</div>
-          <div class="preview-nav-item">🔔 Notifications</div>
-          <div class="preview-nav-item">⚙️ Settings</div>
+          <div class="preview-nav-item active"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg> Dashboard</div>
+          <div class="preview-nav-item"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Cameras</div>
+          <div class="preview-nav-item"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Incidents</div>
+          <div class="preview-nav-item"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Evidence</div>
+          <div class="preview-nav-item"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> Analytics</div>
+          <div class="preview-nav-item"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg> Reports</div>
+          <div class="preview-nav-item"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Notifications</div>
+          <div class="preview-nav-item"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Settings</div>
         </div>
         <div class="preview-main">
           <div class="preview-kpi"><div class="preview-kpi-label" data-i18n="preview.kpi.threat">Threat Level</div><div class="preview-kpi-value"><span class="preview-kpi-dot dot-green"></span>LOW</div></div>
@@ -891,12 +893,12 @@ body.theme-transitioning::before {
     <h2 class="section-title reveal" data-i18n="sec.title">Built-In Protections</h2>
     <p class="section-desc reveal" data-i18n="sec.desc">Sentinel-X implements fundamental security controls for access management and data handling.</p>
     <div class="sec-grid">
-      <div class="sec-card reveal"><h3 data-i18n="sec.auth.title">🔐 Authentication</h3><p data-i18n="sec.auth.desc">Session-based authentication with configurable timeout. All users must sign in to access the dashboard.</p></div>
-      <div class="sec-card reveal reveal-delay-1"><h3 data-i18n="sec.protected.title">🛡️ Protected Dashboard</h3><p data-i18n="sec.protected.desc">Every dashboard route is protected behind authentication. Unauthenticated visitors are redirected.</p></div>
-      <div class="sec-card reveal reveal-delay-2"><h3 data-i18n="sec.access.title">🔑 Controlled Access</h3><p data-i18n="sec.access.desc">CSRF token protection on state-changing operations. Rate limiting on authentication endpoints.</p></div>
-      <div class="sec-card reveal reveal-delay-3"><h3 data-i18n="sec.evidence.title">📁 Evidence Management</h3><p data-i18n="sec.evidence.desc">Event evidence is stored in a structured database with timestamps, camera references, and metadata.</p></div>
-      <div class="sec-card reveal"><h3 data-i18n="sec.history.title">📜 Event History</h3><p data-i18n="sec.history.desc">Complete audit trail of detected events with severity classification, camera source, and zone information.</p></div>
-      <div class="sec-card reveal reveal-delay-1"><h3 data-i18n="sec.ai.title">🤖 Responsible AI</h3><p data-i18n="sec.ai.desc">AI detection results are presented with confidence scores. The system is designed to assist, not replace, human judgment.</p></div>
+      <div class="sec-card reveal"><h3 data-i18n="sec.auth.title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Authentication</h3><p data-i18n="sec.auth.desc">Session-based authentication with configurable timeout. All users must sign in to access the dashboard.</p></div>
+      <div class="sec-card reveal reveal-delay-1"><h3 data-i18n="sec.protected.title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Protected Dashboard</h3><p data-i18n="sec.protected.desc">Every dashboard route is protected behind authentication. Unauthenticated visitors are redirected.</p></div>
+      <div class="sec-card reveal reveal-delay-2"><h3 data-i18n="sec.access.title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg> Controlled Access</h3><p data-i18n="sec.access.desc">CSRF token protection on state-changing operations. Rate limiting on authentication endpoints.</p></div>
+      <div class="sec-card reveal reveal-delay-3"><h3 data-i18n="sec.evidence.title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Evidence Management</h3><p data-i18n="sec.evidence.desc">Event evidence is stored in a structured database with timestamps, camera references, and metadata.</p></div>
+      <div class="sec-card reveal"><h3 data-i18n="sec.history.title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Event History</h3><p data-i18n="sec.history.desc">Complete audit trail of detected events with severity classification, camera source, and zone information.</p></div>
+      <div class="sec-card reveal reveal-delay-1"><h3 data-i18n="sec.ai.title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg> Responsible AI</h3><p data-i18n="sec.ai.desc">AI detection results are presented with confidence scores. The system is designed to assist, not replace, human judgment.</p></div>
     </div>
   </div>
 </section>
@@ -909,17 +911,17 @@ body.theme-transitioning::before {
     <p class="section-desc reveal" data-i18n="tech.desc">Sentinel-X is built with proven open-source technologies for AI-powered video analysis.</p>
     <div class="tech-flow reveal">
       <div class="tech-item"><h3>Python</h3><p data-i18n="tech.python">Core runtime</p></div>
-      <div class="tech-arrow">→</div>
+      <div class="tech-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
       <div class="tech-item"><h3>Flask</h3><p data-i18n="tech.flask">Web framework</p></div>
-      <div class="tech-arrow">→</div>
+      <div class="tech-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
       <div class="tech-item"><h3>OpenCV</h3><p data-i18n="tech.opencv">Video processing</p></div>
-      <div class="tech-arrow">→</div>
+      <div class="tech-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
       <div class="tech-item"><h3>YOLOv8</h3><p data-i18n="tech.yolo">Object detection</p></div>
-      <div class="tech-arrow">→</div>
+      <div class="tech-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
       <div class="tech-item"><h3>ByteTrack</h3><p data-i18n="tech.bytetrack">Object tracking</p></div>
-      <div class="tech-arrow">→</div>
+      <div class="tech-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
       <div class="tech-item"><h3>SQLite</h3><p data-i18n="tech.sqlite">Data storage</p></div>
-      <div class="tech-arrow">→</div>
+      <div class="tech-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
       <div class="tech-item"><h3>JS / CSS</h3><p data-i18n="tech.jscss">Dashboard UI</p></div>
     </div>
   </div>
@@ -931,18 +933,18 @@ body.theme-transitioning::before {
     <div class="section-badge reveal" data-i18n="future.badge">Future Vision</div>
     <h2 class="section-title reveal" data-i18n="future.title">What's Next for Sentinel-X</h2>
     <div class="future-card reveal">
-      <div class="future-badge" data-i18n="future.comingSoon">🔮 Coming Soon</div>
+      <div class="future-badge" data-i18n="future.comingSoon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg> Coming Soon</div>
       <h3 data-i18n="future.edgeBox">Sentinel-X Edge Box</h3>
       <p data-i18n="future.edgeDesc">A dedicated edge-computing appliance designed to run Sentinel-X AI processing closer to the camera infrastructure — reducing dependency on centralized computing and potentially improving deployment flexibility, latency, and bandwidth usage.</p>
       <div class="future-flow">
         <div class="future-node" data-i18n="future.cctv">CCTV Cameras</div>
-        <div class="future-arrow">→</div>
+        <div class="future-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         <div class="future-node highlight" data-i18n="future.edgeNode">Sentinel-X Edge Box</div>
-        <div class="future-arrow">→</div>
+        <div class="future-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         <div class="future-node" data-i18n="future.aiProc">AI Processing</div>
-        <div class="future-arrow">→</div>
+        <div class="future-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         <div class="future-node" data-i18n="future.alerts">Alerts & Events</div>
-        <div class="future-arrow">→</div>
+        <div class="future-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         <div class="future-node" data-i18n="future.cloud">Cloud Dashboard</div>
       </div>
       <p style="margin-top:16px;font-size:13px;color:var(--text-muted);font-style:italic;" data-i18n="future.disclaimer">The Edge Box is planned future work. The current Sentinel-X release is a software-only platform.</p>
@@ -958,7 +960,7 @@ body.theme-transitioning::before {
     <div class="final-buttons reveal reveal-delay-2">
       <a href="/signup" class="btn-lg btn-lg-primary" data-i18n="cta.createAccount">Create Account <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
       <a href="/login" class="btn-lg btn-lg-outline" data-i18n="cta.signIn">Sign In</a>
-      <a href="#hero" class="btn-lg btn-lg-ghost" data-i18n="cta.exploreDemo">Explore Demo ↑</a>
+      <a href="#hero" class="btn-lg btn-lg-ghost" data-i18n="cta.exploreDemo">Explore Demo <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></a>
     </div>
   </div>
 </section>

@@ -91,6 +91,48 @@
             padding: 24px 16px;
         }
 
+        /* Custom scrollbar — WebKit */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(10, 14, 23, 0.6);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(62, 123, 250, 0.25);
+            border-radius: 3px;
+            border: 1px solid rgba(62, 123, 250, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(62, 123, 250, 0.45);
+        }
+
+        /* Custom scrollbar — Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(62, 123, 250, 0.25) rgba(10, 14, 23, 0.6);
+        }
+
+        [data-theme="light"] ::-webkit-scrollbar-track {
+            background: rgba(241, 245, 249, 0.6);
+        }
+
+        [data-theme="light"] ::-webkit-scrollbar-thumb {
+            background: rgba(37, 99, 235, 0.25);
+            border-color: rgba(37, 99, 235, 0.1);
+        }
+
+        [data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+            background: rgba(37, 99, 235, 0.45);
+        }
+
+        [data-theme="light"] * {
+            scrollbar-color: rgba(37, 99, 235, 0.25) rgba(241, 245, 249, 0.6);
+        }
+
         /* ==========================================
            BACKGROUND SCENE
         ========================================== */
