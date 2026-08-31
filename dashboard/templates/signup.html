@@ -617,16 +617,16 @@
                     </div>
                 </div>
 
-                <!-- Email (optional) -->
+                <!-- Email (required for verification) -->
                 <div class="field">
                     <label for="email">
                         <i class="ti ti-mail"></i>
-                        <span>Email <span style="font-weight:400;color:var(--text-muted)">(optional)</span></span>
+                        <span data-i18n="signup.email">Email <span style="font-weight:400;color:var(--text-muted)">(required)</span></span>
                     </label>
                     <div class="input-wrap">
-                        <input type="email" id="email" name="email"
-                               placeholder="your@email.com"
-                               autocomplete="email">
+                        <input type="text" id="email" name="email"
+                               placeholder="your@gmail.com" data-i18n="signup.emailPh"
+                               autocomplete="email" required>
                     </div>
                 </div>
 
@@ -658,10 +658,17 @@
                         <i class="ti ti-lock-check"></i>
                         <span>Confirm Password</span>
                     </label>
-                    <div class="input-wrap">
-                        <input type="password" id="confirmPassword" name="confirmPassword"
-                               placeholder="Re-enter your password" required
-                               autocomplete="new-password">
+                    <div class="pw-wrap">
+                        <div class="input-wrap">
+                            <input type="password" id="confirmPassword" name="confirmPassword"
+                                   placeholder="Re-enter your password" data-i18n="signup.confirmPh" required
+                                   autocomplete="new-password">
+                        </div>
+                        <button type="button" class="pw-toggle" id="confirmPwToggle"
+                                aria-label="Toggle confirm password visibility" tabindex="0">
+                            <i class="ti ti-eye" id="confirmEyeIcon"></i>
+                        </button>
+                    </div>
                     </div>
                 </div>
 
@@ -675,6 +682,28 @@
                         <i class="ti ti-loader-2"></i>
                     </span>
                 </button>
+
+                <!-- Verification Code (shown after first submit sends the code) -->
+                <div class="field" id="codeField" style="display:none;margin-top:14px;">
+                    <label for="verifyCode">
+                        <i class="ti ti-shield-check"></i>
+                        <span data-i18n="signup.verifyCode">Verification Code</span>
+                    </label>
+                    <div class="pw-wrap">
+                        <div class="input-wrap">
+                            <input type="text" id="verifyCode" name="verifyCode"
+                                   placeholder="6-digit code sent to your Gmail"
+                                   data-i18n="signup.verifyCodePh"
+                                   inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+                                   autocomplete="one-time-code">
+                        </div>
+                        <button type="button" class="pw-toggle" id="resendCodeBtn"
+                                aria-label="Resend code" title="Resend code" tabindex="0">
+                            <i class="ti ti-refresh"></i>
+                        </button>
+                    </div>
+                    <div class="pw-strength-label" id="codeHint" style="margin-top:6px;"></div>
+                </div>
             </form>
 
             <!-- Divider -->
@@ -726,8 +755,42 @@
             eyeIcon.className = isPassword ? "ti ti-eye-off" : "ti ti-eye";
         });
 
+        /* =====================================
+           CONFIRM PASSWORD SHOW / HIDE
+        ========================================== */
+        var confirmPwToggle = document.getElementById("confirmPwToggle");
+        var confirmEyeIcon  = document.getElementById("confirmEyeIcon");
+        confirmPwToggle.addEventListener("click", function() {
+            var isPassword = confirmEl.type === "password";
+            confirmEl.type = isPassword ? "text" : "password";
+            confirmEyeIcon.className = isPassword ? "ti ti-eye-off" : "ti ti-eye";
+        });
+
         /* ==========================================
-            PASSWORD STRENGTH INDICATOR
+           BLOCK COPY / CUT / PASTE / SELECT ON PASSWORD FIELDS
+           (Username and email remain freely copyable)
+        ========================================== */
+        function lockPasswordInput(el) {
+            el.addEventListener("copy",      function(e) { e.preventDefault(); });
+            el.addEventListener("cut",       function(e) { e.preventDefault(); });
+            el.addEventListener("paste",     function(e) { e.preventDefault(); });
+            el.addEventListener("dragstart", function(e) { e.preventDefault(); });
+            el.addEventListener("drop",      function(e) { e.preventDefault(); });
+            el.addEventListener("contextmenu", function(e) { e.preventDefault(); });
+            el.addEventListener("keydown", function(e) {
+                var k = e.key.toLowerCase();
+                if ((e.ctrlKey || e.metaKey) && (k === "c" || k === "v" || k === "x" || k === "a")) {
+                    e.preventDefault();
+                }
+            });
+            el.addEventListener("mouseup", function(e) { e.preventDefault(); });
+            el.addEventListener("selectstart", function(e) { e.preventDefault(); });
+        }
+        lockPasswordInput(passEl);
+        lockPasswordInput(confirmEl);
+
+        /* ==========================================
+           PASSWORD STRENGTH INDICATOR
         ========================================== */
         passEl.addEventListener("input", function() {
             var val = passEl.value;
@@ -753,42 +816,107 @@
         });
 
         /* ==========================================
-            FORM SUBMISSION
+           FORM SUBMISSION (two-step: send code, then verify)
         ========================================== */
-        form.addEventListener("submit", function(e) {
-            e.preventDefault();
-            hideMessages();
-            setLoading(true);
+        var codeField   = document.getElementById("codeField");
+        var codeInput   = document.getElementById("verifyCode");
+        var codeHint    = document.getElementById("codeHint");
+        var resendBtn   = document.getElementById("resendCodeBtn");
+        var pendingCreds = null;
 
+        function clientValidate() {
             var username = userEl.value.trim();
             var email    = emailEl.value.trim();
             var password = passEl.value;
             var confirm  = confirmEl.value;
-
-            if (!username || !password) {
-                showError("Please fill in all required fields.");
-                setLoading(false);
-                return;
+            if (!username || !password || !email) {
+                showError("All fields including email are required");
+                return null;
+            }
+            if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+                showError("Enter a valid Gmail address");
+                emailEl.focus();
+                return null;
             }
             if (username.length < 3) {
-                showError("Username must be at least 3 characters long.");
-                setLoading(false);
-                return;
+                showError(SentinelI18N.t("signup.errorUserLen"));
+                return null;
             }
             if (password.length < 4) {
-                showError("Password must be at least 4 characters long.");
-                setLoading(false);
-                return;
+                showError(SentinelI18N.t("signup.errorPassLen"));
+                return null;
             }
             if (password !== confirm) {
-                showError("Passwords do not match.");
-                setLoading(false);
+                showError(SentinelI18N.t("signup.errorMismatch"));
                 confirmEl.focus();
+                return null;
+            }
+            return { username: username, email: email, password: password };
+        }
+
+        function requestCode(creds, onDone) {
+            setLoading(true);
+            btn.disabled = true;
+            if (resendBtn) resendBtn.disabled = true;
+            fetch("/api/auth/signup/request-code", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(creds)
+            })
+            .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+            .then(function(result) {
+                setLoading(false);
+                btn.disabled = false;
+                if (resendBtn) resendBtn.disabled = false;
+                if (result.ok) {
+                    pendingCreds = creds;
+                    codeField.style.display = "";
+                    codeHint.style.color = "var(--success-green)";
+                    codeHint.textContent = result.data.message || "Verification code sent to your Gmail";
+                    codeInput.value = "";
+                    codeInput.focus();
+                } else {
+                    showError(result.data.message || SentinelI18N.t("signup.errorApi"));
+                }
+                if (onDone) onDone(result);
+            })
+            .catch(function() {
+                setLoading(false);
+                btn.disabled = false;
+                if (resendBtn) resendBtn.disabled = false;
+                showError(SentinelI18N.t("signup.errorConn"));
+            });
+        }
+
+        if (resendBtn) {
+            resendBtn.addEventListener("click", function() {
+                if (!pendingCreds) return;
+                hideMessages();
+                requestCode(pendingCreds);
+            });
+        }
+
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+            hideMessages();
+
+            if (!pendingCreds) {
+                var creds = clientValidate();
+                if (!creds) return;
+                requestCode(creds);
                 return;
             }
 
-            var body = { username: username, password: password };
-            if (email) body.email = email;
+            var code = codeInput.value.trim();
+            if (!/^\d{6}$/.test(code)) {
+                showError("Enter the 6-digit code that was emailed to you");
+                codeInput.focus();
+                return;
+            }
+
+            setLoading(true);
+            btn.disabled = true;
+            var body = Object.assign({}, pendingCreds, { code: code });
 
             fetch("/api/auth/signup", {
                 method: "POST",
@@ -803,6 +931,9 @@
                     form.reset();
                     pwBar.style.width = '0';
                     pwLabel.textContent = '';
+                    pendingCreds = null;
+                    codeField.style.display = "none";
+                    codeHint.textContent = "";
                     setTimeout(function() {
                         document.getElementById("authMain").classList.add("auth-exit");
                         setTimeout(function() { window.location.href = "/login"; }, 500);
@@ -810,14 +941,13 @@
                 } else {
                     showError(result.data.message || "Registration failed. Please try again.");
                     setLoading(false);
-                    passEl.value = "";
-                    confirmEl.value = "";
-                    passEl.focus();
+                    btn.disabled = false;
                 }
             })
             .catch(function() {
                 showError("Connection error. Please check your network and try again.");
                 setLoading(false);
+                btn.disabled = false;
             });
         });
 
@@ -913,5 +1043,7 @@
         }
     })();
     </script>
+
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
 </body>
 </html>

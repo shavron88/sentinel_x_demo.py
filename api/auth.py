@@ -208,6 +208,203 @@ def verify_otp_and_register(email, otp_code):
         return False, "Failed to create account. Please try again."
 
 
+# ============================================================
+# EMAIL VERIFICATION (Gmail SMTP)
+# ============================================================
+# Configure these via environment variables. For Gmail you must
+# use an App Password (not your normal Gmail password).
+#   SENTINELX_SMTP_USER  = youraddress@gmail.com
+#   SENTINELX_SMTP_PASS  = xxxx xxxx xxxx xxxx   (16-char App Password)
+#   SENTINELX_SMTP_FROM  = "Sentinel-X" <youraddress@gmail.com>  (optional)
+SMTP_HOST = "smtp.gmail.com"
+SMTP_PORT = 587
+SMTP_USER = os.getenv("SENTINELX_SMTP_USER", "")
+SMTP_PASS = os.getenv("SENTINELX_SMTP_PASS", "")
+SMTP_FROM = os.getenv("SENTINELX_SMTP_FROM") or (f"Sentinel-X <{SMTP_USER}>" if SMTP_USER else "Sentinel-X <no-reply@sentinelx.local>")
+
+VERIFY_CODE_TTL_MINUTES = 10
+CODE_LENGTH = 6
+MAX_VERIFY_ATTEMPTS = 5
+RESEND_COOLDOWN_SECONDS = 30
+
+
+def _ensure_verification_table():
+    """Create the email_verifications table if it does not exist."""
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS email_verifications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL,
+                username TEXT NOT NULL,
+                password_hash TEXT NOT NULL,
+                code_hash TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                attempts INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _send_via_gmail(to_email, subject, body_text, body_html=None):
+    """Send an email through Gmail SMTP. Returns (ok, info)."""
+    if not SMTP_USER or not SMTP_PASS:
+        return False, "SMTP credentials not configured (set SENTINELX_SMTP_USER and SENTINELX_SMTP_PASS)"
+    try:
+        import smtplib
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+
+        msg = MIMEMultipart("alternative")
+        msg["From"] = SMTP_FROM
+        msg["To"] = to_email
+        msg["Subject"] = subject
+        msg.attach(MIMEText(body_text, "plain", "utf-8"))
+        if body_html:
+            msg.attach(MIMEText(body_html, "html", "utf-8"))
+
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.sendmail(SMTP_USER, to_email, msg.as_string())
+        return True, "sent"
+    except Exception as e:
+        print(f"SMTP send error: {e}")
+        return False, str(e)
+
+
+def request_verification_code(username, password, email):
+    """Generate a verification code, persist it hashed with the pending
+    signup, and email it to the user. Returns (ok, message)."""
+    import re
+    email = (email or "").strip()
+    if not email:
+        return False, "Email is required for verification"
+    if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+        return False, "Invalid email address"
+
+    # Hash password and pre-check username uniqueness so we fail fast.
+    password_hash = hashlib.sha256(password.encode()).hexdigest()
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+        cur.execute("SELECT id FROM admin_users WHERE username = ?", (username,))
+        if cur.fetchone():
+            conn.close()
+            return False, "Username already exists"
+        cur.execute("SELECT id FROM admin_users WHERE email = ?", (email,))
+        if cur.fetchone():
+            conn.close()
+            return False, "Email already registered"
+        conn.close()
+    except Exception as e:
+        print(f"DB precheck error: {e}")
+        return False, "Database error"
+
+    # Generate numeric code
+    code = "".join(str(secrets.randbelow(10)) for _ in range(CODE_LENGTH))
+    code_hash = hashlib.sha256(code.encode()).hexdigest()
+    expires_at = (datetime.utcnow() + timedelta(minutes=VERIFY_CODE_TTL_MINUTES)).isoformat() + "Z"
+
+    _ensure_verification_table()
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute("DELETE FROM email_verifications WHERE email = ? OR username = ?", (email, username))
+        conn.execute(
+            """INSERT INTO email_verifications
+               (email, username, password_hash, code_hash, expires_at)
+               VALUES (?, ?, ?, ?, ?)""",
+            (email, username, password_hash, code_hash, expires_at),
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"DB store code error: {e}")
+        return False, "Could not store verification code"
+
+    subject = "Your Sentinel-X verification code"
+    body_text = (
+        f"Your Sentinel-X verification code is: {code}\n\n"
+        f"This code expires in {VERIFY_CODE_TTL_MINUTES} minutes.\n"
+        f"If you did not request this, you can safely ignore this email."
+    )
+    body_html = f"""
+        <div style="font-family:Inter,Arial,sans-serif;max-width:480px;margin:auto;
+                    padding:24px;background:#0A0E17;color:#F1F5F9;border-radius:12px;">
+          <h2 style="margin:0 0 12px;color:#60A5FA;">Sentinel-X Verification</h2>
+          <p style="margin:0 0 16px;color:#94A3B8;">Use the code below to confirm your email address.</p>
+          <div style="font-size:28px;letter-spacing:8px;font-weight:700;
+                      background:#161F32;padding:18px;border-radius:10px;
+                      text-align:center;color:#F1F5F9;">{code}</div>
+          <p style="margin:16px 0 0;color:#64748B;font-size:12px;">
+            This code expires in {VERIFY_CODE_TTL_MINUTES} minutes.
+          </p>
+        </div>
+    """
+    ok, info = _send_via_gmail(email, subject, body_text, body_html)
+    if not ok:
+        return False, f"Failed to send email: {info}"
+    return True, "Verification code sent"
+
+
+def verify_and_complete_signup(username, password, email, code):
+    """Validate the supplied code, then create the user. Returns (ok, msg)."""
+    import re
+    email = (email or "").strip()
+    code  = (code or "").strip()
+    if not code or len(code) != CODE_LENGTH or not code.isdigit():
+        return False, "Invalid code format"
+    if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+        return False, "Invalid email address"
+
+    code_hash = hashlib.sha256(code.encode()).hexdigest()
+    _ensure_verification_table()
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+        cur.execute(
+            """SELECT id, username, password_hash, code_hash, expires_at, attempts
+               FROM email_verifications
+               WHERE email = ? AND username = ?
+               ORDER BY id DESC LIMIT 1""",
+            (email, username),
+        )
+        row = cur.fetchone()
+        if not row:
+            conn.close()
+            return False, "No pending verification for this email/username"
+        if row["code_hash"] != code_hash:
+            new_attempts = (row["attempts"] or 0) + 1
+            cur.execute("UPDATE email_verifications SET attempts = ? WHERE id = ?", (new_attempts, row["id"]))
+            conn.commit()
+            conn.close()
+            return False, "Incorrect verification code"
+        try:
+            expires = datetime.fromisoformat(row["expires_at"].rstrip("Z"))
+        except Exception:
+            expires = None
+        if expires and datetime.utcnow() > expires:
+            conn.close()
+            return False, "Verification code expired"
+        password_hash = row["password_hash"]
+        cur.execute("DELETE FROM email_verifications WHERE id = ?", (row["id"],))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"DB verify error: {e}")
+        return False, "Verification failed"
+
+    # Re-use signup() logic so password rules apply uniformly
+    ok, info = signup(username, password, email)
+    return ok, info
+
+
 def get_csrf_token():
     if "csrf_token" not in session:
         session["csrf_token"] = secrets.token_hex(32)

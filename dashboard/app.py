@@ -21,7 +21,8 @@ from api.auth import (
     is_authenticated, login, logout, signup,
     get_csrf_token, validate_csrf_token,
     require_auth, require_csrf, rate_limit,
-    get_current_user_id
+    get_current_user_id,
+    request_verification_code, verify_and_complete_signup
 )
 
 
@@ -179,21 +180,42 @@ def api_login():
     return jsonify({"status": "error", "message": message}), 401
 
 
-@app.route("/api/auth/signup", methods=["POST"])
+@app.route("/api/auth/signup/request-code", methods=["POST"])
 @rate_limit
-def api_signup():
-    """Register a new user account without auto-authenticating them."""
+def api_signup_request_code():
+    """Step 1: validate inputs, send a 6-digit verification code to the user's Gmail."""
     data = request.get_json(silent=True) or {}
     username = data.get("username", "")
     password = data.get("password", "")
-    email = data.get("email", "")
+    email    = data.get("email", "")
 
-    if not isinstance(username, str) or not isinstance(password, str):
+    if not isinstance(username, str) or not isinstance(password, str) or not isinstance(email, str):
         return jsonify({"status": "error", "message": "Invalid request format"}), 400
-    if len(username) > 100 or len(password) > 100:
+    if len(username) > 100 or len(password) > 100 or len(email) > 200:
         return jsonify({"status": "error", "message": "Request too large"}), 400
 
-    success, result = signup(username, password, email)
+    ok, msg = request_verification_code(username, password, email)
+    if not ok:
+        return jsonify({"status": "error", "message": msg}), 400
+    return jsonify({"status": "success", "message": msg}), 200
+
+
+@app.route("/api/auth/signup", methods=["POST"])
+@rate_limit
+def api_signup():
+    """Step 2: verify the code and create the account (email is saved to DB)."""
+    data = request.get_json(silent=True) or {}
+    username = data.get("username", "")
+    password = data.get("password", "")
+    email    = data.get("email", "")
+    code     = data.get("code", "")
+
+    if not all(isinstance(x, str) for x in (username, password, email, code)):
+        return jsonify({"status": "error", "message": "Invalid request format"}), 400
+    if len(username) > 100 or len(password) > 100 or len(email) > 200 or len(code) > 10:
+        return jsonify({"status": "error", "message": "Request too large"}), 400
+
+    success, result = verify_and_complete_signup(username, password, email, code)
     if success:
         return jsonify({
             "status": "success",
@@ -240,7 +262,7 @@ def api_csrf_token():
 
 _PUBLIC_ENDPOINTS = frozenset({
     "landing_page", "login_page", "signup_page", "static",
-    "api_login", "api_signup", "api_auth_status",
+    "api_login", "api_signup_request_code", "api_signup", "api_auth_status",
     "api_logout", "api_csrf_token",
     "not_found_error", "internal_error", "handle_exception",
     "health_bp.get_system_health", "api_health_status",
