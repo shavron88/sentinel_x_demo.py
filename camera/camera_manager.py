@@ -690,6 +690,7 @@ class CameraManager:
     """Singleton Manager controlling multi-camera streams and routing Phase 2 APIs."""
     _instance = None
     _default_camera_created = False
+    _current_user_id = None
 
     def __new__(cls):
         if cls._instance is None:
@@ -699,10 +700,29 @@ class CameraManager:
 
     def _ensure_default_camera(self):
         if not self._default_camera_created and "Camera_01" not in self.pipelines:
-            pipeline = self.add_camera(name="Camera_01", ip_url=0, zone="Main Entrance", auto_start=True)
+            pipeline = self.add_camera(name="Camera_01", ip_url=1, zone="Main Entrance", auto_start=True)
             self._default_camera_created = True
             return pipeline
         return self.pipelines.get("Camera_01")
+
+    def load_cameras_for_user(self, user_id):
+        """Stop all cameras and load only the specified user's cameras from DB."""
+        self.stop_all()
+        self._current_user_id = user_id
+        self._default_camera_created = False
+        
+        try:
+            from database.db import get_all_cameras
+            cameras = get_all_cameras(user_id=user_id)
+            for cam in cameras:
+                self.add_camera(
+                    name=cam.get("name", ""),
+                    ip_url=cam.get("stream_url", ""),
+                    zone=cam.get("location", "General Area"),
+                    auto_start=True
+                )
+        except Exception as e:
+            print(f"Error loading cameras for user {user_id}: {e}")
 
     def add_camera(self, name, ip_url, zone="DEFAULT", rtsp_config=None, reconnect_delay=5, max_queue_size=30, auto_start=True):
         """Adds a new camera with its own independent pipeline."""

@@ -71,6 +71,11 @@ def is_authenticated():
     return True
 
 
+def get_current_user_id():
+    """Get the current user's ID from the session. Returns 1 for demo/fallback."""
+    return session.get("user_id", 1)
+
+
 def login(username, password):
     """Attempt to log in by validating against the SQLite database hash.
     Falls back to demo credentials if database is unavailable."""
@@ -82,14 +87,15 @@ def login(username, password):
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute("SELECT password_hash FROM admin_users WHERE username = ?", (username,))
+        cursor.execute("SELECT id, password_hash FROM admin_users WHERE username = ?", (username,))
         row = cursor.fetchone()
         conn.close()
         
-        if row and row[0] == password_hash:
+        if row and row[1] == password_hash:
             session.clear()
             session["authenticated"] = True
             session["username"] = username
+            session["user_id"] = row[0]
             session["email"] = f"{username}@sentinelx.ai"
             session["role"] = "System Administrator"
             session["last_active"] = datetime.now().isoformat()
@@ -103,6 +109,7 @@ def login(username, password):
         session.clear()
         session["authenticated"] = True
         session["username"] = username
+        session["user_id"] = 1
         session["email"] = f"{username}@sentinelx.ai"
         session["role"] = "System Administrator"
         session["last_active"] = datetime.now().isoformat()
@@ -151,9 +158,10 @@ def signup(username, password, email=""):
             "INSERT INTO admin_users (username, password_hash, email) VALUES (?, ?, ?)",
             (username, password_hash, email or f"{username}@sentinelx.ai")
         )
+        user_id = cursor.lastrowid
         conn.commit()
         conn.close()
-        return True, "Account created successfully"
+        return True, user_id
     except Exception as e:
         print(f"Signup database error: {e}")
         return False, "Registration failed. Please try again."

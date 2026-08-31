@@ -14,17 +14,21 @@ class SettingsStore:
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS settings (
                 key TEXT PRIMARY KEY,
-                value TEXT NOT NULL
+                value TEXT NOT NULL,
+                user_id INTEGER
             )
         """)
         conn.commit()
         return conn, cursor
 
     @staticmethod
-    def get_setting(key, default=None):
+    def get_setting(key, default=None, user_id=None):
         try:
             conn, cursor = SettingsStore._get_table()
-            cursor.execute("SELECT value FROM settings WHERE key = ?", (key,))
+            if user_id is not None:
+                cursor.execute("SELECT value FROM settings WHERE key = ? AND user_id = ?", (key, user_id))
+            else:
+                cursor.execute("SELECT value FROM settings WHERE key = ?", (key,))
             row = cursor.fetchone()
             conn.close()
             if row:
@@ -38,13 +42,19 @@ class SettingsStore:
             return default
 
     @staticmethod
-    def set_setting(key, value):
+    def set_setting(key, value, user_id=None):
         try:
             conn, cursor = SettingsStore._get_table()
-            cursor.execute(
-                "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
-                (key, json.dumps(value) if not isinstance(value, str) else value)
-            )
+            if user_id is not None:
+                cursor.execute(
+                    "INSERT OR REPLACE INTO settings (key, value, user_id) VALUES (?, ?, ?)",
+                    (key, json.dumps(value) if not isinstance(value, str) else value, user_id)
+                )
+            else:
+                cursor.execute(
+                    "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+                    (key, json.dumps(value) if not isinstance(value, str) else value)
+                )
             conn.commit()
             conn.close()
             return True
@@ -53,10 +63,13 @@ class SettingsStore:
             return False
 
     @staticmethod
-    def get_all_settings():
+    def get_all_settings(user_id=None):
         try:
             conn, cursor = SettingsStore._get_table()
-            cursor.execute("SELECT key, value FROM settings")
+            if user_id is not None:
+                cursor.execute("SELECT key, value FROM settings WHERE user_id = ?", (user_id,))
+            else:
+                cursor.execute("SELECT key, value FROM settings")
             rows = cursor.fetchall()
             conn.close()
             settings = {}
@@ -71,7 +84,7 @@ class SettingsStore:
             return {}
 
     @staticmethod
-    def save_camera_settings(cameras):
+    def save_camera_settings(cameras, user_id=1):
         results = []
         for cam in cameras:
             try:
@@ -82,7 +95,8 @@ class SettingsStore:
                     status='ONLINE' if cam.get('enabled') else 'OFFLINE',
                     fps=float(cam.get('fps', 30)),
                     latency=cam.get('latency', 0),
-                    resolution=cam.get('resolution', '640x480')
+                    resolution=cam.get('resolution', '640x480'),
+                    user_id=user_id
                 )
                 results.append({'name': cam.get('name'), 'success': success})
             except Exception as e:

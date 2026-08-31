@@ -1,8 +1,14 @@
 import sys
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from camera.camera_manager import camera_manager
 
 camera_bp = Blueprint('camera', __name__, url_prefix='/api/camera')
+
+
+def _get_current_user_id():
+    """Get current user ID from session, defaulting to 1."""
+    return session.get("user_id", 1)
+
 
 @camera_bp.route('/snapshot', methods=['POST'])
 def handle_snapshot():
@@ -105,6 +111,15 @@ def handle_add_camera():
             reconnect_delay=reconnect_delay,
             auto_start=False
         )
+        from database.db import save_camera
+        save_camera(
+            name=name,
+            stream_url=source,
+            location=zone,
+            status="OFFLINE",
+            user_id=_get_current_user_id(),
+            is_rtsp=is_rtsp
+        )
         return jsonify({"success": True, "message": f"Camera '{name}' added."}), 200
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -114,6 +129,12 @@ def handle_add_camera():
 def handle_remove_camera(name):
     try:
         camera_manager.remove_camera(name)
+        from database.db import get_connection
+        user_id = _get_current_user_id()
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM cameras WHERE name = ? AND user_id = ?", (name, user_id))
+            conn.commit()
         return jsonify({"success": True, "message": f"Camera '{name}' removed."}), 200
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500

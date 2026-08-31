@@ -41,7 +41,7 @@ CONFIDENCE_THRESHOLD = float(_get_env("CONFIDENCE_THRESHOLD", "0.60"))
 # ==========================================
 # Camera Configuration
 # ==========================================
-CAMERA_SOURCE = _get_env("CAMERA_SOURCE", "0")
+CAMERA_SOURCE = _get_env("CAMERA_SOURCE", "1")
 
 # Multi-camera configuration from environment
 # Format: name:source:zone[:timeout]

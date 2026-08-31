@@ -9,6 +9,12 @@ DB_PATH = "sentinelx.db"
 EVIDENCE_DIR = "evidence/screenshots"
 logger = logging.getLogger("SentinelX.EvidenceManager")
 
+try:
+    from database.db import init_db
+    init_db()
+except Exception:
+    pass
+
 
 def get_connection():
     conn = sqlite3.connect(DB_PATH)
@@ -17,11 +23,11 @@ def get_connection():
 
 
 class EvidenceManager:
-    def save(self, frame, event_type, track_id=-1, event_id=None, camera="Unknown"):
-        return save(frame, event_type, track_id, event_id, camera)
+    def save(self, frame, event_type, track_id=-1, event_id=None, camera="Unknown", user_id=1):
+        return save(frame, event_type, track_id, event_id, camera, user_id)
 
 
-def save(frame, event_type, track_id=-1, event_id=None, camera="Unknown"):
+def save(frame, event_type, track_id=-1, event_id=None, camera="Unknown", user_id=1):
     """Saves annotated frame as evidence image and records it in the database."""
     try:
         os.makedirs(EVIDENCE_DIR, exist_ok=True)
@@ -38,9 +44,10 @@ def save(frame, event_type, track_id=-1, event_id=None, camera="Unknown"):
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                INSERT INTO evidence (event_id, camera, image_path, metadata, timestamp)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO evidence (user_id, event_id, camera, image_path, metadata, timestamp)
+                VALUES (?, ?, ?, ?, ?, ?)
             """, (
+                user_id,
                 event_id,
                 camera,
                 db_filepath,

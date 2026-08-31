@@ -42,18 +42,18 @@ def update_stats(persons=0, vehicles=0, threat="LOW", fps=0.0):
     _memory_stats["fps"] = fps
 
 
-def get_events(limit=20):
+def get_events(limit=20, user_id=None):
     """Returns events from DB, falling back to in-memory if DB is empty."""
-    db_events = get_all_events(limit=limit)
+    db_events = get_all_events(limit=limit, user_id=user_id)
     if db_events:
         return db_events
     return _memory_events[:limit]
 
 
-def get_stats():
+def get_stats(user_id=None):
     """Returns stats from DB, falling back to in-memory if DB is empty."""
     try:
-        db_stats = _compute_db_stats()
+        db_stats = _compute_db_stats(user_id=user_id)
         if db_stats.get("total_incidents", 0) > 0 or db_stats.get("total_cameras", 0) > 0:
             return db_stats
         return dict(_memory_stats)
@@ -62,9 +62,9 @@ def get_stats():
         return dict(_memory_stats)
 
 
-def _compute_db_stats():
-    events = get_all_events(limit=100)
-    cameras = get_all_cameras()
+def _compute_db_stats(user_id=None):
+    events = get_all_events(limit=100, user_id=user_id)
+    cameras = get_all_cameras(user_id=user_id)
 
     total_cameras = len(cameras)
     online_cameras = sum(1 for c in cameras if c.get("status") == "ONLINE")

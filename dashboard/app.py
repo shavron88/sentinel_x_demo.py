@@ -20,8 +20,14 @@ from core.recovery import AutoRecoveryManager
 from api.auth import (
     is_authenticated, login, logout, signup,
     get_csrf_token, validate_csrf_token,
-    require_auth, require_csrf, rate_limit
+    require_auth, require_csrf, rate_limit,
+    get_current_user_id
 )
+
+
+def _get_user_id():
+    """Get the current user ID from session, defaulting to 1 for backward compatibility."""
+    return get_current_user_id()
 
 # --- Camera Subsystem Import ---
 from camera.camera_manager import camera_manager
@@ -160,6 +166,8 @@ def api_login():
     success, message = login(username, password)
     
     if success:
+        user_id = get_current_user_id()
+        camera_manager.load_cameras_for_user(user_id)
         return jsonify({
             "status": "success",
             "message": message,
@@ -184,10 +192,25 @@ def api_signup():
     if len(username) > 100 or len(password) > 100:
         return jsonify({"status": "error", "message": "Request too large"}), 400
 
-    success, message = signup(username, password, email)
+    success, result = signup(username, password, email)
     if success:
-        return jsonify({"status": "success", "message": message}), 201
-    return jsonify({"status": "error", "message": message}), 400
+        user_id = result
+        session.clear()
+        session["authenticated"] = True
+        session["username"] = username
+        session["user_id"] = user_id
+        session["email"] = email or f"{username}@sentinelx.ai"
+        session["role"] = "System Administrator"
+        session["last_active"] = datetime.now().isoformat()
+        session["csrf_token"] = secrets.token_hex(32)
+        camera_manager.load_cameras_for_user(user_id)
+        return jsonify({
+            "status": "success",
+            "message": "Account created successfully",
+            "username": username,
+            "csrf_token": get_csrf_token()
+        }), 201
+    return jsonify({"status": "error", "message": result}), 400
 
 
 @app.route("/api/auth/logout", methods=["POST"])
@@ -231,7 +254,7 @@ _PUBLIC_ENDPOINTS = frozenset({
     "api_login", "api_signup", "api_auth_status",
     "api_logout", "api_csrf_token",
     "not_found_error", "internal_error", "handle_exception",
-    "health_bp.get_system_health",
+    "health_bp.get_system_health", "api_health_status",
 })
 
 _PUBLIC_PREFIXES = ("static",)
@@ -405,15 +428,15 @@ def video_feed():
 
 @app.route("/events")
 def events():
-    return jsonify(get_events())
+    return jsonify(get_events(user_id=_get_user_id()))
 
 @app.route("/stats")
 def stats():
-    return jsonify(get_stats())
+    return jsonify(get_stats(user_id=_get_user_id()))
 
 @app.route("/timeline")
 def timeline():
-    return {"timeline": get_timeline()}
+    return {"timeline": get_timeline(user_id=_get_user_id())}
 
 @app.route("/api/storage")
 def api_storage():
@@ -438,9 +461,10 @@ def api_storage():
 def gallery_endpoint():
     """Fetches recorded evidence images and video logs directly."""
     try:
+        user_id = _get_user_id()
         with get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM evidence ORDER BY id DESC LIMIT 50")
+            cursor.execute("SELECT * FROM evidence WHERE user_id = ? ORDER BY id DESC LIMIT 50", (user_id,))
             rows = cursor.fetchall()
             return jsonify([dict(row) for row in rows]), 200
     except Exception as e:
@@ -451,7 +475,7 @@ def ai_summary_endpoint():
     """Returns AI model detection summary metrics directly."""
     try:
         from dashboard.store import get_stats
-        stats = get_stats()
+        stats = get_stats(user_id=_get_user_id())
         risk = "LOW"
         if stats.get("high_severity_incidents", 0) > 5:
             risk = "HIGH"
@@ -516,9 +540,10 @@ def analytics_data():
         from database.db import get_all_evidence
         from collections import Counter
         
-        stats = get_stats()
-        events = get_events(limit=200)
-        evidence = get_all_evidence(limit=200)
+        user_id = _get_user_id()
+        stats = get_stats(user_id=user_id)
+        events = get_events(limit=200, user_id=user_id)
+        evidence = get_all_evidence(limit=200, user_id=user_id)
         
         total_incidents = stats.get("total_incidents", len(events))
         people = stats.get("persons", 0)
@@ -580,7 +605,7 @@ def reports_data():
         data = ReportService.generate_summary_data(timeframe="daily")
         
         from database.db import get_all_cameras
-        cameras = get_all_cameras()
+        cameras = get_all_cameras(user_id=_get_user_id())
         
         event_summary = []
         for name, count in data.get("breakdown_by_type", {}).items():
@@ -598,7 +623,7 @@ def reports_data():
         evidence_today = 0
         try:
             from database.db import get_all_evidence
-            ev = get_all_evidence(limit=500)
+            ev = get_all_evidence(limit=500, user_id=_get_user_id())
             evidence_count = len(ev)
             today_str = datetime.now().strftime("%Y-%m-%d")
             evidence_today = sum(1 for e in ev if today_str in (e.get("time") or ""))
@@ -688,8 +713,9 @@ def download_pdf():
 @require_csrf  # <-- CSRF Protection Added Here
 @rate_limit
 def api_settings():
+    user_id = _get_user_id()
     if request.method == "GET":
-        settings = SettingsStore.get_all_settings()
+        settings = SettingsStore.get_all_settings(user_id=user_id)
         return jsonify(settings)
     else:
         data = request.get_json(silent=True) or {}
@@ -697,7 +723,7 @@ def api_settings():
         value = data.get("value")
         if key is None:
             return jsonify({"success": False, "error": "Missing 'key'"}), 400
-        success = SettingsStore.set_setting(key, value)
+        success = SettingsStore.set_setting(key, value, user_id=user_id)
         return jsonify({"success": success}), 200 if success else 500
 
 @app.route("/api/settings/camera", methods=["POST"])
@@ -714,7 +740,7 @@ def api_settings_camera():
     cameras = data.get("cameras", [])
     if not isinstance(cameras, list):
         return jsonify({"success": False, "error": "Invalid cameras data"}), 400
-    results = SettingsStore.save_camera_settings(cameras)
+    results = SettingsStore.save_camera_settings(cameras, user_id=_get_user_id())
     return jsonify({"success": True, "results": results})
 
 @app.route("/api/settings/notifications", methods=["POST"])
@@ -731,7 +757,7 @@ def api_settings_notifications():
     notifications = data.get("notifications", {})
     if not isinstance(notifications, dict):
         return jsonify({"success": False, "error": "Invalid notification data"}), 400
-    success = SettingsStore.set_setting("notifications", notifications)
+    success = SettingsStore.set_setting("notifications", notifications, user_id=_get_user_id())
     return jsonify({"success": success}), 200 if success else 500
 
 @app.route("/api/system/restart", methods=["POST"])
@@ -802,13 +828,6 @@ def evidence_screenshot(filename):
 def _auto_start_cameras():
     """Start cameras from CAMERAS config (including VIDEO_FILE if set)."""
     from config import CAMERAS
-
-    # Always ensure the default webcam (Camera_01) is running first so that
-    # adding a recorded video camera never blocks the primary webcam.
-    try:
-        camera_manager._ensure_default_camera()
-    except Exception as e:
-        print(f"⚠️ Failed to auto-start Camera_01: {e}")
 
     if not CAMERAS:
         return

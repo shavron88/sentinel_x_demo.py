@@ -23,6 +23,7 @@ def init_db():
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS events (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL DEFAULT 1,
                 timestamp TEXT NOT NULL,
                 event_type TEXT NOT NULL,
                 severity TEXT DEFAULT 'LOW',
@@ -39,6 +40,7 @@ def init_db():
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS evidence (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL DEFAULT 1,
                 event_id INTEGER,
                 timestamp TEXT NOT NULL,
                 camera TEXT NOT NULL,
@@ -52,7 +54,8 @@ def init_db():
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS cameras (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT UNIQUE NOT NULL,
+                user_id INTEGER NOT NULL DEFAULT 1,
+                name TEXT NOT NULL,
                 location TEXT DEFAULT 'Unspecified',
                 stream_url TEXT NOT NULL,
                 status TEXT DEFAULT 'OFFLINE',
@@ -62,7 +65,8 @@ def init_db():
                 network_errors INTEGER DEFAULT 0,
                 decode_errors INTEGER DEFAULT 0,
                 last_error TEXT,
-                is_rtsp INTEGER DEFAULT 0
+                is_rtsp INTEGER DEFAULT 0,
+                UNIQUE(user_id, name)
             )
         """)
 
@@ -81,6 +85,22 @@ def init_db():
             pass
         try:
             cursor.execute("ALTER TABLE cameras ADD COLUMN is_rtsp INTEGER DEFAULT 0")
+        except sqlite3.OperationalError:
+            pass
+        try:
+            cursor.execute("ALTER TABLE events ADD COLUMN user_id INTEGER NOT NULL DEFAULT 1")
+        except sqlite3.OperationalError:
+            pass
+        try:
+            cursor.execute("ALTER TABLE evidence ADD COLUMN user_id INTEGER NOT NULL DEFAULT 1")
+        except sqlite3.OperationalError:
+            pass
+        try:
+            cursor.execute("ALTER TABLE cameras ADD COLUMN user_id INTEGER NOT NULL DEFAULT 1")
+        except sqlite3.OperationalError:
+            pass
+        try:
+            cursor.execute("ALTER TABLE settings ADD COLUMN user_id INTEGER")
         except sqlite3.OperationalError:
             pass
 
@@ -110,33 +130,46 @@ def init_db():
         logger.info("Database initialized successfully.")
 
 
+init_db()
+
 # ==========================================
 # EVENTS & EVIDENCE FUNCTIONS
 # ==========================================
 
-def get_all_events(limit=50):
+def get_all_events(limit=50, user_id=None):
     """Fetches recent recorded events from database."""
     try:
         with get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM events ORDER BY id DESC LIMIT ?", (limit,))
+            if user_id is not None:
+                cursor.execute("SELECT * FROM events WHERE user_id = ? ORDER BY id DESC LIMIT ?", (user_id, limit))
+            else:
+                cursor.execute("SELECT * FROM events ORDER BY id DESC LIMIT ?", (limit,))
             return [dict(row) for row in cursor.fetchall()]
     except Exception as e:
         logger.error(f"Error fetching events: {e}")
         return []
 
 
-def get_evidence_by_id(evidence_id):
+def get_evidence_by_id(evidence_id, user_id=None):
     """Fetches single evidence record with joined event details."""
     try:
         with get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
-                SELECT e.*, ev.event_type, ev.severity, ev.zone, ev.confidence as event_confidence
-                FROM evidence e
-                LEFT JOIN events ev ON e.event_id = ev.id
-                WHERE e.id = ?
-            """, (evidence_id,))
+            if user_id is not None:
+                cursor.execute("""
+                    SELECT e.*, ev.event_type, ev.severity, ev.zone, ev.confidence as event_confidence
+                    FROM evidence e
+                    LEFT JOIN events ev ON e.event_id = ev.id
+                    WHERE e.id = ? AND e.user_id = ?
+                """, (evidence_id, user_id))
+            else:
+                cursor.execute("""
+                    SELECT e.*, ev.event_type, ev.severity, ev.zone, ev.confidence as event_confidence
+                    FROM evidence e
+                    LEFT JOIN events ev ON e.event_id = ev.id
+                    WHERE e.id = ?
+                """, (evidence_id,))
             row = cursor.fetchone()
             return _row_to_evidence_dict(row)
     except Exception as ex:
@@ -144,18 +177,28 @@ def get_evidence_by_id(evidence_id):
         return None
 
 
-def get_all_evidence(limit=100):
+def get_all_evidence(limit=100, user_id=None):
     """Fetches all evidence records with joined event details for the evidence vault."""
     try:
         with get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
-                SELECT e.*, ev.event_type, ev.severity, ev.zone, ev.confidence as event_confidence
-                FROM evidence e
-                LEFT JOIN events ev ON e.event_id = ev.id
-                ORDER BY e.timestamp DESC
-                LIMIT ?
-            """, (limit,))
+            if user_id is not None:
+                cursor.execute("""
+                    SELECT e.*, ev.event_type, ev.severity, ev.zone, ev.confidence as event_confidence
+                    FROM evidence e
+                    LEFT JOIN events ev ON e.event_id = ev.id
+                    WHERE e.user_id = ?
+                    ORDER BY e.timestamp DESC
+                    LIMIT ?
+                """, (user_id, limit))
+            else:
+                cursor.execute("""
+                    SELECT e.*, ev.event_type, ev.severity, ev.zone, ev.confidence as event_confidence
+                    FROM evidence e
+                    LEFT JOIN events ev ON e.event_id = ev.id
+                    ORDER BY e.timestamp DESC
+                    LIMIT ?
+                """, (limit,))
             rows = cursor.fetchall()
             return [_row_to_evidence_dict(row) for row in rows]
     except Exception as ex:
@@ -203,15 +246,15 @@ def _row_to_evidence_dict(row):
 # CAMERA CRUD FUNCTIONS
 # ==========================================
 
-def save_camera(name, stream_url, location="Unspecified", status="OFFLINE", fps=0.0, latency=0.0, resolution="640x480", **kwargs):
+def save_camera(name, stream_url, location="Unspecified", status="OFFLINE", fps=0.0, latency=0.0, resolution="640x480", user_id=1, **kwargs):
     """Saves or updates camera config in DB."""
     try:
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                INSERT INTO cameras (name, stream_url, location, status, fps, latency, resolution, network_errors, decode_errors, last_error, is_rtsp)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(name) DO UPDATE SET
+                INSERT INTO cameras (user_id, name, stream_url, location, status, fps, latency, resolution, network_errors, decode_errors, last_error, is_rtsp)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(user_id, name) DO UPDATE SET
                     stream_url=excluded.stream_url,
                     location=excluded.location,
                     status=excluded.status,
@@ -223,7 +266,7 @@ def save_camera(name, stream_url, location="Unspecified", status="OFFLINE", fps=
                     last_error=excluded.last_error,
                     is_rtsp=excluded.is_rtsp
             """, (
-                name, stream_url, location, status, fps, latency, resolution,
+                user_id, name, stream_url, location, status, fps, latency, resolution,
                 kwargs.get("network_errors", 0),
                 kwargs.get("decode_errors", 0),
                 kwargs.get("last_error"),
@@ -236,7 +279,7 @@ def save_camera(name, stream_url, location="Unspecified", status="OFFLINE", fps=
         return False
 
 
-def update_camera_status(name, status, fps=0.0, latency=0.0, **kwargs):
+def update_camera_status(name, status, fps=0.0, latency=0.0, user_id=None, **kwargs):
     """
     Updates camera online status, fps, and latency.
     **kwargs suppresses any unexpected keyword arguments (e.g. health, uptime, reconnects).
@@ -244,11 +287,18 @@ def update_camera_status(name, status, fps=0.0, latency=0.0, **kwargs):
     try:
         with get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
-                UPDATE cameras 
-                SET status = ?, fps = ?, latency = ?
-                WHERE name = ?
-            """, (status, fps, latency, name))
+            if user_id is not None:
+                cursor.execute("""
+                    UPDATE cameras 
+                    SET status = ?, fps = ?, latency = ?
+                    WHERE name = ? AND user_id = ?
+                """, (status, fps, latency, name, user_id))
+            else:
+                cursor.execute("""
+                    UPDATE cameras 
+                    SET status = ?, fps = ?, latency = ?
+                    WHERE name = ?
+                """, (status, fps, latency, name))
             conn.commit()
             return True
     except Exception as e:
@@ -256,12 +306,15 @@ def update_camera_status(name, status, fps=0.0, latency=0.0, **kwargs):
         return False
 
 
-def get_camera(name):
+def get_camera(name, user_id=None):
     """Fetches camera details by camera name."""
     try:
         with get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM cameras WHERE name = ?", (name,))
+            if user_id is not None:
+                cursor.execute("SELECT * FROM cameras WHERE name = ? AND user_id = ?", (name, user_id))
+            else:
+                cursor.execute("SELECT * FROM cameras WHERE name = ?", (name,))
             row = cursor.fetchone()
             return dict(row) if row else None
     except Exception as e:
@@ -269,28 +322,31 @@ def get_camera(name):
         return None
 
 
-def get_all_cameras():
+def get_all_cameras(user_id=None):
     """Fetches all registered cameras from database."""
     try:
         with get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM cameras ORDER BY id ASC")
+            if user_id is not None:
+                cursor.execute("SELECT * FROM cameras WHERE user_id = ? ORDER BY id ASC", (user_id,))
+            else:
+                cursor.execute("SELECT * FROM cameras ORDER BY id ASC")
             return [dict(row) for row in cursor.fetchall()]
     except Exception as e:
         logger.error(f"Error fetching cameras: {e}")
         return []
 
 
-def save_event(event_type, severity="LOW", camera="Unknown", zone="General Area", confidence=0.0, duration=0.0, metadata=None, screenshot="", track_id=-1):
+def save_event(event_type, severity="LOW", camera="Unknown", zone="General Area", confidence=0.0, duration=0.0, metadata=None, screenshot="", track_id=-1, user_id=1):
     """Saves a new event/detection to the database."""
     try:
         with get_connection() as conn:
             cursor = conn.cursor()
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             cursor.execute("""
-                INSERT INTO events (timestamp, event_type, severity, camera, zone, track_id, confidence, duration, metadata)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (timestamp, event_type, severity, camera, zone, track_id, confidence, duration, json.dumps(metadata) if metadata else None))
+                INSERT INTO events (user_id, timestamp, event_type, severity, camera, zone, track_id, confidence, duration, metadata)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (user_id, timestamp, event_type, severity, camera, zone, track_id, confidence, duration, json.dumps(metadata) if metadata else None))
             conn.commit()
             return cursor.lastrowid
     except Exception as e:
