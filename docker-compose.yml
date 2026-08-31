@@ -17,8 +17,13 @@ services:
       - FLASK_DEBUG=0
       - FLASK_HOST=0.0.0.0
       - FLASK_PORT=5000
-      - MODEL_PATH=models/yolov8m.pt
-      - CONFIDENCE_THRESHOLD=0.60
+      - MODEL_PATH=models/yolo11n.pt
+      - CONFIDENCE_THRESHOLD=0.50
+      - IOU_THRESHOLD=0.45
+      - IMAGE_SIZE=640
+      - DEVICE=auto
+      - TARGET_CLASSES=0,1,2,3,5,7,24,26,28
+      - TRACKING_ENABLED=1
       - CAMERA_SOURCE=0
       - EVENT_COOLDOWN=600
       - LOITERING_THRESHOLD=30

@@ -68,7 +68,7 @@ def get_system_health():
         },
         "services": {
             "database": check_database(),
-            "ai_engine": {"status": "RUNNING", "model": "YOLOv8-Sentinel"},
+            "ai_engine": {"status": "RUNNING", "model": "YOLO11-Surveillance"},
             "cameras": {
                 "total": total_cams,
                 "online": online_cams,

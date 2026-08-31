@@ -79,8 +79,7 @@ class CameraStream:
         self.is_running = False
         if self.is_recording:
             self.stop_recording()
-        if self.cap:
-            self.cap.release()
+        self._safe_release()
         self.status = "OFFLINE"
         self._sync_db()
 
@@ -88,7 +87,10 @@ class CameraStream:
         """Restarts the underlying cv2 capture connection."""
         with self.lock:
             if self.cap:
-                self.cap.release()
+                try:
+                    self.cap.release()
+                except Exception as e:
+                    logger.warning(f"[{self.name}] cv2 capture release error during restart (ignored): {e}")
                 self.cap = None
         self.status = "RECONNECTING"
 
@@ -154,6 +156,42 @@ class CameraStream:
         delay = min(self.reconnect_delay * (factor ** self.reconnects), max_delay)
         return delay
 
+    def _open_capture(self, target, preferred_backend):
+        """Open a cv2.VideoCapture robustly, falling back to the default backend.
+
+        Some OpenCV/Windows DShow configurations raise an unrecoverable C++
+        exception for device indices, so every backend attempt is guarded and
+        we always fall back to the platform default backend.
+        Returns an open VideoCapture or None.
+        """
+        backends_to_try = [preferred_backend]
+        if preferred_backend != 0:
+            backends_to_try.append(0)
+        for be in backends_to_try:
+            try:
+                cap = cv2.VideoCapture(target, be)
+            except Exception as e:
+                logger.warning(f"[{self.name}] cv2.VideoCapture(backend={be}) failed: {e}")
+                continue
+            if cap is not None and cap.isOpened():
+                return cap
+            try:
+                cap.release()
+            except Exception:
+                pass
+        # Last resort: no explicit backend
+        try:
+            cap = cv2.VideoCapture(target)
+            if cap is not None and cap.isOpened():
+                return cap
+            try:
+                cap.release()
+            except Exception:
+                pass
+        except Exception as e:
+            logger.warning(f"[{self.name}] default cv2.VideoCapture failed: {e}")
+        return None
+
     def _capture_loop(self):
         frame_count = 0
         fps_start_time = time.time()
@@ -170,19 +208,21 @@ class CameraStream:
                     self._pre_configure_rtsp_env()
 
                     target = int(self.ip_url) if str(self.ip_url).isdigit() else self.ip_url
-                    # Use FFMPEG backend for RTSP and video files (CAP_DSHOW only supports capture devices)
+                    # Use FFMPEG backend for RTSP streams and video files
+                    # (CAP_DSHOW only supports capture devices). For local capture
+                    # devices use the platform default backend — it is more robust
+                    # than DShow on Windows OpenCV builds, where DShow can raise an
+                    # unrecoverable C++ exception for some device indices.
                     if self._is_rtsp() or self._is_video:
                         backend = cv2.CAP_FFMPEG
-                    elif sys.platform.startswith("win"):
-                        backend = cv2.CAP_DSHOW
                     else:
                         backend = 0
-                    self.cap = cv2.VideoCapture(target, backend)
+                    self.cap = self._open_capture(target, backend)
 
-                    if self._is_rtsp():
+                    if self.cap is not None and self._is_rtsp():
                         self._configure_rtsp(self.cap)
 
-                    if not self.cap.isOpened():
+                    if self.cap is None or not self.cap.isOpened():
                         self.status = "OFFLINE"
                         self.health = "CRITICAL"
                         self.network_errors += 1
@@ -222,9 +262,7 @@ class CameraStream:
                                 continue
                         # If seek failed, release and let the top of the loop reopen
                         self.status = "RECONNECTING"
-                        if self.cap:
-                            self.cap.release()
-                            self.cap = None
+                        self._safe_release()
                         continue
 
                     # Live stream disconnect — reconnect with backoff
@@ -234,9 +272,7 @@ class CameraStream:
                     self.health = "POOR"
                     self.network_errors += 1
                     self.reconnects += 1
-                    if self.cap:
-                        self.cap.release()
-                        self.cap = None
+                    self._safe_release()
                     self._sync_db()
                     backoff = self._calculate_backoff()
                     time.sleep(backoff)
@@ -295,6 +331,15 @@ class CameraStream:
     def get_frame(self):
         with self.lock:
             return self.latest_frame.copy() if self.latest_frame is not None else None
+
+    def _safe_release(self):
+        """Releases the cv2 capture handle defensively (DShow can raise on release)."""
+        if self.cap:
+            try:
+                self.cap.release()
+            except Exception as e:
+                logger.warning(f"[{self.name}] cv2 capture release error (ignored): {e}")
+        self.cap = None
 
     def take_snapshot(self):
         """Captures current frame and saves image file."""
@@ -450,7 +495,7 @@ class CameraPipeline:
             model_path = MODEL_PATH
 
         self.health = AIHealthMonitor()
-        self.engine = YOLOInferenceEngine(model_path=model_path, health_monitor=self.health)
+        self.engine = YOLOInferenceEngine(model_path=model_path, health_monitor=self.health, camera_id=self.name)
         self.worker = YOLOWorker(self.queue, self.engine, self.health, on_result=self._on_inference_result)
 
         self.stream.start()

@@ -1925,36 +1925,7 @@ h1, h2, h3, h4, h5, h6 {
     gap: 18px;
 }
 
-.camera-card {
-    background: rgba(17, 24, 39, 0.65);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 16px;
-    overflow: hidden;
-    transition: transform 0.25s, box-shadow 0.25s;
-}
-
-.camera-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
-}
-
-.camera-card .camera-header {
-    padding: 12px 16px;
-    background: rgba(30, 41, 59, 0.8);
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.camera-card img {
-    height: 240px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.camera-card .camera-footer {
-    padding: 10px 16px;
-    background: rgba(30, 41, 59, 0.5);
-    font-size: 13px;
-}
+/* Legacy .camera-card styles removed - cameras.html uses exclusive .cam-card styles */
 
 .layout-buttons {
     gap: 8px;
@@ -2439,7 +2410,6 @@ h1, h2, h3, h4, h5, h6 {
     to   { opacity: 1; transform: translateY(0); }
 }
 .kpi-card,
-.camera-card,
 .incident-card,
 .alert-item,
 .evidence-card {
@@ -2449,10 +2419,6 @@ h1, h2, h3, h4, h5, h6 {
 .kpi-card:nth-child(2) { animation-delay: 100ms; }
 .kpi-card:nth-child(3) { animation-delay: 150ms; }
 .kpi-card:nth-child(4) { animation-delay: 200ms; }
-.camera-card:nth-child(1) { animation-delay: 80ms; }
-.camera-card:nth-child(2) { animation-delay: 140ms; }
-.camera-card:nth-child(3) { animation-delay: 200ms; }
-.camera-card:nth-child(4) { animation-delay: 260ms; }
 
 /* ═══ Premium empty states ═══ */
 .empty-state {

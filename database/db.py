@@ -126,6 +126,15 @@ def init_db():
             (default_username, default_password_hash, f"{default_username}@sentinelx.ai", "System Administrator")
         )
 
+        # Seed legacy demo admin for backward compatibility
+        demo_username = "admin"
+        demo_password = "sentinelx"
+        demo_password_hash = hashlib.sha256(demo_password.encode()).hexdigest()
+        cursor.execute(
+            "INSERT OR IGNORE INTO admin_users (username, password_hash, email, role) VALUES (?, ?, ?, ?)",
+            (demo_username, demo_password_hash, f"{demo_username}@sentinelx.ai", "System Administrator")
+        )
+
         conn.commit()
         logger.info("Database initialized successfully.")
 

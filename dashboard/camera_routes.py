@@ -174,8 +174,10 @@ def handle_test_connection():
     try:
         import cv2
         target = int(source) if str(source).isdigit() else source
+        # Prefer the default backend for local devices — CAP_DSHOW can raise an
+        # unrecoverable C++ exception on some Windows OpenCV builds.
         try:
-            cap = cv2.VideoCapture(target, cv2.CAP_DSHOW if sys.platform.startswith("win") else 0)
+            cap = cv2.VideoCapture(target)
         except Exception:
             cap = cv2.VideoCapture(target)
         if not cap.isOpened():

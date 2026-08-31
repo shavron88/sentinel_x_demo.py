@@ -126,8 +126,13 @@ docker run -d \
 | `FLASK_DEBUG` | 0 | Enable Flask debug mode (0/1) |
 | `FLASK_HOST` | 0.0.0.0 | Flask bind address |
 | `FLASK_PORT` | 5000 | Flask port |
-| `MODEL_PATH` | models/yolov8m.pt | YOLO model path |
-| `CONFIDENCE_THRESHOLD` | 0.60 | Detection confidence threshold |
+| `MODEL_PATH` | models/yolo11n.pt | YOLO11 model path |
+| `CONFIDENCE_THRESHOLD` | 0.50 | Detection confidence threshold |
+| `IOU_THRESHOLD` | 0.45 | NMS IoU threshold |
+| `IMAGE_SIZE` | 640 | Inference resolution |
+| `DEVICE` | auto | Inference device (auto/cpu/cuda) |
+| `TARGET_CLASSES` | 0,1,2,3,5,7,24,26,28 | COCO classes to detect |
+| `TRACKING_ENABLED` | 1 | Enable ByteTrack multi-object tracking |
 | `CAMERA_SOURCE` | 0 | Default camera source |
 | `CAMERAS` | | Multi-camera configuration |
 | `EVENT_COOLDOWN` | 600 | Event cooldown in seconds |
@@ -297,7 +302,7 @@ python -c "import cv2; print([i for i in range(5) if cv2.VideoCapture(i).isOpene
 ### Out of Memory
 
 - Reduce `MAX_QUEUE_SIZE`
-- Use smaller model: `MODEL_PATH=models/yolov8n.pt`
+- Use smaller model: `MODEL_PATH=models/yolo11n.pt`
 - Reduce number of cameras
 - Increase Docker `--shm-size`
 
@@ -306,7 +311,7 @@ python -c "import cv2; print([i for i in range(5) if cv2.VideoCapture(i).isOpene
 - Use GPU acceleration (CUDA)
 - Reduce inference resolution
 - Increase `FRAME_SKIP` to process fewer frames
-- Use `yolov8n.pt` instead of `yolov8m.pt`
+- Use `yolo11n.pt` instead of `yolo11s.pt`/`yolo11m.pt` for lower latency
 
 ---
 

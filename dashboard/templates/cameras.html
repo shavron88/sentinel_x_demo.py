@@ -3,10 +3,16 @@
 {% block content %}
 
 <style>
+/* ==========================================
+   CAMERA MANAGER - LATEST CARD STYLE
+   Exclusive modern design, no legacy styles
+========================================= */
 .camera-manager {
     max-width: 1400px;
     margin: 0 auto;
+    padding: 24px;
 }
+
 .camera-manager-header {
     display: flex;
     justify-content: space-between;
@@ -15,18 +21,22 @@
     gap: 16px;
     flex-wrap: wrap;
 }
+
 .camera-manager-header h2 {
     margin: 0;
     font-size: 24px;
     font-weight: 700;
-    color: var(--ev-text, #e2e8f0);
+    color: #f1f5f9;
 }
+
 .camera-manager-header .subtitle {
-    color: var(--ev-text-muted, #94a3b8);
+    color: #94a3b8;
     font-size: 14px;
     margin-top: 4px;
 }
-.btn {
+
+/* Button Styles */
+.cm-btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -37,122 +47,148 @@
     cursor: pointer;
     transition: all 0.2s;
     font-size: 14px;
+    font-family: inherit;
 }
-.btn-primary {
-    background: var(--ev-primary, #3b82f6);
-    color: white;
+
+.cm-btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
 }
-.btn-primary:hover {
-    background: var(--ev-primary-hover, #2563eb);
-    transform: translateY(-1px);
+
+.cm-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
 }
-.btn-secondary {
-    background: var(--ev-primary-soft, rgba(255,255,255,0.08));
-    color: var(--ev-text, #e2e8f0);
-    border: 1px solid var(--ev-border, rgba(255,255,255,0.1));
+
+.cm-btn-secondary {
+    background: rgba(59, 130, 246, 0.1);
+    color: #e2e8f0;
+    border: 1px solid rgba(59, 130, 246, 0.2);
 }
-.btn-secondary:hover {
-    background: var(--ev-surface-2, rgba(255,255,255,0.12));
+
+.cm-btn-secondary:hover {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.3);
 }
-.btn-danger {
-    background: rgba(239,68,68,0.15);
+
+.cm-btn-danger {
+    background: rgba(239, 68, 68, 0.15);
     color: #ef4444;
-    border: 1px solid rgba(239,68,68,0.25);
+    border: 1px solid rgba(239, 68, 68, 0.25);
 }
-.btn-danger:hover {
-    background: rgba(239,68,68,0.25);
+
+.cm-btn-danger:hover {
+    background: rgba(239, 68, 68, 0.25);
 }
+
+/* Camera Grid */
 .camera-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
     gap: 24px;
 }
-.camera-card {
-    background: var(--ev-surface, #1b2432);
-    border-radius: 16px;
-    border: 1px solid var(--ev-border, rgba(255,255,255,0.06));
-    overflow: hidden;
-    transition: all 0.3s;
-    animation: cardFadeIn 0.4s ease;
+
+/* Latest Card Style - PERMANENT */
+.cam-card {
+    background: #1b2432 !important;
+    border-radius: 16px !important;
+    border: 1px solid rgba(59, 130, 246, 0.1) !important;
+    overflow: hidden !important;
+    transition: all 0.3s ease !important;
+    animation: none !important;
+    box-shadow: none !important;
 }
-.camera-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--ev-shadow-lg, 0 12px 40px rgba(0,0,0,0.3));
-    border-color: var(--ev-primary, rgba(59,130,246,0.2));
+
+.cam-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(59, 130, 246, 0.2) !important;
+    border-color: rgba(59, 130, 246, 0.3) !important;
 }
-@keyframes cardFadeIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+
+.cam-card-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    padding: 16px 20px !important;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.1) !important;
 }
-.camera-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--ev-border-subtle, rgba(255,255,255,0.06));
+
+.cam-card-header h3 {
+    margin: 0 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #f1f5f9 !important;
 }
-.camera-card-header h3 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--ev-text, white);
+
+.cam-card-header .cam-type {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    padding: 4px 10px !important;
+    border-radius: 20px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-top: 6px !important;
+    display: inline-block !important;
 }
-.camera-card-header .camera-type {
-    font-size: 11px;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 20px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+
+.cam-type-rtsp {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #ef4444 !important;
+    border: 1px solid rgba(239, 68, 68, 0.25) !important;
 }
-.camera-type-rtsp {
-    background: rgba(239,68,68,0.15);
-    color: #ef4444;
-    border: 1px solid rgba(239,68,68,0.25);
+
+.cam-type-webcam {
+    background: rgba(34, 197, 94, 0.15) !important;
+    color: #22c55e !important;
+    border: 1px solid rgba(34, 197, 94, 0.25) !important;
 }
-.camera-type-webcam {
-    background: rgba(34,197,94,0.15);
-    color: #22c55e;
-    border: 1px solid rgba(34,197,94,0.25);
+
+.cam-type-http {
+    background: rgba(59, 130, 246, 0.15) !important;
+    color: #3b82f6 !important;
+    border: 1px solid rgba(59, 130, 246, 0.25) !important;
 }
-.camera-type-http {
-    background: rgba(59,130,246,0.15);
-    color: #3b82f6;
-    border: 1px solid rgba(59,130,246,0.25);
+
+.cam-card-body {
+    padding: 16px 20px !important;
 }
-.camera-card-body {
-    padding: 16px 20px;
+
+.cam-card-body .meta-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 6px 0 !important;
+    font-size: 13px !important;
 }
-.camera-card-body .meta-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 0;
-    font-size: 13px;
+
+.cam-card-body .meta-label {
+    color: #94a3b8 !important;
+    font-weight: 500 !important;
 }
-.camera-card-body .meta-label {
-    color: var(--ev-text-dark, #64748b);
-    font-weight: 500;
+
+.cam-card-body .meta-value {
+    color: #e2e8f0 !important;
+    font-weight: 600 !important;
+    font-variant-numeric: tabular-nums !important;
 }
-.camera-card-body .meta-value {
-    color: var(--ev-text, #e2e8f0);
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
+
+.cam-card-footer {
+    display: flex !important;
+    gap: 8px !important;
+    padding: 12px 20px !important;
+    border-top: 1px solid rgba(59, 130, 246, 0.1) !important;
+    background: rgba(15, 23, 42, 0.3) !important;
 }
-.camera-card-footer {
-    display: flex;
-    gap: 8px;
-    padding: 12px 20px;
-    border-top: 1px solid var(--ev-border-subtle, rgba(255,255,255,0.06));
-    background: var(--ev-surface-2, rgba(15,23,42,0.3));
+
+.cam-card-footer .cm-btn {
+    flex: 1 !important;
+    justify-content: center !important;
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    min-height: 36px !important;
 }
-.camera-card-footer .btn {
-    flex: 1;
-    justify-content: center;
-    padding: 8px 12px;
-    font-size: 12px;
-    min-height: 36px;
-}
+
 .status-online { color: #22c55e; }
 .status-offline { color: #ef4444; }
 .status-connecting { color: #facc15; }
@@ -161,7 +197,7 @@
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
     display: none;
     justify-content: center;
@@ -169,41 +205,41 @@
     z-index: 1000;
     padding: 20px;
 }
+
 .modal-overlay.active {
     display: flex;
 }
+
 .modal {
-    background: var(--ev-surface, #1b2432);
-    border: 1px solid var(--ev-border, rgba(255,255,255,0.08));
+    background: #1b2432;
+    border: 1px solid rgba(59, 130, 246, 0.15);
     border-radius: 20px;
     width: 100%;
     max-width: 520px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.5);
-    animation: modalIn 0.3s ease;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
 }
-@keyframes modalIn {
-    from { opacity: 0; transform: scale(0.95) translateY(10px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-}
+
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 20px 24px;
-    border-bottom: 1px solid var(--ev-border-subtle, rgba(255,255,255,0.06));
+    border-bottom: 1px solid rgba(59, 130, 246, 0.1);
 }
+
 .modal-header h3 {
     margin: 0;
     font-size: 18px;
     font-weight: 700;
-    color: var(--ev-text, white);
+    color: #f1f5f9;
 }
+
 .modal-close {
     background: none;
     border: none;
-    color: var(--ev-text-dark, #64748b);
+    color: #94a3b8;
     font-size: 24px;
     cursor: pointer;
     line-height: 1;
@@ -215,63 +251,75 @@
     justify-content: center;
     border-radius: 8px;
 }
+
 .modal-close:hover {
-    background: var(--ev-primary-soft, rgba(255,255,255,0.08));
-    color: var(--ev-text, white);
+    background: rgba(59, 130, 246, 0.1);
+    color: #f1f5f9;
 }
+
 .modal-body {
     padding: 24px;
 }
+
 .form-group {
     margin-bottom: 18px;
 }
+
 .form-group label {
     display: block;
     margin-bottom: 6px;
     font-size: 13px;
     font-weight: 600;
-    color: var(--ev-text-muted, #94a3b8);
+    color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.3px;
 }
+
 .form-group input,
 .form-group select {
     width: 100%;
     padding: 10px 14px;
     border-radius: 10px;
-    border: 1px solid var(--ev-border, rgba(255,255,255,0.1));
-    background: var(--ev-bg, #0f172a);
-    color: var(--ev-text, white);
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    background: #0f172a;
+    color: #f1f5f9;
     font-size: 14px;
     transition: all 0.2s;
     box-sizing: border-box;
+    font-family: inherit;
 }
+
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
-    border-color: var(--ev-primary, #3b82f6);
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
+
 .form-group .help-text {
     font-size: 12px;
-    color: var(--ev-text-dark, #64748b);
+    color: #64748b;
     margin-top: 4px;
 }
+
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
 }
+
 .modal-footer {
     display: flex;
     gap: 10px;
     padding: 16px 24px;
-    border-top: 1px solid var(--ev-border-subtle, rgba(255,255,255,0.06));
+    border-top: 1px solid rgba(59, 130, 246, 0.1);
     justify-content: flex-end;
 }
-.modal-footer .btn {
+
+.modal-footer .cm-btn {
     min-width: 100px;
 }
+
 .test-result {
     margin-top: 12px;
     padding: 10px 14px;
@@ -280,33 +328,59 @@
     font-weight: 600;
     display: none;
 }
+
 .test-result.success {
     display: block;
-    background: rgba(34,197,94,0.1);
+    background: rgba(34, 197, 94, 0.1);
     color: #22c55e;
-    border: 1px solid rgba(34,197,94,0.2);
+    border: 1px solid rgba(34, 197, 94, 0.2);
 }
+
 .test-result.error {
     display: block;
-    background: rgba(239,68,68,0.1);
+    background: rgba(239, 68, 68, 0.1);
     color: #ef4444;
-    border: 1px solid rgba(239,68,68,0.2);
+    border: 1px solid rgba(239, 68, 68, 0.2);
 }
+
 .empty-state {
     text-align: center;
     padding: 60px 20px;
-    color: var(--ev-text-muted, #64748b);
+    color: #94a3b8;
 }
+
 .empty-state svg {
     margin-bottom: 16px;
     opacity: 0.5;
 }
+
 .empty-state h3 {
-    color: var(--ev-text, #e2e8f0);
+    color: #f1f5f9;
     margin: 0 0 8px 0;
 }
-.camera-manager {
-    padding: 24px;
+
+/* Responsive */
+@media (max-width: 768px) {
+    .camera-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .camera-manager-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+    }
+    
+    .modal-footer .cm-btn {
+        width: 100%;
+    }
 }
 </style>
 
@@ -316,7 +390,7 @@
             <h2>Camera Management</h2>
             <p class="subtitle">Connect and manage IP cameras, RTSP streams, and webcams</p>
         </div>
-        <button class="btn btn-primary" onclick="openAddCameraModal()">
+        <button class="cm-btn cm-btn-primary" onclick="openAddCameraModal()">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -374,14 +448,14 @@
             <div class="test-result" id="testResult"></div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="testCameraConnection()">
+            <button class="cm-btn cm-btn-secondary" onclick="testCameraConnection()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
                 </svg>
                 Test Connection
             </button>
-            <button class="btn btn-secondary" onclick="closeAddCameraModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="addCamera()">Add Camera</button>
+            <button class="cm-btn cm-btn-secondary" onclick="closeAddCameraModal()">Cancel</button>
+            <button class="cm-btn cm-btn-primary" onclick="addCamera()">Add Camera</button>
         </div>
     </div>
 </div>
@@ -535,11 +609,26 @@ async function stopCamera(name) {
     }
 }
 
-async function loadCameras(){
+async function loadCameras() {
     const grid = document.getElementById("camera-grid");
-    if(!grid) return;
+    if (!grid) return;
     grid.innerHTML = "";
-    showSkeletonCards("camera-grid", 4);
+    
+    // Show skeleton loading
+    for (let i = 0; i < 4; i++) {
+        const skeleton = document.createElement("div");
+        skeleton.className = "cam-card";
+        skeleton.innerHTML = `
+            <div style="padding:16px 20px;">
+                <div style="width:60%;height:16px;background:rgba(255,255,255,0.1);border-radius:4px;margin-bottom:12px;"></div>
+                <div style="width:100%;height:18px;background:rgba(255,255,255,0.05);border-radius:4px;margin-bottom:8px;"></div>
+                <div style="width:100%;height:18px;background:rgba(255,255,255,0.05);border-radius:4px;margin-bottom:8px;"></div>
+                <div style="width:100%;height:18px;background:rgba(255,255,255,0.05);border-radius:4px;"></div>
+            </div>
+        `;
+        grid.appendChild(skeleton);
+    }
+    
     try {
         const response = await fetch("/api/cameras");
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -563,29 +652,38 @@ async function loadCameras(){
                 type: cam.is_rtsp ? 'rtsp' : 'webcam'
             }));
         }
-        hideSkeletons();
+        
+        // Remove skeletons
+        grid.innerHTML = "";
+        
         if (cameras.length === 0) {
-            showEmptyState("emptyState", "No Cameras Found", "Get started by adding your first camera.", [{label:"Add Camera", onclick:"openAddCameraModal()", class:"btn-primary"}]);
+            document.getElementById("emptyState").style.display = "block";
+            document.getElementById("emptyState").innerHTML = `
+                <div style="font-size:48px;margin-bottom:16px;opacity:0.6;">📹</div>
+                <h3 style="color:#f1f5f9;margin:0 0 8px 0;">No Cameras Found</h3>
+                <p style="color:#94a3b8;margin:0 0 20px 0;">Get started by adding your first camera.</p>
+                <button class="cm-btn cm-btn-primary" onclick="openAddCameraModal()">Add Camera</button>
+            `;
             return;
         }
+        
         cameras.forEach((camera, index) => {
             const card = document.createElement("div");
-            card.className = "camera-card";
-            card.style.animationDelay = `${Math.min(index * 0.05, 0.4)}s`;
+            card.className = "cam-card";
             const isOnline = camera.status === "ONLINE";
-            const typeClass = camera.type === 'rtsp' ? 'camera-type-rtsp' : camera.type === 'http' ? 'camera-type-http' : 'camera-type-webcam';
+            const typeClass = camera.type === 'rtsp' ? 'cam-type-rtsp' : camera.type === 'http' ? 'cam-type-http' : 'cam-type-webcam';
             const typeLabel = camera.type === 'rtsp' ? 'RTSP' : camera.type === 'http' ? 'HTTP' : 'WEBCAM';
             card.innerHTML = `
-                <div class="camera-card-header">
+                <div class="cam-card-header">
                     <div>
                         <h3>${escapeHtml(camera.name)}</h3>
-                        <span class="camera-type ${typeClass}">${typeLabel}</span>
+                        <span class="cam-type ${typeClass}">${typeLabel}</span>
                     </div>
                     <span class="${isOnline ? 'status-online' : camera.status === 'CONNECTING' ? 'status-connecting' : 'status-offline'}">
                         ● ${camera.status}
                     </span>
                 </div>
-                <div class="camera-card-body">
+                <div class="cam-card-body">
                     <div class="meta-row">
                         <span class="meta-label">Location</span>
                         <span class="meta-value">${escapeHtml(camera.location)}</span>
@@ -607,28 +705,34 @@ async function loadCameras(){
                         <span class="meta-value">${camera.health}</span>
                     </div>
                 </div>
-                <div class="camera-card-footer">
+                <div class="cam-card-footer">
                     ${isOnline ? `
-                        <a href="/camera_view?camera=${encodeURIComponent(camera.name)}"><button class="btn btn-primary">Live</button></a>
-                        <button class="btn btn-secondary" onclick="stopCamera('${escapeHtml(camera.name)}')">Stop</button>
+                        <a href="/camera_view?camera=${encodeURIComponent(camera.name)}" style:none;"><button class="cm-btn cm-btn-primary">Live</button></a>
+                        <button class="cm-btn cm-btn-secondary" onclick="stopCamera('${escapeHtml(camera.name)}')">Stop</button>
                     ` : `
-                        <button class="btn btn-primary" onclick="startCamera('${escapeHtml(camera.name)}')">Start</button>
-                        <button class="btn btn-secondary" onclick="removeCamera('${escapeHtml(camera.name)}')">Remove</button>
+                        <button class="cm-btn cm-btn-primary" onclick="startCamera('${escapeHtml(camera.name)}')">Start</button>
+                        <button class="cm-btn cm-btn-secondary" onclick="removeCamera('${escapeHtml(camera.name)}')">Remove</button>
                     `}
-                    <button class="btn btn-secondary" onclick="takeSnapshot('${escapeHtml(camera.name)}')">Snapshot</button>
+                    <button class="cm-btn cm-btn-secondary" onclick="takeSnapshot('${escapeHtml(camera.name)}')">Snapshot</button>
                 </div>
             `;
             grid.appendChild(card);
         });
     } catch (err) {
-        hideSkeletons();
-        showEmptyState("emptyState", "Unable to Load Cameras", "The camera service could not be reached.", [{label:"Retry", onclick:"loadCameras()", class:"btn-primary"}]);
+        grid.innerHTML = "";
+        document.getElementById("emptyState").style.display = "block";
+        document.getElementById("emptyState").innerHTML = `
+            <div style="font-size:48px;margin-bottom:16px;opacity:0.6;">⚠️</div>
+            <h3 style="color:#f1f5f9;margin:0 0 8px 0;">Unable to Load Cameras</h3>
+            <p style="color:#94a3b8;margin:0 0 20px 0;">The camera service could not be reached.</p>
+            <button class="cm-btn cm-btn-primary" onclick="loadCameras()">Retry</button>
+        `;
     }
 }
 
 loadCameras();
 
-async function takeSnapshot(cameraName){
+async function takeSnapshot(cameraName) {
     try {
         const response = await fetch("/api/camera/snapshot", {
             method: "POST",
@@ -646,75 +750,34 @@ async function takeSnapshot(cameraName){
     }
 }
 
-async function refreshCamera(cameraName){
-    showToast("Refresh", `Refreshing ${cameraName}...`, "info");
-    await loadCameras();
-}
-
-function viewCameraDetails(cameraName){
-    showToast("Camera", `Opening details for ${cameraName}`, "info");
-}
-
-function showSkeletonCards(containerId, count){
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    for (let i = 0; i < count; i++) {
-        const skeleton = document.createElement("div");
-        skeleton.className = "camera-card skeleton-card";
-        skeleton.innerHTML = `
-            <div class="skeleton-line" style="width:60%;height:16px;margin-bottom:12px;"></div>
-            <div class="skeleton-line" style="width:100%;height:180px;margin-bottom:12px;"></div>
-            <div class="skeleton-line" style="width:100%;height:10px;margin-bottom:6px;"></div>
-            <div class="skeleton-line" style="width:80%;height:10px;"></div>
-        `;
-        container.appendChild(skeleton);
-    }
-}
-
-function hideSkeletons(){
-    document.querySelectorAll(".skeleton-card").forEach(c => c.remove());
-}
-
-function showEmptyState(containerId, title, message, actions){
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    const actionsHtml = actions.map(a => `<button class="${a.class || 'btn-secondary'}" onclick="${a.onclick}">${a.label}</button>`).join("");
-    container.style.display = "flex";
-    container.innerHTML = `
-        <div style="grid-column:1/-1;text-align:center;padding:60px 20px;">
-            <div style="font-size:48px;margin-bottom:16px;opacity:0.6;">📹</div>
-            <h3 style="color:#e2e8f0;margin:0 0 8px 0;">${title}</h3>
-            <p style="color:#94a3b8;margin:0 0 20px 0;">${message}</p>
-            <div style="display:flex;gap:10px;justify-content:center;">${actionsHtml}</div>
-        </div>
-    `;
-}
-
-function showToast(title, message, type){
+function showToast(title, message, type) {
     const toast = document.createElement("div");
-    toast.className = `toast toast-${type}`;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: #1b2432;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 12px;
+        padding: 16px 20px;
+        color: #f1f5f9;
+        font-size: 14px;
+        z-index: 9999;
+        animation: slideIn 0.3s ease;
+        max-width: 360px;
+    `;
     toast.innerHTML = `
-        <div class="toast-title">${title}</div>
-        <div class="toast-message">${message}</div>
+        <div style="font-weight: 600; margin-bottom: 4px;">${title}</div>
+        <div style="color: #94a3b8;">${message}</div>
     `;
     document.body.appendChild(toast);
-    setTimeout(() => toast.classList.add("toast-enter"), 10);
     setTimeout(() => {
-        toast.classList.remove("toast-enter");
-        toast.classList.add("toast-exit");
-        setTimeout(() => toast.remove(), 400);
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(10px)";
+        toast.style.transition = "all 0.3s ease";
+        setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
-
-function cleanupCameras() {
-    document.querySelectorAll('.camera-feed img, .camera-feed video').forEach(el => {
-        el.pause();
-        el.src = "";
-        el.load();
-    });
-}
-
-window.addEventListener("beforeunload", cleanupCameras);
 </script>
 
 {% endblock %}

@@ -112,6 +112,9 @@ section { padding: var(--section-pad); position: relative; }
 .nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; color: var(--text-primary); }
 .nav-brand svg { width: 32px; height: 32px; }
 .nav-brand span:last-child { color: var(--accent); }
+.nav-utils { display: flex; align-items: center; gap: 8px; }
+.nav-utils .lang-selector { display: flex; }
+.nav-utils .theme-toggle { display: flex; }
 .nav-links { display: flex; align-items: center; gap: 8px; }
 .nav-link {
   padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500;
@@ -129,10 +132,11 @@ section { padding: var(--section-pad); position: relative; }
   padding: 9px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
   cursor: pointer; border: none; transition: all .2s;
 }
-.nav-btn-outline { background: transparent; color: var(--text-primary); border: 1px solid var(--border-subtle); }
-.nav-btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-.nav-btn-primary { background: var(--accent); color: #fff; }
-.nav-btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+.nav-btn-outline { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+.nav-btn-outline:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+[data-theme="light"] .nav-btn-outline { font-weight: 700; }
+.nav-btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35); border: 1px solid rgba(255, 255, 255, 0.1); }
+.nav-btn-primary:hover { background: var(--accent-hover); color: #fff; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5); }
 .theme-toggle {
   width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border-subtle);
   background: transparent; color: var(--text-muted); cursor: pointer;
@@ -264,11 +268,11 @@ section { padding: var(--section-pad); position: relative; }
   cursor: pointer; border: none; transition: all .2s cubic-bezier(.4,0,.2,1);
 }
 .btn-lg svg { transition: transform .2s cubic-bezier(.4,0,.2,1); }
-.btn-lg-primary { background: var(--accent); color: #fff; }
-.btn-lg-primary:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(59,130,246,.3); }
+.btn-lg-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35); }
+.btn-lg-primary:hover { background: var(--accent-hover); color: #fff; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(59, 130, 246, 0.5); }
 .btn-lg-primary:hover svg { transform: translateX(4px); }
 .btn-lg-primary:active { transform: translateY(0) scale(.98); box-shadow: 0 2px 10px rgba(59,130,246,.2); }
-.btn-lg-outline { background: transparent; color: var(--text-primary); border: 1.5px solid var(--border-subtle); }
+.btn-lg-outline { background: transparent; color: var(--text-primary); border: 2px solid var(--accent); }
 .btn-lg-outline:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
 .btn-lg-outline:active { transform: translateY(0) scale(.98); }
 .btn-lg-ghost { background: transparent; color: var(--text-secondary); }
@@ -501,18 +505,28 @@ section { padding: var(--section-pad); position: relative; }
 ============================================ */
 .tech-section { background: var(--bg-surface); }
 .tech-flow {
-  display: flex; align-items: center; justify-content: center;
-  gap: 0; margin-top: 48px; flex-wrap: wrap;
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px;
+  margin-top: 48px; max-width: 1000px; margin-left: auto; margin-right: auto;
+}
+@media (max-width: 768px) {
+  .tech-flow {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .tech-flow {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 .tech-item {
   padding: 18px 24px; border-radius: var(--radius-sm); text-align: center;
   background: var(--bg-card); border: 1px solid var(--border-subtle);
-  min-width: 120px; transition: all .25s cubic-bezier(.4,0,.2,1);
+  transition: all .25s cubic-bezier(.4,0,.2,1);
 }
 .tech-item:hover { border-color: var(--accent); transform: translateY(-3px) scale(1.02); box-shadow: 0 6px 20px rgba(59,130,246,.1); }
 .tech-item h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
 .tech-item p { font-size: 11px; color: var(--text-muted); }
-.tech-arrow { padding: 0 8px; color: var(--text-muted); font-size: 16px; opacity: .4; }
+.tech-arrow { display: none; }
 
 /* ============================================
    12. FUTURE VISION
@@ -539,6 +553,79 @@ section { padding: var(--section-pad); position: relative; }
 }
 .future-node.highlight { border-color: var(--accent); color: var(--accent); }
 .future-arrow { padding: 0 10px; color: var(--text-muted); opacity: .4; }
+.edge-box-wrap {
+  perspective: 1400px;
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
+}
+.edge-box-img {
+  display: block; width: 100%; max-width: 460px;
+  border-radius: var(--radius); border: 1px solid var(--border-accent);
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.45),
+    0 20px 40px rgba(59,130,246,.12),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 18px;
+  transform: rotateY(-18deg) rotateX(8deg) rotateZ(-2deg) translateY(0);
+  animation: edgeFloat3D 7s ease-in-out infinite;
+  transition: transform .45s cubic-bezier(.4,0,.2,1), box-shadow .45s ease;
+  will-change: transform;
+}
+.edge-box-img:hover {
+  transform: rotateY(0deg) rotateX(0deg) rotateZ(0deg) translateY(-14px) scale(1.04);
+  box-shadow:
+    0 40px 100px rgba(0,0,0,.5),
+    0 25px 55px rgba(59,130,246,.18),
+    0 0 0 1px rgba(59,130,246,.25),
+    inset 0 1px 0 rgba(255,255,255,.08);
+  animation-play-state: paused;
+}
+.edge-box-desc {
+  margin-top: 28px;
+}
+@keyframes edgeFloat3D {
+  0%, 100% {
+    transform: rotateY(-18deg) rotateX(8deg) rotateZ(-2deg) translateY(0);
+    box-shadow:
+      0 30px 80px rgba(0,0,0,.45),
+      0 20px 40px rgba(59,130,246,.12),
+      inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  50% {
+    transform: rotateY(-14deg) rotateX(6deg) rotateZ(-1deg) translateY(-18px);
+    box-shadow:
+      0 45px 100px rgba(0,0,0,.5),
+      0 28px 55px rgba(59,130,246,.18),
+      inset 0 1px 0 rgba(255,255,255,.08);
+  }
+}
+@media (max-width: 600px) {
+  .edge-box-img { max-width: 100%; }
+}
+
+/* Custom scrollbar — matches login page */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(10, 14, 23, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(62, 123, 250, 0.25);
+  border-radius: 3px;
+  border: 1px solid rgba(62, 123, 250, 0.1);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(62, 123, 250, 0.45);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(62, 123, 250, 0.25) rgba(10, 14, 23, 0.6);
+}
 
 /* ============================================
    13. FINAL CTA
@@ -562,6 +649,81 @@ section { padding: var(--section-pad); position: relative; }
   text-align: center; font-size: 13px; color: var(--text-muted);
 }
 
+
+/* ============================================
+   TAG SECTION PAGINATION DOTS
+   Visual indicator for horizontal scroll
+=========================================== */
+.tag-pagination {
+    display: none;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+}
+.tag-pagination-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border-subtle);
+    transition: background 0.3s, transform 0.3s;
+}
+.tag-pagination-dot.active {
+    background: var(--accent);
+    transform: scale(1.2);
+}
+[data-theme="light"] .tag-pagination-dot {
+    background: rgba(15, 23, 42, 0.15);
+}
+[data-theme="light"] .tag-pagination-dot.active {
+    background: var(--accent);
+}
+
+@media (max-width: 768px) {
+    .tag-pagination {
+        display: flex;
+    }
+}
+
+
+/* Mobile navigation - scroll with page */
+@media (max-width: 768px) {
+    .nav {
+        position: absolute;
+    }
+    .nav-links {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--bg-surface);
+        border-bottom: 1px solid var(--border-subtle);
+        flex-direction: column;
+        padding: 12px;
+        gap: 8px;
+        display: none;
+        z-index: 101;
+    }
+    .nav-links.open {
+        display: flex;
+    }
+    .nav-links .nav-link {
+        display: block;
+        width: 100%;
+        text-align: center;
+    }
+    .nav-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    /* Hide Sign In and Create Account on mobile (they're in hero) */
+    .nav-btn-outline,
+    .nav-btn-primary {
+        display: none;
+    }
+}
+[data-theme="light"] .nav-links {
+    background: #ffffff;
+}
 /* ============================================
    RESPONSIVE
 ============================================ */
@@ -573,6 +735,9 @@ section { padding: var(--section-pad); position: relative; }
   .preview-main { grid-template-columns: 1fr 1fr; }
   .steps::before { left: 27px; }
   .nav-links .nav-link { display: none; }
+  .nav-btn { display: none; }
+  .nav-mobile-toggle { display: flex; }
+  .nav-links.open .nav-link { display: block; }
 }
 @media (max-width: 600px) {
   :root { --section-pad: 64px 0; }
@@ -583,6 +748,49 @@ section { padding: var(--section-pad); position: relative; }
   .hero-buttons { flex-direction: column; }
   .btn-lg { width: 100%; justify-content: center; }
   .final-buttons { flex-direction: column; align-items: center; }
+  .nav { padding: 12px 16px; }
+  .nav-brand { font-size: 16px; }
+  .nav-brand svg { width: 28px; height: 28px; }
+  .hero h1 { font-size: clamp(28px, 7vw, 42px); }
+  .hero-sub { font-size: 15px; }
+  .section-title { font-size: clamp(22px, 5vw, 32px); }
+  .section-desc { font-size: 14px; }
+  .hero-panel { padding: 20px; }
+  .capabilities-grid { grid-template-columns: 1fr; }
+  .problem-grid { grid-template-columns: 1fr; }
+  .adv-grid { grid-template-columns: 1fr; }
+  .use-grid { grid-template-columns: 1fr 1fr; }
+  .sec-grid { grid-template-columns: 1fr; }
+  .limit-grid { grid-template-columns: 1fr; }
+  .tech-item { min-width: 100px; padding: 14px 18px; }
+  .future-card { padding: 24px; }
+  .future-card h3 { font-size: 20px; }
+  .future-flow { flex-direction: column; gap: 8px; }
+  .future-arrow { transform: rotate(90deg); }
+  .step { gap: 16px; }
+  .step-num { flex: 0 0 48px; height: 48px; font-size: 16px; }
+  .step-body h3 { font-size: 15px; }
+  .step-body p { font-size: 13px; }
+  .final-cta { padding: 80px 0; }
+  .final-cta h2 { font-size: clamp(24px, 6vw, 36px); }
+  .final-cta p { font-size: 15px; }
+  .footer { padding: 24px 0; font-size: 12px; }
+}
+@media (max-width: 360px) {
+  .nav { padding: 10px 12px; }
+  .hero { padding-top: 60px; }
+  .hero h1 { font-size: 24px; }
+  .hero-sub { font-size: 14px; }
+  .btn-lg { padding: 12px 20px; font-size: 14px; }
+  .use-grid { grid-template-columns: 1fr; }
+  .cap-card { padding: 20px; }
+  .cap-icon { font-size: 24px; }
+  .cap-card h3 { font-size: 14px; }
+  .cap-card p { font-size: 12px; }
+  .pipeline-step { min-width: 90px; padding: 0 8px; }
+  .pipeline-icon { width: 44px; height: 44px; font-size: 18px; }
+  .pipeline-label { font-size: 10px; }
+  .section-badge { font-size: 11px; padding: 5px 12px; }
 }
 
 /* ═══ RTL OVERRIDES (Urdu) ═══ */
@@ -651,10 +859,7 @@ body.theme-transitioning::before {
       <svg viewBox="0 0 32 32" fill="none"><rect x="2" y="2" width="28" height="28" rx="8" stroke="currentColor" stroke-width="2"/><path d="M16 8l8 4v8l-8 4-8-4V8l8-4z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="16" cy="16" r="3" fill="currentColor"/></svg>
       <span>Sentinel</span><span>-X</span>
     </a>
-    <div class="nav-links">
-      <a href="#capabilities" class="nav-link" data-i18n="nav.capabilities">Capabilities</a>
-      <a href="#how-it-works" class="nav-link" data-i18n="nav.howItWorks">How It Works</a>
-      <a href="#technology" class="nav-link" data-i18n="nav.technology">Technology</a>
+    <div class="nav-utils">
       <select id="langSelector" class="lang-selector" onchange="SentinelI18N.set(this.value)" aria-label="Language">
         <option value="en">EN</option>
         <option value="zh">中文</option>
@@ -663,9 +868,17 @@ body.theme-transitioning::before {
       <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       </button>
+    </div>
+    <div class="nav-links" id="navLinks">
+      <a href="#capabilities" class="nav-link" data-i18n="nav.capabilities">Capabilities</a>
+      <a href="#how-it-works" class="nav-link" data-i18n="nav.howItWorks">How It Works</a>
+      <a href="#technology" class="nav-link" data-i18n="nav.technology">Technology</a>
       <a href="/login" class="nav-btn nav-btn-outline" data-i18n="nav.signIn">Sign In</a>
       <a href="/signup" class="nav-btn nav-btn-primary" data-i18n="nav.createAccount">Create Account</a>
     </div>
+    <button class="nav-mobile-toggle" id="navMobileToggle" aria-label="Toggle menu" onclick="toggleNavMobile()">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </nav>
 
@@ -681,7 +894,6 @@ body.theme-transitioning::before {
         <div class="hero-buttons reveal reveal-delay-3">
           <a href="/signup" class="btn-lg btn-lg-primary" data-i18n="hero.getStarted">Get Started <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
           <a href="/login" class="btn-lg btn-lg-outline" data-i18n="hero.signIn">Sign In</a>
-          <a href="#problem" class="btn-lg btn-lg-ghost" data-i18n="hero.explore">Explore Sentinel-X <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></a>
         </div>
       </div>
       <div class="reveal reveal-delay-2">
@@ -724,7 +936,7 @@ body.theme-transitioning::before {
     <div class="section-badge reveal" data-i18n="solution.badge">The Sentinel-X Solution</div>
     <h2 class="section-title reveal" data-i18n="solution.title">From Raw Video to Security Intelligence</h2>
     <p class="section-desc reveal" data-i18n="solution.desc">Sentinel-X processes camera streams through a multi-stage AI pipeline that transforms raw footage into structured, actionable security events.</p>
-    <div class="pipeline-track reveal">
+    <div class="pipeline-track reveal" id="pipelineTrack">
       <div class="pipeline-step"><div class="pipeline-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div><span class="pipeline-label" data-i18n="solution.pipe.camera">Camera Feed</span></div>
       <div class="pipeline-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
       <div class="pipeline-step"><div class="pipeline-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.5 18A2.5 2.5 0 0 1 7 15.5V11a2.5 2.5 0 0 1 5 0v4.5a2.5 2.5 0 0 1-2.5 2.5z"/><path d="M14.5 18A2.5 2.5 0 0 1 12 15.5V11a2.5 2.5 0 0 1 5 0v4.5a2.5 2.5 0 0 1-2.5 2.5z"/><path d="M12 2v4"/><path d="M8 4h8"/></svg></div><span class="pipeline-label" data-i18n="solution.pipe.vision">AI Vision</span></div>
@@ -741,6 +953,10 @@ body.theme-transitioning::before {
       <div class="pipeline-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
       <div class="pipeline-step"><div class="pipeline-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></div><span class="pipeline-label" data-i18n="solution.pipe.dashboard">Dashboard</span></div>
     </div>
+    <div class="tag-pagination" id="tagPagination">
+      <span class="tag-pagination-dot active"></span>
+      <span class="tag-pagination-dot"></span>
+    </div>
   </div>
 </section>
 
@@ -749,7 +965,7 @@ body.theme-transitioning::before {
   <div class="container">
     <div class="section-badge reveal" data-i18n="cap.badge">Core Capabilities</div>
     <h2 class="section-title reveal" data-i18n="cap.title">What Sentinel-X Detects</h2>
-    <p class="section-desc reveal" data-i18n="cap.desc">Powered by YOLOv8 object detection and ByteTrack multi-object tracking, Sentinel-X supports a range of security-relevant detection scenarios.</p>
+    <p class="section-desc reveal" data-i18n="cap.desc">Powered by YOLO11 object detection and ByteTrack multi-object tracking, Sentinel-X supports a range of security-relevant detection scenarios.</p>
     <div class="capabilities-grid">
       <div class="cap-card reveal"><div class="cap-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div><h3 data-i18n="cap.person.title">Person Detection</h3><p data-i18n="cap.person.desc">Identifies and tracks individual persons across camera feeds in real time.</p></div>
       <div class="cap-card reveal reveal-delay-1"><div class="cap-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><h3 data-i18n="cap.crowd.title">Crowd Detection</h3><p data-i18n="cap.crowd.desc">Monitors crowd density and triggers alerts when groups form in designated areas.</p></div>
@@ -776,7 +992,7 @@ body.theme-transitioning::before {
     <div class="steps">
       <div class="step reveal"><div class="step-num">1</div><div class="step-body"><h3 data-i18n="how.1.title">Connect Your Camera</h3><p data-i18n="how.1.desc">Add webcam, IP camera, or RTSP stream sources through the dashboard. Sentinel-X supports multiple input types.</p></div></div>
       <div class="step reveal"><div class="step-num">2</div><div class="step-body"><h3 data-i18n="how.2.title">Stream Ingestion</h3><p data-i18n="how.2.desc">Sentinel-X receives the video stream and queues frames for processing using an optimized capture pipeline.</p></div></div>
-      <div class="step reveal"><div class="step-num">3</div><div class="step-body"><h3 data-i18n="how.3.title">AI Frame Analysis</h3><p data-i18n="how.3.desc">The YOLOv8 inference engine processes each frame, detecting objects with confidence scores and bounding boxes.</p></div></div>
+      <div class="step reveal"><div class="step-num">3</div><div class="step-body"><h3 data-i18n="how.3.title">AI Frame Analysis</h3><p data-i18n="how.3.desc">The YOLO11 inference engine processes each frame, detecting objects with confidence scores and bounding boxes.</p></div></div>
       <div class="step reveal"><div class="step-num">4</div><div class="step-body"><h3 data-i18n="how.4.title">Object Tracking</h3><p data-i18n="how.4.desc">ByteTrack assigns consistent IDs to detected objects, enabling movement tracking across consecutive frames.</p></div></div>
       <div class="step reveal"><div class="step-num">5</div><div class="step-body"><h3 data-i18n="how.5.title">Event Generation</h3><p data-i18n="how.5.desc">Detection results are classified into event types — person detected, crowd forming, restricted entry, and more.</p></div></div>
       <div class="step reveal"><div class="step-num">6</div><div class="step-body"><h3 data-i18n="how.6.title">Threat Severity Assessment</h3><p data-i18n="how.6.desc">Each event is assigned a severity level (Low, Medium, High, Critical) based on event type, zone, and confidence.</p></div></div>
@@ -796,7 +1012,7 @@ body.theme-transitioning::before {
     <div class="adv-grid">
       <div class="adv-item reveal"><div class="adv-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><p data-i18n="adv.1">Works with existing camera infrastructure — no hardware replacement required</p></div>
       <div class="adv-item reveal reveal-delay-1"><div class="adv-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><p data-i18n="adv.2">Supports webcam, IP camera, RTSP streams, and video file sources</p></div>
-      <div class="adv-item reveal reveal-delay-2"><div class="adv-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><p data-i18n="adv.3">Real-time AI analysis of video frames with YOLOv8 detection models</p></div>
+      <div class="adv-item reveal reveal-delay-2"><div class="adv-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><p data-i18n="adv.3">Real-time AI analysis of video frames with YOLO11 detection models</p></div>
       <div class="adv-item reveal reveal-delay-3"><div class="adv-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><p data-i18n="adv.4">Centralized multi-camera monitoring from a single web dashboard</p></div>
       <div class="adv-item reveal"><div class="adv-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><p data-i18n="adv.5">Automated evidence generation with screenshots and metadata</p></div>
       <div class="adv-item reveal reveal-delay-1"><div class="adv-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><p data-i18n="adv.6">Reduces dependence on continuous human observation of camera feeds</p></div>
@@ -916,7 +1132,7 @@ body.theme-transitioning::before {
       <div class="tech-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
       <div class="tech-item"><h3>OpenCV</h3><p data-i18n="tech.opencv">Video processing</p></div>
       <div class="tech-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
-      <div class="tech-item"><h3>YOLOv8</h3><p data-i18n="tech.yolo">Object detection</p></div>
+      <div class="tech-item"><h3>YOLO11</h3><p data-i18n="tech.yolo">Object detection</p></div>
       <div class="tech-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
       <div class="tech-item"><h3>ByteTrack</h3><p data-i18n="tech.bytetrack">Object tracking</p></div>
       <div class="tech-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
@@ -935,7 +1151,10 @@ body.theme-transitioning::before {
     <div class="future-card reveal">
       <div class="future-badge" data-i18n="future.comingSoon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg> Coming Soon</div>
       <h3 data-i18n="future.edgeBox">Sentinel-X Edge Box</h3>
-      <p data-i18n="future.edgeDesc">A dedicated edge-computing appliance designed to run Sentinel-X AI processing closer to the camera infrastructure — reducing dependency on centralized computing and potentially improving deployment flexibility, latency, and bandwidth usage.</p>
+      <div class="edge-box-wrap">
+        <img src="{{ url_for('static', filename='images/sentinel-edge-box.png') }}" alt="Sentinel-X Edge Box" class="edge-box-img">
+      </div>
+      <p class="edge-box-desc" data-i18n="future.edgeDesc">A dedicated edge-computing appliance designed to run Sentinel-X AI processing closer to the camera infrastructure — reducing dependency on centralized computing and potentially improving deployment flexibility, latency, and bandwidth usage.</p>
       <div class="future-flow">
         <div class="future-node" data-i18n="future.cctv">CCTV Cameras</div>
         <div class="future-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
@@ -960,7 +1179,6 @@ body.theme-transitioning::before {
     <div class="final-buttons reveal reveal-delay-2">
       <a href="/signup" class="btn-lg btn-lg-primary" data-i18n="cta.createAccount">Create Account <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
       <a href="/login" class="btn-lg btn-lg-outline" data-i18n="cta.signIn">Sign In</a>
-      <a href="#hero" class="btn-lg btn-lg-ghost" data-i18n="cta.exploreDemo">Explore Demo <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></a>
     </div>
   </div>
 </section>
@@ -968,7 +1186,7 @@ body.theme-transitioning::before {
 <!-- ==================== FOOTER ==================== -->
 <footer class="footer">
   <div class="container">
-    <p data-i18n="footer.text">Sentinel-X AI Edge Surveillance Platform · Version 1.0 · Built with Python, Flask, OpenCV, YOLOv8</p>
+    <p data-i18n="footer.text">Sentinel-X AI Edge Surveillance Platform · Version 1.0 · Built with Python, Flask, OpenCV, YOLO11</p>
   </div>
 </footer>
 
@@ -1067,6 +1285,41 @@ window.addEventListener('scroll', function() {
   var nav = document.getElementById('mainNav');
   if (!nav) return;
   nav.classList.toggle('nav-scrolled', window.scrollY > 60);
+});
+
+/* Mobile nav toggle */
+function toggleNavMobile() {
+  var links = document.getElementById('navLinks');
+  if (links) links.classList.toggle('open');
+}
+
+
+/* Tag section pagination dots */
+(function() {
+    var track = document.getElementById('pipelineTrack');
+    var pagination = document.getElementById('tagPagination');
+    if (!track || !pagination) return;
+    var dots = pagination.querySelectorAll('.tag-pagination-dot');
+    
+    track.addEventListener('scroll', function() {
+        var scrollPercentage = track.scrollLeft / (track.scrollWidth - track.clientWidth);
+        var activeIndex = Math.round(scrollPercentage * (dots.length - 1));
+        dots.forEach(function(dot, i) {
+            dot.classList.toggle('active', i === activeIndex);
+        });
+    });
+})();
+
+// Close mobile menu on link click
+document.addEventListener('DOMContentLoaded', function() {
+  var links = document.getElementById('navLinks');
+  if (links) {
+    links.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', function() {
+        links.classList.remove('open');
+      });
+    });
+  }
 });
 </script>
 <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>

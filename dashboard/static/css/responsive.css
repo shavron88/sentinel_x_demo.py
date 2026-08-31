@@ -1,0 +1,2013 @@
+/* ==========================================
+    SentinelX — Mobile-First Responsive System
+    Comprehensive responsive design for all
+    screen sizes from 320px to 1280px+
+    Loaded AFTER theme-system.css
+========================================== */
+
+/* ==========================================
+    BASE RESPONSIVE TYPOGRAPHY
+========================================== */
+
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 15px;
+    }
+}
+
+@media (min-width: 1024px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE LAYOUT — BASE
+========================================== */
+
+.container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* ==========================================
+    RESPONSIVE SIDEBAR
+========================================== */
+
+.sidebar {
+    width: 280px;
+    min-width: 280px;
+    max-width: 280px;
+    transform: translateX(-100%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.open {
+    transform: translateX(0);
+}
+
+.sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Sidebar toggle button (mobile) */
+.sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--ev-surface-2);
+    border: 1px solid var(--ev-border);
+    color: var(--ev-text);
+    cursor: pointer;
+    transition: var(--ev-transition-fast);
+}
+
+.sidebar-toggle:hover {
+    background: var(--ev-primary-soft);
+    border-color: var(--ev-primary);
+    color: var(--ev-primary);
+}
+
+.sidebar-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+
+@media (min-width: 1025px) {
+    .sidebar {
+        transform: translateX(0);
+    }
+
+    .sidebar-toggle {
+        display: none;
+    }
+
+    .sidebar-overlay {
+        display: none;
+    }
+
+    .main-content {
+        margin-left: var(--ev-sidebar-width);
+        width: calc(100% - var(--ev-sidebar-width));
+        padding: 20px 24px 24px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE TOPBAR
+========================================== */
+
+.topbar {
+    padding: 14px 16px;
+    border-radius: 14px;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.top-left h2 {
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+.breadcrumb {
+    font-size: 11px;
+}
+
+.top-right {
+    gap: 8px;
+}
+
+.status-chip {
+    font-size: 11px;
+    padding: 6px 10px;
+    gap: 6px;
+}
+
+.topbar-controls {
+    gap: 6px;
+    padding: 4px;
+}
+
+.notification-btn,
+#notification-btn,
+.sound-toggle {
+    width: 36px;
+    height: 36px;
+}
+
+.avatar,
+#avatarBtn {
+    width: 36px;
+    height: 36px;
+}
+
+.avatar-initials,
+#avatarBtn .avatar-initials {
+    font-size: 12px;
+}
+
+.avatar-status,
+#avatarBtn .avatar-status {
+    width: 8px;
+    height: 8px;
+}
+
+@media (min-width: 768px) {
+    .topbar {
+        padding: 16px 20px;
+        border-radius: 16px;
+        gap: 14px;
+    }
+
+    .top-left h2 {
+        font-size: 22px;
+    }
+
+    .breadcrumb {
+        font-size: 13px;
+    }
+
+    .status-chip {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+
+    .notification-btn,
+    #notification-btn,
+    .sound-toggle {
+        width: 40px;
+        height: 40px;
+    }
+
+    .avatar,
+    #avatarBtn {
+        width: 40px;
+        height: 40px;
+    }
+
+    .avatar-initials,
+    #avatarBtn .avatar-initials {
+        font-size: 14px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .topbar {
+        padding: 18px 28px;
+        border-radius: 18px;
+        gap: 18px;
+    }
+
+    .top-left h2 {
+        font-size: 24px;
+    }
+
+    .breadcrumb {
+        font-size: 13px;
+    }
+
+    .notification-btn,
+    #notification-btn,
+    .sound-toggle {
+        width: 48px;
+        height: 48px;
+    }
+
+    .avatar,
+    #avatarBtn {
+        width: 48px;
+        height: 48px;
+    }
+
+    .avatar-initials,
+    #avatarBtn .avatar-initials {
+        font-size: 16px;
+    }
+
+    .avatar-status,
+    #avatarBtn .avatar-status {
+        width: 11px;
+        height: 11px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE KPI BAR
+========================================== */
+
+.kpi-bar {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.kpi-card {
+    padding: 16px 18px;
+    border-radius: 14px;
+}
+
+.kpi-label {
+    font-size: 10px;
+    margin-bottom: 6px;
+}
+
+.kpi-value {
+    font-size: 26px;
+    margin-bottom: 10px;
+}
+
+.kpi-total,
+.kpi-percent {
+    font-size: 14px;
+}
+
+.kpi-text {
+    font-size: 10px;
+}
+
+@media (min-width: 768px) {
+    .kpi-bar {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .kpi-card {
+        padding: 20px 22px;
+        border-radius: 16px;
+    }
+
+    .kpi-value {
+        font-size: 32px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .kpi-bar {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+
+    .kpi-card {
+        padding: 22px 24px;
+        border-radius: 20px;
+    }
+
+    .kpi-value {
+        font-size: 36px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE COMMAND CENTER / MONITORING
+========================================== */
+
+.command-center {
+    gap: 16px;
+}
+
+.monitoring-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+@media (min-width: 1024px) {
+    .monitoring-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE CAMERA HERO / DUAL CAMERA
+========================================== */
+
+.dual-camera-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+@media (min-width: 1024px) {
+    .dual-camera-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+}
+
+.camera-hero {
+    border-radius: 14px;
+}
+
+.camera-hero-header {
+    padding: 12px 16px;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.camera-hero-title h2 {
+    font-size: 12px;
+}
+
+.camera-hero-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 10px 16px;
+}
+
+.camera-hero-metrics .metric {
+    font-size: 11px;
+}
+
+.camera-hero-metrics .metric strong {
+    font-size: 12px;
+}
+
+.camera-hero-controls {
+    display: flex;
+    gap: 8px;
+    padding: 10px 16px;
+    flex-wrap: wrap;
+}
+
+.cam-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: 8px 12px;
+    font-size: 11px;
+    border-radius: 8px;
+}
+
+.camera-hero-footer {
+    padding: 8px 16px;
+    font-size: 11px;
+}
+
+@media (min-width: 768px) {
+    .camera-hero {
+        border-radius: 16px;
+    }
+
+    .camera-hero-header {
+        padding: 14px 20px;
+    }
+
+    .camera-hero-title h2 {
+        font-size: 14px;
+    }
+
+    .camera-hero-metrics {
+        grid-template-columns: repeat(4, 1fr);
+        padding: 12px 20px;
+    }
+
+    .camera-hero-controls {
+        padding: 12px 20px;
+    }
+
+    .cam-btn {
+        font-size: 12px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .camera-hero-metrics {
+        grid-template-columns: repeat(8, 1fr);
+    }
+}
+
+/* ==========================================
+    RESPONSIVE CAMERA STATUS
+========================================== */
+
+.camera-status {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.camera-status .status-item {
+    padding: 10px 12px;
+    border-radius: 10px;
+}
+
+.camera-status .status-item span {
+    font-size: 10px;
+}
+
+.camera-status .status-item strong {
+    font-size: 12px;
+}
+
+@media (min-width: 768px) {
+    .camera-status {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+
+    .camera-status .status-item {
+        padding: 12px 14px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE CAMERA CONTROLS GRID
+========================================== */
+
+.camera-controls-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.camera-control-btn {
+    padding: 14px 8px;
+    border-radius: 12px;
+}
+
+.camera-control-btn span {
+    font-size: 11px;
+}
+
+.camera-control-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+@media (min-width: 768px) {
+    .camera-controls-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+    .camera-control-btn {
+        padding: 16px 10px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE PANELS
+========================================== */
+
+.panel {
+    border-radius: 14px;
+    padding: 16px 18px;
+}
+
+.panel h3 {
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.panel-header {
+    margin-bottom: 12px;
+}
+
+@media (min-width: 768px) {
+    .panel {
+        border-radius: 16px;
+        padding: 20px 22px;
+    }
+
+    .panel h3 {
+        font-size: 15px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .panel {
+        border-radius: 18px;
+        padding: 22px 24px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE AI FEED / TIMELINE
+========================================== */
+
+.ai-feed-list,
+#timeline {
+    max-height: 300px;
+}
+
+.ai-feed-item {
+    padding: 8px 12px;
+    border-radius: 8px;
+    gap: 8px;
+}
+
+.ai-feed-title {
+    font-size: 12px;
+}
+
+.ai-feed-meta {
+    font-size: 10px;
+}
+
+.ai-feed-time {
+    font-size: 10px;
+    min-width: 36px;
+}
+
+@media (min-width: 768px) {
+    .ai-feed-list,
+    #timeline {
+        max-height: 380px;
+    }
+
+    .ai-feed-item {
+        padding: 10px 14px;
+    }
+
+    .ai-feed-title {
+        font-size: 13px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE AI INTELLIGENCE
+========================================== */
+
+.ai-intelligence-content {
+    gap: 12px;
+}
+
+.ai-risk-card {
+    padding: 14px 16px;
+    border-radius: 12px;
+}
+
+.ai-stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.ai-stat {
+    padding: 10px 12px;
+    border-radius: 8px;
+}
+
+.ai-stat-label {
+    font-size: 9px;
+}
+
+.ai-stat-value {
+    font-size: 13px;
+}
+
+.ai-recommendation {
+    padding: 10px 12px;
+    border-radius: 8px;
+}
+
+.ai-recommendation p {
+    font-size: 12px;
+}
+
+@media (min-width: 768px) {
+    .ai-risk-card {
+        padding: 16px 18px;
+        border-radius: 14px;
+    }
+
+    .ai-stat-value {
+        font-size: 14px;
+    }
+
+    .ai-recommendation p {
+        font-size: 13px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE DEMO GRID
+========================================== */
+
+.demo-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.demo-btn {
+    padding: 14px 10px;
+    border-radius: 12px;
+}
+
+.demo-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+}
+
+.demo-label {
+    font-size: 11px;
+}
+
+@media (min-width: 768px) {
+    .demo-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+    }
+
+    .demo-btn {
+        padding: 16px 12px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .demo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+}
+
+/* ==========================================
+    RESPONSIVE BOTTOM GRID
+========================================== */
+
+.bottom-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+@media (min-width: 768px) {
+    .bottom-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .bottom-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE PERFORMANCE GRID
+========================================== */
+
+.performance-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.ai-perf-metrics {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.perf-item {
+    padding: 12px;
+    min-height: 90px;
+}
+
+.perf-label {
+    font-size: 9px;
+}
+
+.perf-value {
+    font-size: 20px;
+    margin-top: 8px;
+}
+
+.ai-performance-chart {
+    height: 80px;
+}
+
+@media (min-width: 768px) {
+    .ai-perf-metrics {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+
+    .perf-item {
+        padding: 16px;
+        min-height: 106px;
+    }
+
+    .perf-value {
+        font-size: 24px;
+    }
+
+    .ai-performance-chart {
+        height: 90px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .performance-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .perf-value {
+        font-size: 28px;
+    }
+
+    .ai-performance-chart {
+        height: 100px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE SECURITY MAP
+========================================== */
+
+.map-container {
+    min-height: 240px;
+    padding: 12px;
+}
+
+.camera-marker {
+    width: 32px;
+    height: 32px;
+    font-size: 16px !important;
+}
+
+.event-marker {
+    width: 28px;
+    height: 28px;
+    font-size: 14px !important;
+}
+
+.map-legend {
+    gap: 8px;
+}
+
+.legend-chip {
+    font-size: 10px;
+}
+
+@media (min-width: 768px) {
+    .map-container {
+        min-height: 320px;
+        padding: 18px;
+    }
+
+    .camera-marker {
+        width: 44px;
+        height: 44px;
+        font-size: 21px !important;
+    }
+
+    .event-marker {
+        width: 40px;
+        height: 40px;
+        font-size: 19px !important;
+    }
+
+    .map-legend {
+        gap: 14px;
+    }
+
+    .legend-chip {
+        font-size: 12px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE TABLES
+========================================== */
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 16px;
+}
+
+.table-responsive table {
+    min-width: 600px;
+}
+
+.report-table,
+.data-table {
+    font-size: 12px;
+}
+
+.report-table th,
+.report-table td {
+    padding: 10px 12px;
+    white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+    .report-table,
+    .data-table {
+        font-size: 13px;
+    }
+
+    .report-table th,
+    .report-table td {
+        padding: 12px 14px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .report-table th,
+    .report-table td {
+        padding: 14px 16px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE MODALS
+========================================== */
+
+.modal-overlay {
+    padding: 12px;
+}
+
+.modal {
+    border-radius: 14px;
+    max-width: 100%;
+    max-height: 95vh;
+}
+
+.modal-header {
+    padding: 16px;
+}
+
+.modal-header h3 {
+    font-size: 16px;
+}
+
+.modal-body {
+    padding: 16px;
+}
+
+.modal-footer {
+    padding: 12px 16px;
+    gap: 8px;
+}
+
+.form-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+@media (min-width: 768px) {
+    .modal-overlay {
+        padding: 20px;
+    }
+
+    .modal {
+        border-radius: 20px;
+        max-width: 520px;
+    }
+
+    .modal-header {
+        padding: 20px 24px;
+    }
+
+    .modal-header h3 {
+        font-size: 18px;
+    }
+
+    .modal-body {
+        padding: 24px;
+    }
+
+    .modal-footer {
+        padding: 16px 24px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE CAMERA MANAGER
+========================================== */
+
+.camera-manager {
+    padding: 12px;
+}
+
+.camera-manager-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.camera-manager-header h2 {
+    font-size: 20px;
+}
+
+.camera-manager-header .subtitle {
+    font-size: 12px;
+}
+
+.camera-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.camera-card-header {
+    padding: 12px 16px;
+}
+
+.camera-card-header h3 {
+    font-size: 14px;
+}
+
+.camera-card-body {
+    padding: 12px 16px;
+}
+
+.camera-card-footer {
+    padding: 10px 16px;
+    gap: 6px;
+}
+
+.camera-card-footer .btn {
+    padding: 6px 10px;
+    font-size: 11px;
+    min-height: 32px;
+}
+
+@media (min-width: 768px) {
+    .camera-manager {
+        padding: 20px;
+    }
+
+    .camera-manager-header {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .camera-manager-header h2 {
+        font-size: 22px;
+    }
+
+    .camera-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .camera-grid {
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 24px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE SETTINGS PAGE
+========================================== */
+
+.settings-page {
+    gap: 16px;
+}
+
+.settings-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.settings-title-area h1 {
+    font-size: 22px;
+}
+
+.settings-title-area p {
+    font-size: 12px;
+}
+
+.settings-section {
+    margin-bottom: 4px;
+}
+
+.section-header {
+    margin-bottom: 12px;
+}
+
+.section-header h2 {
+    font-size: 16px;
+}
+
+.profile-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px;
+}
+
+.profile-details {
+    width: 100%;
+}
+
+.camera-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.camera-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.notification-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.notification-card {
+    padding: 16px;
+}
+
+.theme-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.theme-card {
+    padding: 16px;
+}
+
+.system-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.system-card {
+    padding: 16px;
+}
+
+@media (min-width: 768px) {
+    .settings-header {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .settings-title-area h1 {
+        font-size: 26px;
+    }
+
+    .profile-card {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .camera-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .notification-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .theme-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .system-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .camera-cards-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .notification-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ==========================================
+    RESPONSIVE INCIDENTS PAGE
+========================================== */
+
+.filter-buttons {
+    gap: 6px;
+}
+
+.filter-btn {
+    padding: 8px 14px;
+    font-size: 12px;
+    border-radius: 8px;
+}
+
+.incident-list {
+    gap: 10px;
+}
+
+.incident-card {
+    padding: 16px 18px;
+    border-radius: 12px;
+    border-left-width: 4px;
+}
+
+@media (min-width: 768px) {
+    .filter-btn {
+        padding: 10px 18px;
+        font-size: 13px;
+    }
+
+    .incident-card {
+        padding: 20px 24px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE EVIDENCE PAGE
+========================================== */
+
+.evidence-gallery-grid,
+.latest-evidence-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.evidence-gallery-grid img,
+.latest-evidence-grid img {
+    height: 70px;
+    border-radius: 6px;
+}
+
+@media (min-width: 768px) {
+    .evidence-gallery-grid,
+    .latest-evidence-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .evidence-gallery-grid img,
+    .latest-evidence-grid img {
+        height: 80px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .evidence-gallery-grid,
+    .latest-evidence-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+
+    .evidence-gallery-grid img,
+    .latest-evidence-grid img {
+        height: 90px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE ANALYTICS PAGE
+========================================== */
+
+.analytics-page {
+    gap: 16px;
+}
+
+.analytics-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.analytics-header h1 {
+    font-size: 22px;
+}
+
+.analytics-header p {
+    font-size: 12px;
+}
+
+.analytics-controls {
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.analytics-control-btn {
+    flex: 1;
+    min-width: 80px;
+    justify-content: center;
+    padding: 8px 12px;
+    font-size: 12px;
+}
+
+.analytics-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.analytics-kpi-card {
+    padding: 14px;
+    gap: 10px;
+}
+
+.analytics-kpi-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+}
+
+.analytics-kpi-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.analytics-kpi-label {
+    font-size: 11px;
+}
+
+.analytics-kpi-value {
+    font-size: 20px;
+}
+
+.analytics-kpi-trend {
+    font-size: 10px;
+}
+
+.analytics-charts-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.analytics-card {
+    padding: 16px;
+    border-radius: 14px;
+}
+
+.analytics-card-title {
+    font-size: 14px;
+}
+
+.analytics-secondary-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.analytics-timeline-card {
+    padding: 16px;
+    border-radius: 14px;
+}
+
+.analytics-timeline-title {
+    font-size: 14px;
+}
+
+.analytics-donut-wrapper {
+    flex-direction: column;
+    gap: 16px;
+}
+
+@media (min-width: 768px) {
+    .analytics-header h1 {
+        font-size: 26px;
+    }
+
+    .analytics-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+    }
+
+    .analytics-kpi-value {
+        font-size: 24px;
+    }
+
+    .analytics-charts-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .analytics-secondary-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .analytics-donut-wrapper {
+        flex-direction: row;
+    }
+}
+
+@media (min-width: 1024px) {
+    .analytics-header {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+
+    .analytics-kpi-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    }
+
+    .analytics-charts-row {
+        grid-template-columns: 1.4fr 1fr;
+        gap: 18px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE REPORTS PAGE
+========================================== */
+
+.report-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+}
+
+.report-toolbar select {
+    width: 100%;
+}
+
+.stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.stat-card {
+    padding: 16px;
+    border-radius: 14px;
+}
+
+.stat-card h3 {
+    font-size: 12px;
+}
+
+.stat-card h1 {
+    font-size: 24px;
+}
+
+.stat-card p {
+    font-size: 11px;
+}
+
+.export-buttons {
+    flex-direction: column;
+    gap: 8px;
+}
+
+.export-buttons button {
+    width: 100%;
+    justify-content: center;
+}
+
+@media (min-width: 768px) {
+    .report-toolbar {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .report-toolbar select {
+        width: auto;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 14px;
+    }
+
+    .stat-card h1 {
+        font-size: 28px;
+    }
+
+    .export-buttons {
+        flex-direction: row;
+    }
+
+    .export-buttons button {
+        width: auto;
+    }
+}
+
+@media (min-width: 1024px) {
+    .stat-card h1 {
+        font-size: 32px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE NOTIFICATIONS PAGE
+========================================== */
+
+.notification-history-container {
+    padding: 16px;
+    border-radius: 14px;
+}
+
+.notification-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+}
+
+.notification-search {
+    width: 100%;
+}
+
+.notification-filters {
+    width: 100%;
+}
+
+.notification-actions-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+@media (min-width: 768px) {
+    .notification-history-container {
+        padding: 20px;
+    }
+
+    .notification-toolbar {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .notification-search {
+        width: auto;
+    }
+
+    .notification-actions-bar {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE COPILOT PAGE
+========================================== */
+
+.copilot-container {
+    border-radius: 14px;
+}
+
+.chat-window {
+    padding: 16px;
+    max-height: 60vh;
+}
+
+.ai-message,
+.user-message {
+    max-width: 85%;
+    padding: 12px 14px;
+    font-size: 13px;
+}
+
+.chat-input {
+    padding: 14px 16px;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.chat-input input {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 13px;
+}
+
+.chat-input button {
+    width: 100%;
+    padding: 12px 16px;
+    justify-content: center;
+}
+
+@media (min-width: 768px) {
+    .copilot-container {
+        border-radius: 18px;
+    }
+
+    .chat-window {
+        padding: 24px;
+        max-height: 70vh;
+    }
+
+    .ai-message,
+    .user-message {
+        max-width: 75%;
+        padding: 14px 18px;
+        font-size: 14px;
+    }
+
+    .chat-input {
+        padding: 18px 24px;
+        flex-direction: row;
+    }
+
+    .chat-input input {
+        width: auto;
+        flex: 1;
+    }
+
+    .chat-input button {
+        width: auto;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE REPLAY PAGE
+========================================== */
+
+.replay-page {
+    gap: 16px;
+}
+
+.video-panel {
+    padding: 16px;
+    border-radius: 14px;
+}
+
+.video-panel video {
+    border-radius: 10px;
+}
+
+.timeline-controls {
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.incident-info {
+    padding: 16px;
+    border-radius: 14px;
+}
+
+.info-card p {
+    padding: 10px 0;
+    font-size: 13px;
+}
+
+.info-card strong {
+    min-width: 80px;
+}
+
+@media (min-width: 768px) {
+    .replay-page {
+        gap: 24px;
+    }
+
+    .video-panel {
+        padding: 24px;
+        border-radius: 18px;
+    }
+
+    .incident-info {
+        padding: 24px;
+        border-radius: 18px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE THREAT CENTER
+========================================== */
+
+.threat-layout {
+    gap: 16px;
+}
+
+.threat-left.card,
+.threat-right .card {
+    padding: 16px;
+    border-radius: 14px;
+}
+
+.feed-item {
+    padding: 12px 14px;
+    border-radius: 10px;
+}
+
+#riskGauge {
+    font-size: 36px;
+}
+
+.ai-log {
+    padding: 10px 12px;
+    font-size: 12px;
+}
+
+@media (min-width: 768px) {
+    .threat-layout {
+        gap: 22px;
+    }
+
+    .threat-left.card,
+    .threat-right .card {
+        padding: 22px 24px;
+        border-radius: 18px;
+    }
+
+    #riskGauge {
+        font-size: 52px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE LIVE WALL
+========================================== */
+
+.camera-wall {
+    gap: 12px;
+    grid-template-columns: 1fr;
+}
+
+.camera-card .camera-header {
+    padding: 10px 14px;
+    font-size: 12px;
+}
+
+.camera-card img {
+    height: 180px;
+}
+
+.camera-card .camera-footer {
+    padding: 8px 14px;
+    font-size: 11px;
+}
+
+.layout-buttons {
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.layout-buttons button {
+    padding: 8px 12px;
+    font-size: 12px;
+    flex: 1;
+    min-width: 60px;
+}
+
+@media (min-width: 768px) {
+    .camera-wall {
+        gap: 16px;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .camera-card img {
+        height: 220px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .camera-wall {
+        gap: 18px;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+
+    .camera-card img {
+        height: 240px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE COMMAND CENTER
+========================================== */
+
+.command-grid {
+    gap: 12px;
+    grid-template-columns: 1fr;
+}
+
+.command-grid .card {
+    min-height: 160px;
+    padding: 16px;
+}
+
+@media (min-width: 768px) {
+    .command-grid {
+        gap: 16px;
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .command-grid {
+        gap: 20px;
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ==========================================
+    RESPONSIVE FOOTER
+========================================== */
+
+.dashboard-footer {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+    padding: 16px;
+    font-size: 12px;
+}
+
+@media (min-width: 768px) {
+    .dashboard-footer {
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
+        padding: 20px 24px;
+        font-size: 13px;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE TOAST
+========================================== */
+
+#toast-container {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    max-width: none;
+    width: auto;
+}
+
+.toast {
+    padding: 12px 14px;
+    font-size: 12px;
+}
+
+@media (min-width: 768px) {
+    #toast-container {
+        top: 20px;
+        right: 20px;
+        left: auto;
+        max-width: 400px;
+        width: calc(100% - 40px);
+    }
+}
+
+/* ==========================================
+    RESPONSIVE PROFILE DROPDOWN
+========================================== */
+
+.profile-dropdown {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+}
+
+.profile-dropdown.open {
+    transform: translateY(0);
+}
+
+@media (min-width: 768px) {
+    .profile-dropdown {
+        position: absolute;
+        top: calc(100% + 10px);
+        bottom: auto;
+        left: auto;
+        right: 0;
+        min-width: 260px;
+        width: auto;
+        border-radius: 16px;
+        transform: none;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE SEARCH & FILTERS
+========================================== */
+
+.search-bar {
+    flex-direction: column;
+    gap: 8px;
+}
+
+.search-bar input {
+    width: 100%;
+}
+
+.filter-chips {
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.filter-chip {
+    padding: 6px 12px;
+    font-size: 11px;
+}
+
+@media (min-width: 768px) {
+    .search-bar {
+        flex-direction: row;
+    }
+
+    .search-bar input {
+        width: auto;
+    }
+}
+
+/* ==========================================
+    SMALL SCREEN OPTIMIZATIONS (320px - 360px)
+========================================== */
+
+@media (max-width: 360px) {
+    .main-content {
+        padding: 8px;
+    }
+
+    .topbar {
+        padding: 10px 12px;
+        border-radius: 12px;
+    }
+
+    .top-left h2 {
+        font-size: 16px;
+    }
+
+    .kpi-bar {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .kpi-card {
+        padding: 12px 14px;
+    }
+
+    .kpi-value {
+        font-size: 22px;
+    }
+
+    .panel {
+        padding: 12px 14px;
+        border-radius: 12px;
+    }
+
+    .camera-hero-header {
+        padding: 10px 12px;
+    }
+
+    .camera-hero-metrics {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .status-chip {
+        font-size: 10px;
+        padding: 5px 8px;
+    }
+
+    .btn {
+        padding: 8px 14px;
+        font-size: 12px;
+    }
+
+    .demo-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .demo-btn {
+        padding: 12px 8px;
+    }
+
+    .demo-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .demo-label {
+        font-size: 10px;
+    }
+}
+
+/* ==========================================
+    TOUCH-FRIENDLY INTERACTIONS
+========================================== */
+
+@media (hover: none) and (pointer: coarse) {
+    .btn,
+    .camera-control-btn,
+    .demo-btn,
+    .filter-btn,
+    .cam-btn,
+    .sidebar-nav-link {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .sidebar-nav-link {
+        padding: 14px 16px;
+    }
+
+    .camera-control-btn {
+        padding: 18px 12px;
+    }
+
+    .demo-btn {
+        padding: 18px 12px;
+    }
+
+    .kpi-card:hover {
+        transform: none;
+    }
+
+    .camera-card:hover {
+        transform: none;
+    }
+
+    .panel:hover {
+        transform: none;
+    }
+}
+
+/* ==========================================
+    PRINT STYLES
+========================================== */
+
+@media print {
+    .sidebar,
+    .topbar,
+    .sidebar-toggle,
+    .sidebar-overlay {
+        display: none !important;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 0 !important;
+    }
+
+    .panel,
+    .card {
+        break-inside: avoid;
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+}

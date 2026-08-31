@@ -1,6 +1,7 @@
 import cv2
 import time
 import logging
+import numpy as np
 from datetime import datetime
 
 logger = logging.getLogger("SentinelX.Stream")
@@ -90,17 +91,42 @@ def _draw_status_overlay(frame, camera_name="Camera", status="ONLINE", fps=0.0, 
     return frame
 
 
+def _placeholder_frame(camera_name="Camera", status="OFFLINE"):
+    """Generate a solid placeholder frame with a status message.
+
+    Keeps the MJPEG stream alive (so the browser does not hang / go black) when
+    no real frame is available from the camera or AI pipeline.
+    """
+    w, h = 640, 360
+    frame = np.zeros((h, w, 3), dtype=np.uint8)
+    frame[:] = (0, 0, 20)
+
+    color = STATUS_COLORS.get(status, (0, 0, 255))
+    cv2.rectangle(frame, (0, 0), (w, h), color, 3)
+    cv2.putText(frame, status.upper(), (w // 2 - 110, h // 2 - 20),
+                cv2.FONT_HERSHEY_SIMPLEX, 1.1, color, 3)
+    cv2.putText(frame, camera_name, (w // 2 - 90, h // 2 + 20),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
+    cv2.putText(frame, "No video feed available", (w // 2 - 130, h - 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (180, 180, 180), 1)
+    return frame
+
+
 def generate(camera_name="Camera_01", camera_status="ONLINE", queue_size=0):
     """
     Stream generator that prefers AI-annotated frames (per-camera), falls back to CameraManager.
     Refreshes live camera status from the pipeline each frame (ONLINE / ENDED / OFFLINE ...).
+    Yields a placeholder frame when no real frame is available so the browser feed
+    never hangs or goes black.
     """
     global _frame_drops
 
     from camera.camera_manager import camera_manager
 
+    _last_placeholder = 0.0
+
     while True:
-        # Live status from the pipeline (kept current: EOF → ENDED, drops → OFFLINE)
+        # Live status from the pipeline (kept current: EOF -> ENDED, drops -> OFFLINE)
         pipeline = camera_manager.get_pipeline(camera_name)
         if pipeline:
             camera_status = pipeline.stream.status
@@ -118,8 +144,15 @@ def generate(camera_name="Camera_01", camera_status="ONLINE", queue_size=0):
                 frame = stream.get_frame()
             if frame is None:
                 _frame_drops += 1
-                time.sleep(0.03)
-                continue
+                # Yield a placeholder periodically so the MJPEG client does not
+                # stall; real frames take precedence when they become available.
+                now = time.time()
+                if now - _last_placeholder >= 0.5:
+                    _last_placeholder = now
+                    frame = _placeholder_frame(camera_name, camera_status)
+                else:
+                    time.sleep(0.03)
+                    continue
 
         _update_fps()
 

@@ -5,6 +5,7 @@ from datetime import datetime
 from database.db import save_event
 from camera.camera_manager import CameraManager
 from ai.inference import YOLOInferenceEngine
+from config import MODEL_PATH
 
 from events.event_manager import EventManager
 from events.memory_manager import MemoryManager
@@ -42,7 +43,7 @@ def run_engine():
     print("========== SENTINELX ENGINE STARTED ==========")
 
     camera = CameraManager()
-    engine = YOLOInferenceEngine(model_path="models/yolov8m.pt")
+    engine = YOLOInferenceEngine(model_path=MODEL_PATH)
 
     event_manager = EventManager()
     memory_manager = MemoryManager()
@@ -319,7 +320,7 @@ def run_multi_camera():
     print("========== SENTINELX MULTI-CAMERA ENGINE STARTED ==========")
 
     camera = CameraManager()
-    model_path = "models/yolov8m.pt"
+    model_path = MODEL_PATH
 
     previous_time = time.time()
 

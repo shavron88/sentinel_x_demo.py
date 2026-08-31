@@ -14,13 +14,18 @@
     <script>
         try {
             var savedTheme = localStorage.getItem('sentinelx-theme');
-            if (savedTheme && ['dark', 'light', 'midnight'].indexOf(savedTheme) !== -1) {
+            // Force dark theme - clear any saved light theme
+            if (savedTheme === 'light') {
+                localStorage.removeItem('sentinelx-theme');
+                savedTheme = null;
+            }
+            if (savedTheme && ['dark', 'midnight'].indexOf(savedTheme) !== -1) {
                 document.documentElement.setAttribute('data-theme', savedTheme);
             } else {
-                document.documentElement.setAttribute('data-theme', 'midnight');
+                document.documentElement.setAttribute('data-theme', 'dark');
             }
         } catch (e) {
-            document.documentElement.setAttribute('data-theme', 'midnight');
+            document.documentElement.setAttribute('data-theme', 'dark');
         }
     </script>
 
@@ -34,74 +39,78 @@
     });
     </script>
 
-    <!-- CSS — Design tokens first, then reset, then component styles -->
+    <!-- CSS — Reset first, then component styles, then theme system LAST -->
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}?v=20260829">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reset.css') }}?v=20260831">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/reset.css') }}?v=20260829">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260831">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260829">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}?v=20260831">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}?v=20260829">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}?v=20260831">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}?v=20260829">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}?v=20260831">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}?v=20260829">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}?v=20260831">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}?v=20260829">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}?v=20260831">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}?v=20260829">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}?v=20260831">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}?v=20260829">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/topbar.css') }}?v=20260831">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/topbar.css') }}?v=20260829">
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading.css') }}?v=20260829">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading.css') }}?v=20260831">
 
     {% if request.path == '/evidence' %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/evidence.css') }}?v=20260829">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/evidence.css') }}?v=20260831">
 
     {% endif %}
 
     {% if request.path == '/live_wall' %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/livewall.css') }}?v=20260829">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/livewall.css') }}?v=20260831">
 
     {% endif %}
 
     {% if request.path == '/security_map' %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/security_map.css') }}?v=20260829">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/security_map.css') }}?v=20260831">
 
     {% endif %}
 
     {% if request.path == '/threat_center' %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/threat_center.css') }}?v=20260829">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/threat_center.css') }}?v=20260831">
 
     {% endif %}
 
     {% if request.path == '/command_center' %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/command_center.css') }}?v=20260829">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/command_center.css') }}?v=20260831">
 
     {% endif %}
 
     {% if request.path == '/copilot' %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/copilot.css') }}?v=20260829">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/copilot.css') }}?v=20260831">
 
     {% endif %}
 
     {% if request.path == '/analytics' %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}?v=20260829">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}?v=20260831">
 
     {% endif %}
 
-    <!-- Polish layer — visual refinements (loaded last for cascade override) -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/polish.css') }}?v=20260829">
+    <!-- Polish layer — visual refinements -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/polish.css') }}?v=20260831">
+
+    <!-- Theme system — MUST load last for cascade override -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme-system.css') }}?v=20260831">
+
+    <!-- Responsive system — mobile-first responsive design -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}?v=20260831">
 
     <style>
     /* ═══ Page entrance transition ═══ */
@@ -418,6 +427,14 @@
         <header class="topbar">
 
             <div class="top-left">
+
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle navigation menu" onclick="toggleSidebar()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
 
                 <div class="page-title">
 

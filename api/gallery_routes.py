@@ -92,6 +92,6 @@ def api_ai_summary():
     return jsonify({
         "total_detections_today": 14,
         "high_risk_alerts": 2,
-        "model_status": "Active (YOLOv8)",
+        "model_status": "Active (YOLO11)",
         "accuracy": "94.8%"
     }), 200

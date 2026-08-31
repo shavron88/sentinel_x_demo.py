@@ -11,15 +11,111 @@
             <p>Real-time insights and system intelligence</p>
         </div>
         <div class="analytics-controls">
-            <button class="analytics-control-btn" onclick="alert('Date range picker coming soon')">
-                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span>May 18 – May 24, 2025</span>
-                <svg viewBox="0 0 24 24" style="width:12px;height:12px;margin-left:2px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
-            </button>
-            <button class="analytics-control-btn" onclick="alert('Filters coming soon')">
-                <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                <span>Filters</span>
-            </button>
+            <!-- DATE RANGE PICKER -->
+            <div class="dropdown-container">
+                <button class="analytics-control-btn" id="date-range-btn">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span id="date-range-display">Last 7 days</span>
+                    <svg viewBox="0 0 24 24" style="width:12px;height:12px;margin-left:2px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <div class="dropdown-menu" id="date-range-dropdown">
+                    <div class="dropdown-header">Quick Select</div>
+                    <div class="date-quick-options">
+                        <button class="date-quick-btn" data-range="today">Today</button>
+                        <button class="date-quick-btn" data-range="7days">Last 7 Days</button>
+                        <button class="date-quick-btn" data-range="30days">Last 30 Days</button>
+                        <button class="date-quick-btn" data-range="90days">Last 90 Days</button>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-header">Custom Range</div>
+                    <div class="date-custom-range">
+                        <div class="date-input-group">
+                            <label>From</label>
+                            <input type="date" id="date-start">
+                        </div>
+                        <div class="date-input-group">
+                            <label>To</label>
+                            <input type="date" id="date-end">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" id="apply-date-range">Apply</button>
+                </div>
+            </div>
+
+            <!-- FILTERS -->
+            <div class="dropdown-container">
+                <button class="analytics-control-btn" id="filter-btn">
+                    <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                    <span>Filters</span>
+                    <span class="filter-badge" id="filter-badge" style="display:none;">0</span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-wide" id="filter-dropdown">
+                    <div class="filter-section">
+                        <div class="dropdown-header">Event Type</div>
+                        <div class="filter-options" id="filter-event-types">
+                            <label class="filter-option">
+                                <input type="checkbox" class="filter-event-type" value="Person">
+                                <span>Person</span>
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" class="filter-event-type" value="Vehicle">
+                                <span>Vehicle</span>
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" class="filter-event-type" value="Fall">
+                                <span>Fall</span>
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" class="filter-event-type" value="Weapon">
+                                <span>Weapon</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="filter-section">
+                        <div class="dropdown-header">Severity</div>
+                        <div class="filter-options" id="filter-severity">
+                            <label class="filter-option">
+                                <input type="checkbox" class="filter-severity" value="LOW">
+                                <span class="severity-badge low">LOW</span>
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" class="filter-severity" value="MEDIUM">
+                                <span class="severity-badge medium">MEDIUM</span>
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" class="filter-severity" value="HIGH">
+                                <span class="severity-badge high">HIGH</span>
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" class="filter-severity" value="CRITICAL">
+                                <span class="severity-badge critical">CRITICAL</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="filter-section">
+                        <div class="dropdown-header">Camera</div>
+                        <div class="filter-options" id="filter-cameras">
+                            <label class="filter-option">
+                                <input type="checkbox" class="filter-camera" value="Camera_01">
+                                <span>Camera 01</span>
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" class="filter-camera" value="Camera_02">
+                                <span>Camera 02</span>
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" class="filter-camera" value="Camera_03">
+                                <span>Camera 03</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="filter-actions">
+                        <button class="btn btn-secondary btn-sm" id="clear-filters">Clear All</button>
+                        <button class="btn btn-primary btn-sm" id="apply-filters">Apply Filters</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -32,7 +128,7 @@
             <div class="analytics-kpi-content">
                 <span class="analytics-kpi-label">Total Incidents</span>
                 <span class="analytics-kpi-value" id="total-incidents">0</span>
-                <span class="analytics-kpi-trend neutral" id="incidents-trend">-- vs last 7 days</span>
+                <span class="analytics-kpi-trend neutral" id="incidents-trend">vs previous period</span>
             </div>
         </div>
 
@@ -43,7 +139,7 @@
             <div class="analytics-kpi-content">
                 <span class="analytics-kpi-label">People Detected</span>
                 <span class="analytics-kpi-value" id="people-count">0</span>
-                <span class="analytics-kpi-trend neutral" id="people-trend">-- vs last 7 days</span>
+                <span class="analytics-kpi-trend neutral" id="people-trend">vs previous period</span>
             </div>
         </div>
 
@@ -54,7 +150,7 @@
             <div class="analytics-kpi-content">
                 <span class="analytics-kpi-label">Vehicles Detected</span>
                 <span class="analytics-kpi-value" id="vehicle-count">0</span>
-                <span class="analytics-kpi-trend neutral" id="vehicles-trend">-- vs last 7 days</span>
+                <span class="analytics-kpi-trend neutral" id="vehicles-trend">vs previous period</span>
             </div>
         </div>
 

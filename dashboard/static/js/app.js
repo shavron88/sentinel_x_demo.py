@@ -5,16 +5,25 @@ let alertPopupActive = false;
 /* ==========================================
    GLOBAL THEME RESTORE
    Runs on every page to apply saved theme.
-========================================== */
+   Light theme is disabled - defaults to dark.
+========================================= */
 
 function restoreTheme() {
     try {
         const saved = localStorage.getItem('sentinelx-theme');
-        if (saved && ['dark', 'light', 'midnight'].includes(saved)) {
+        // Force dark theme - clear any saved light theme
+        if (saved === 'light') {
+            localStorage.removeItem('sentinelx-theme');
+        }
+        if (saved && ['dark', 'midnight'].includes(saved)) {
             document.documentElement.setAttribute('data-theme', saved);
         } else {
-            document.documentElement.setAttribute('data-theme', 'midnight');
+            document.documentElement.setAttribute('data-theme', 'dark');
         }
+    } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    }
+}
     } catch (e) {
         document.documentElement.setAttribute('data-theme', 'midnight');
     }

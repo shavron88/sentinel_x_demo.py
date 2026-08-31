@@ -18,14 +18,15 @@
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--ev-primary-hover), var(--ev-primary));
-    color: var(--ev-text);
-    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+    background: linear-gradient(135deg, var(--ev-primary), #60a5fa);
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.45);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+    background: linear-gradient(135deg, #60a5fa, #93c5fd);
 }
 
 .btn-secondary {

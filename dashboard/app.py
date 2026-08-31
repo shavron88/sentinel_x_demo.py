@@ -534,20 +534,52 @@ def api_demo_trigger():
 
 @app.route("/analytics_data")
 def analytics_data():
-    """Returns aggregated analytics data for the analytics page."""
+    """Returns aggregated analytics data for the analytics page with date range and filter support."""
     try:
         from dashboard.store import get_stats, get_events
         from database.db import get_all_evidence
         from collections import Counter
+        from datetime import datetime, timedelta
         
         user_id = _get_user_id()
-        stats = get_stats(user_id=user_id)
-        events = get_events(limit=200, user_id=user_id)
-        evidence = get_all_evidence(limit=200, user_id=user_id)
         
-        total_incidents = stats.get("total_incidents", len(events))
-        people = stats.get("persons", 0)
-        vehicles = stats.get("vehicles", 0)
+        # Get query parameters
+        start_date = request.args.get("start_date")
+        end_date = request.args.get("end_date")
+        event_types_filter = request.args.get("event_types")
+        severity_filter = request.args.get("severity")
+        cameras_filter = request.args.get("cameras")
+        
+        stats = get_stats(user_id=user_id)
+        events = get_events(limit=500, user_id=user_id)
+        evidence = get_all_evidence(limit=500, user_id=user_id)
+        
+        # Apply date range filter
+        if start_date:
+            start_dt = datetime.strptime(start_date, "%Y-%m-%d")
+            events = [e for e in events if e.get("timestamp") and datetime.strptime(e.get("timestamp").split(" ")[0], "%Y-%m-%d") >= start_dt]
+        if end_date:
+            end_dt = datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1)
+            events = [e for e in events if e.get("timestamp") and datetime.strptime(e.get("timestamp").split(" ")[0], "%Y-%m-%d") < end_dt]
+        
+        # Apply event type filter
+        if event_types_filter:
+            types = [t.strip().lower() for t in event_types_filter.split(",")]
+            events = [e for e in events if any(t in (e.get("event_type") or "").lower() for t in types)]
+        
+        # Apply severity filter
+        if severity_filter:
+            severities = [s.strip().upper() for s in severity_filter.split(",")]
+            events = [e for e in events if (e.get("severity") or "LOW").upper() in severities]
+        
+        # Apply camera filter
+        if cameras_filter:
+            cameras = [c.strip() for c in cameras_filter.split(",")]
+            events = [e for e in events if (e.get("camera") or "") in cameras]
+        
+        total_incidents = len(events)
+        people = sum(1 for e in events if "person" in (e.get("event_type") or "").lower())
+        vehicles = sum(1 for e in events if "vehicle" in (e.get("event_type") or "").lower())
         threat = stats.get("threat", "LOW")
         
         event_types = Counter()

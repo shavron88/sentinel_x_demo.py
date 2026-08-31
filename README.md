@@ -4,7 +4,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)]()
 [![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-green)]()
-[![YOLOv8](https://img.shields.io/badge/YOLOv8-Ultralytics-red)]()
+[![YOLO11](https://img.shields.io/badge/YOLO11-Ultralytics-red)]()
 [![Flask](https://img.shields.io/badge/Flask-Web%20Dashboard-black)]()
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)]()
 
@@ -196,7 +196,7 @@ Camera Manager
 
 ↓
 
-YOLOv8 Detector
+YOLO11 Detector
 
 ↓
 
@@ -356,7 +356,7 @@ Flask
 
 Computer Vision:
 
-OpenCV + YOLOv8
+OpenCV + YOLO11
 
 ---
 
@@ -407,7 +407,7 @@ ai/
 
 ### Responsibilities
 
-- Load YOLOv8 model
+- Load YOLO11 model
 - Run object detection
 - Return bounding boxes
 - Return confidence scores
@@ -880,9 +880,9 @@ Stores AI models.
 Current models
 
 ```
-yolov8n.pt
+yolo11n.pt
 
-yolov8m.pt
+yolo11s.pt
 ```
 
 Developers may replace these with larger or custom-trained models.
@@ -1009,7 +1009,7 @@ The complete pipeline is shown below.
         Camera Manager
                    │
                    ▼
-          YOLOv8 Detector
+          YOLO11 Detector
                    │
                    ▼
         Object Tracking
@@ -1070,7 +1070,7 @@ Module
 ai/detector.py
 ```
 
-YOLOv8 processes every frame.
+YOLO11 processes every frame.
 
 The detector recognises objects such as
 
@@ -2486,22 +2486,22 @@ Current models
 ```
 models/
 
-yolov8n.pt
+yolo11n.pt
 
-yolov8m.pt
+yolo11s.pt
 ```
 
 Default
 
 ```
-YOLOv8n
+YOLO11n
 ```
 
 Developers can switch to
 
-- YOLOv8s
-- YOLOv8m
-- YOLOv8l
+- YOLO11s
+- YOLO11m
+- YOLO11l
 - Custom trained models
 
 ---
@@ -2877,7 +2877,7 @@ SentinelX is built using open-source technologies including
 - Python
 - Flask
 - OpenCV
-- Ultralytics YOLOv8
+- Ultralytics YOLO11
 - NumPy
 
 Special thanks to the open-source community for providing the tools that make this project possible.

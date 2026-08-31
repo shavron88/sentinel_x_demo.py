@@ -32,11 +32,28 @@ PORT = int(_get_env("FLASK_PORT", "5000"))
 SECRET_KEY = _get_env("SECRET_KEY", "sentinelx-dev-key-change-in-production")
 
 # ==========================================
-# AI Model
+# AI Model  (YOLO11 via the Ultralytics ecosystem)
 # ==========================================
-_raw_model_path = _get_env("MODEL_PATH", "models/yolov8m.pt")
+# YOLO11n is the smallest real-time model; ideal for CPU edge inference.
+# Swap to yolo11s.pt / yolo11m.pt for higher accuracy on capable hardware.
+_raw_model_path = _get_env("MODEL_PATH", "models/yolo11n.pt")
 MODEL_PATH = _resolve_path(_raw_model_path)
-CONFIDENCE_THRESHOLD = float(_get_env("CONFIDENCE_THRESHOLD", "0.60"))
+CONFIDENCE_THRESHOLD = float(_get_env("CONFIDENCE_THRESHOLD", "0.50"))
+# IoU threshold for Non-Maximum Suppression (lower = more aggressive suppression of duplicates)
+IOU_THRESHOLD = float(_get_env("IOU_THRESHOLD", "0.45"))
+# Inference resolution (YOLO letterbox-resizes to this; 640 is the YOLO standard)
+IMAGE_SIZE = int(_get_env("IMAGE_SIZE", "640"))
+# Inference device: "auto" = CUDA if available else CPU, or explicit "cuda"/"cpu"
+DEVICE = _get_env("DEVICE", "auto")
+# Comma-separated list of COCO class IDs to retain for surveillance.
+# person(0), bicycle(1), car(2), motorcycle(3), bus(5), truck(7),
+# backpack(24), handbag(26), suitcase(28)  (last three feed the abandoned-object detector)
+_raw_target_classes = _get_env("TARGET_CLASSES", "0,1,2,3,5,7,24,26,28")
+TARGET_CLASSES = [int(c) for c in _raw_target_classes.split(",") if c.strip().lstrip("-").isdigit()]
+# Enable/disable multi-object tracking (ByteTrack). When disabled, detection-only mode is used.
+TRACKING_ENABLED = _get_env("TRACKING_ENABLED", "1") == "1"
+# ByteTrack config filename shipped with Ultralytics.
+TRACKER = _get_env("TRACKER", "bytetrack.yaml")
 
 # ==========================================
 # Camera Configuration
