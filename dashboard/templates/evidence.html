@@ -1,0 +1,984 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-content fade-in">
+
+<section class="evidence-page">
+
+    <!-- HEADER -->
+
+    <div class="ev-header">
+
+        <div class="ev-header-left">
+
+            <h1 class="ev-title">
+
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+
+                    <path d="M21 15l-5-5L11 19"></path>
+
+                </svg>
+
+                AI Evidence Vault
+
+            </h1>
+
+            <span class="ev-badge" id="threatBadge">
+
+                <span class="threat-dot"></span>
+
+                <span id="threatText">LOW</span>
+
+            </span>
+
+            <span class="scanning-indicator">
+
+                <span class="scanning-dot"></span>
+
+                AI Monitoring Live
+
+            </span>
+
+        </div>
+
+        <div class="ev-header-right">
+
+            <button class="btn btn-secondary" onclick="exportAll()">
+
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+
+                    <polyline points="7 10 12 15 17 10"></polyline>
+
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+
+                </svg>
+
+                Export
+
+            </button>
+
+            <button class="btn btn-primary" onclick="loadEvidence()">
+
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                    <polyline points="23 4 23 10 17 10"></polyline>
+
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+
+                </svg>
+
+                Refresh
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- STATS -->
+
+    <div class="ev-stats">
+
+        <div class="ev-stat-card">
+
+            <div class="ev-stat-icon">
+
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+
+                    <polyline points="14 2 14 8 20 8"></polyline>
+
+                </svg>
+
+            </div>
+
+            <div class="ev-stat-content">
+
+                <span class="ev-stat-value" id="statTotal">0</span>
+
+                <span class="ev-stat-label">Evidence</span>
+
+            </div>
+
+        </div>
+
+        <div class="ev-stat-card">
+
+            <div class="ev-stat-icon">
+
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <circle cx="12" cy="12" r="10"></circle>
+
+                    <polyline points="12 6 12 12 16 14"></polyline>
+
+                </svg>
+
+            </div>
+
+            <div class="ev-stat-content">
+
+                <span class="ev-stat-value" id="statToday">0</span>
+
+                <span class="ev-stat-label">Today</span>
+
+            </div>
+
+        </div>
+
+        <div class="ev-stat-card ev-stat-critical">
+
+            <div class="ev-stat-icon">
+
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+
+                </svg>
+
+            </div>
+
+            <div class="ev-stat-content">
+
+                <span class="ev-stat-value" id="statCritical">0</span>
+
+                <span class="ev-stat-label">Critical</span>
+
+            </div>
+
+        </div>
+
+        <div class="ev-stat-card">
+
+            <div class="ev-stat-icon">
+
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+
+                </svg>
+
+            </div>
+
+            <div class="ev-stat-content">
+
+                <span class="ev-stat-value" id="statStorage">0 GB</span>
+
+                <span class="ev-stat-label">Storage</span>
+
+            </div>
+
+        </div>
+
+        <div class="ev-stat-card">
+
+            <div class="ev-stat-icon">
+
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+
+                </svg>
+
+            </div>
+
+            <div class="ev-stat-content">
+
+                <span class="ev-stat-value" id="statConfidence">0%</span>
+
+                <span class="ev-stat-label">Avg Confidence</span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- HISTOGRAM -->
+
+    <div class="ev-histogram" id="evHistogram">
+
+        <!-- Bars injected by JS -->
+
+    </div>
+
+    <!-- TOOLBAR -->
+
+    <div class="ev-toolbar">
+
+        <div class="ev-toolbar-left">
+
+            <div class="ev-search">
+
+                <svg class="ev-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                    <circle cx="11" cy="11" r="8"></circle>
+
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+
+                </svg>
+
+                <input
+
+                    type="text"
+
+                    id="searchEvidence"
+
+                    placeholder="Search by Person ID, Tracking ID, Camera, Zone..."
+
+                    class="ev-search-input"
+
+                >
+
+            </div>
+
+            <div class="ev-filter-chips" id="filterChips">
+
+                <button class="chip active" data-filter="all">All</button>
+
+                <button class="chip chip-today" data-filter="today">Today</button>
+
+                <button class="chip chip-yesterday" data-filter="yesterday">Yesterday</button>
+
+                <button class="chip chip-week" data-filter="week">This Week</button>
+
+                <button class="chip chip-high" data-filter="high">High Threat</button>
+
+                <button class="chip chip-critical" data-filter="critical">Critical</button>
+
+                <button class="chip chip-person" data-filter="person">Person</button>
+
+                <button class="chip chip-vehicle" data-filter="vehicle">Vehicle</button>
+
+                <button class="chip chip-weapon" data-filter="weapon">Weapon</button>
+
+                <button class="chip chip-crowd" data-filter="crowd">Crowd</button>
+
+                <button class="chip chip-running" data-filter="running">Running</button>
+
+                <button class="chip chip-loitering" data-filter="loitering">Loitering</button>
+
+                <button class="chip chip-fall" data-filter="fall">Fall</button>
+
+            </div>
+
+        </div>
+
+        <div class="ev-toolbar-right">
+
+            <div class="ev-view-toggle">
+
+                <button class="view-btn active" data-view="grid" title="Grid View">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                        <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+
+                        <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+
+                        <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+
+                        <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+
+                    </svg>
+
+                </button>
+
+                <button class="view-btn" data-view="list" title="List View">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+
+                    </svg>
+
+                </button>
+
+                <button class="view-btn" data-view="timeline" title="Timeline">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                        <line x1="12" y1="20" x2="12" y2="10"></line>
+
+                        <line x1="18" y1="20" x2="18" y2="4"></line>
+
+                        <line x1="6" y1="20" x2="6" y2="16"></line>
+
+                    </svg>
+
+                </button>
+
+                <button class="view-btn" data-view="map" title="Map">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                        <polygon points="1 6 1 22 7 18 7 6 1 6"></polygon>
+
+                        <polygon points="13 6 13 22 19 18 19 6 13 6"></polygon>
+
+                    </svg>
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- BULK ACTIONS -->
+
+    <div class="ev-bulk-bar" id="bulkBar" style="display:none;">
+
+        <div class="ev-bulk-left">
+
+            <label class="ev-checkbox">
+
+                <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+
+                <span class="checkmark"></span>
+
+            </label>
+
+            <span class="ev-bulk-count">
+
+                <span id="selectedCount">0</span> selected
+
+            </span>
+
+        </div>
+
+        <div class="ev-bulk-actions">
+
+            <button class="bulk-btn" onclick="bulkAction('export')">
+
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+
+                    <polyline points="7 10 12 15 17 10"></polyline>
+
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+
+                </svg>
+
+                Export
+
+            </button>
+
+            <button class="bulk-btn" onclick="bulkAction('download')">
+
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+
+                    <polyline points="7 10 12 15 17 10"></polyline>
+
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+
+                </svg>
+
+                Download
+
+            </button>
+
+            <button class="bulk-btn" onclick="bulkAction('favorite')">
+
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+
+                </svg>
+
+                Favorite
+
+            </button>
+
+            <button class="bulk-btn bulk-btn-danger" onclick="bulkAction('delete')">
+
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                    <polyline points="3 6 5 6 21 6"></polyline>
+
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+
+                </svg>
+
+                Delete
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- MAIN CONTENT -->
+
+    <div class="ev-content">
+
+        <!-- GALLERY -->
+
+        <div class="ev-gallery">
+
+            <div id="galleryGrid" class="ev-grid">
+
+                <!-- Cards injected by JS -->
+
+            </div>
+
+            <div id="noEvidence" class="ev-empty" style="display:none;">
+
+                <div class="ev-empty-icon">
+
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+
+                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+
+                        <path d="M21 15l-5-5L11 19"></path>
+
+                    </svg>
+
+                </div>
+
+                <h3>No Evidence Found</h3>
+
+                <p>AI has not recorded any evidence matching your criteria.</p>
+
+                <div class="ev-empty-actions">
+
+                    <button class="btn btn-primary" onclick="loadEvidence()">
+
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                            <polyline points="23 4 23 10 17 10"></polyline>
+
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+
+                        </svg>
+
+                        Refresh
+
+                    </button>
+
+                    <button class="btn btn-secondary" onclick="window.location.href='/cameras'">
+
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+
+                            <circle cx="12" cy="13" r="4"></circle>
+
+                        </svg>
+
+                        Open Cameras
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- SIDEBAR -->
+
+        <div class="ev-sidebar">
+
+            <!-- PREVIEW -->
+
+            <div class="ev-preview-card">
+
+                <div class="ev-preview-header">
+
+                    <h3>Evidence Preview</h3>
+
+                    <span class="badge badge-preview">HD</span>
+
+                </div>
+
+                <div class="ev-preview-body">
+
+                    <img id="previewImage" class="ev-preview-img" src="" alt="Evidence preview">
+
+                    <div class="ev-preview-overlay">
+
+                        <button class="ev-icon-btn" onclick="openFullscreen()" title="Fullscreen">
+
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                                <polyline points="15 3 21 3 21 9"></polyline>
+
+                                <polyline points="9 21 3 21 3 15"></polyline>
+
+                                <line x1="21" y1="3" x2="14" y2="10"></line>
+
+                                <line x1="3" y1="21" x2="10" y2="14"></line>
+
+                            </svg>
+
+                        </button>
+
+                        <button class="ev-icon-btn" id="sidebarFavorite" title="Favorite">
+
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+
+                            </svg>
+
+                        </button>
+
+                        <button class="ev-icon-btn" id="sidebarDownload" title="Download">
+
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+
+                                <polyline points="7 10 12 15 17 10"></polyline>
+
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+
+                            </svg>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- AI SUMMARY -->
+
+            <div class="ev-summary-card">
+
+                <div class="ev-summary-header">
+
+                    <h3>AI Summary</h3>
+
+                    <span class="badge badge-ai" id="aiBadge">ANALYZED</span>
+
+                </div>
+
+                <div class="ev-summary-body">
+
+                    <div class="ev-summary-title" id="summaryEvent">-</div>
+
+                    <!-- Confidence Ring -->
+
+                    <div class="confidence-ring-wrapper">
+
+                        <div class="confidence-ring" id="confidenceRing">
+
+                            <span id="confidenceValue">0%</span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="ev-summary-grid">
+
+                        <div class="ev-summary-item">
+
+                            <span class="ev-summary-label">Confidence</span>
+
+                            <span class="ev-summary-value" id="summaryConfidence">-</span>
+
+                        </div>
+
+                        <div class="ev-summary-item">
+
+                            <span class="ev-summary-label">Camera</span>
+
+                            <span class="ev-summary-value" id="summaryCamera">-</span>
+
+                        </div>
+
+                        <div class="ev-summary-item">
+
+                            <span class="ev-summary-label">Tracking ID</span>
+
+                            <span class="ev-summary-value" id="summaryTracking">-</span>
+
+                        </div>
+
+                        <div class="ev-summary-item">
+
+                            <span class="ev-summary-label">Threat</span>
+
+                            <span class="ev-summary-value" id="summaryThreat">-</span>
+
+                        </div>
+
+                        <div class="ev-summary-item">
+
+                            <span class="ev-summary-label">Zone</span>
+
+                            <span class="ev-summary-value" id="summaryZone">-</span>
+
+                        </div>
+
+                        <div class="ev-summary-item">
+
+                            <span class="ev-summary-label">Timestamp</span>
+
+                            <span class="ev-summary-value" id="summaryTime">-</span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="ev-summary-description" id="summaryDescription">
+                    <span class="ev-summary-desc-label">AI Description</span>
+                    <p id="aiDescriptionText">Select an evidence item for AI analysis.</p>
+                </div>
+
+            </div>
+
+            <!-- TIMELINE -->
+
+            <div class="ev-timeline-card">
+
+                <div class="ev-timeline-header">
+
+                    <h3>Evidence Timeline</h3>
+
+                </div>
+
+                <div class="ev-timeline" id="evidenceTimeline">
+
+                    <!-- Populated by JS -->
+
+                </div>
+
+            </div>
+
+            <!-- METADATA & OCR -->
+
+            <div class="ev-meta-card">
+
+                <div class="ev-meta-header">
+
+                    <h3>Metadata & OCR</h3>
+
+                </div>
+
+                <div class="ev-meta-content">
+
+                    <div class="ev-ocr-section">
+
+                        <div class="ev-ocr-label">OCR Text</div>
+
+                        <div class="ev-ocr-text" id="ocrText">
+                            No OCR data available.
+                        </div>
+
+                    </div>
+
+                    <div class="ev-tags-section">
+
+                        <div class="ev-tags-label">Evidence Tags</div>
+
+                        <div class="ev-tags-list" id="evidenceTags">
+                            <span class="ev-tag">No tags</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- SIMILAR EVIDENCE -->
+
+            <div class="ev-similar-card">
+
+                <div class="ev-similar-header">
+
+                    <h3>Similar Evidence</h3>
+
+                    <span class="badge badge-ai" id="similarCount">0</span>
+
+                </div>
+
+                <div class="ev-similar-list" id="similarEvidenceList">
+
+                    <div class="ev-similar-empty">No similar evidence found.</div>
+
+                </div>
+
+            </div>
+
+            <!-- MINI CAMERA MAP -->
+
+            <div class="ev-camera-map">
+
+                <div class="ev-camera-map-title">
+
+                    📹 Camera Map
+
+                </div>
+
+                <div class="ev-camera-list">
+
+                    <div class="ev-camera-item">
+
+                        <span class="ev-camera-dot"></span>
+
+                        <div class="ev-camera-info">
+
+                            <div class="ev-camera-name">Camera 01</div>
+
+                            <div class="ev-camera-location">Main Entrance</div>
+
+                        </div>
+
+                        <span class="ev-camera-status">ONLINE</span>
+
+                    </div>
+
+                    <div class="ev-camera-item">
+
+                        <span class="ev-camera-dot"></span>
+
+                        <div class="ev-camera-info">
+
+                            <div class="ev-camera-name">Camera 02</div>
+
+                            <div class="ev-camera-location">Parking A</div>
+
+                        </div>
+
+                        <span class="ev-camera-status">ONLINE</span>
+
+                    </div>
+
+                    <div class="ev-camera-item">
+
+                        <span class="ev-camera-dot" style="background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,.5);"></span>
+
+                        <div class="ev-camera-info">
+
+                            <div class="ev-camera-name">Camera 03</div>
+
+                            <div class="ev-camera-location">Warehouse</div>
+
+                        </div>
+
+                        <span class="ev-camera-status" style="color:#f59e0b;">OFFLINE</span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- FULLSCREEN MODAL -->
+
+<div id="fullscreenModal" class="ev-modal" onclick="closeFullscreen()">
+
+    <div class="ev-modal-dialog" onclick="event.stopPropagation()">
+
+        <button class="ev-modal-close" onclick="closeFullscreen()">
+
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+
+            </svg>
+
+        </button>
+
+        <img id="fullscreenImage" class="ev-modal-img" src="">
+
+        <div class="ev-modal-footer">
+
+            <div class="ev-modal-meta">
+
+                <span id="modalEvent">-</span>
+
+                <span id="modalCamera">-</span>
+
+                <span id="modalTime">-</span>
+
+            </div>
+
+            <div class="ev-modal-actions">
+
+                <button class="btn btn-secondary" onclick="downloadCurrent()">
+
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+
+                        <polyline points="7 10 12 15 17 10"></polyline>
+
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+
+                    </svg>
+
+                    Download
+
+                </button>
+
+                <button class="btn btn-secondary" onclick="openCompareMode()" title="Compare with another">
+
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+
+                        <path d="M21 15l-5-5L11 19"></path>
+
+                    </svg>
+
+                    Compare
+
+                </button>
+
+                <button class="btn btn-primary" onclick="favoriteCurrent()">
+
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+
+                    </svg>
+
+                    Favorite
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- COMPARE MODAL -->
+
+<div id="compareModal" class="ev-modal" onclick="closeCompare()">
+
+    <div class="ev-compare-dialog" onclick="event.stopPropagation()">
+
+        <button class="ev-modal-close" onclick="closeCompare()">
+
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+
+            </svg>
+
+        </button>
+
+        <div class="ev-compare-content">
+
+            <div class="ev-compare-panel" id="comparePanelA">
+
+                <img id="compareImageA" class="ev-compare-img" src="" alt="Evidence A">
+
+                <div class="ev-compare-meta">
+
+                    <span class="ev-compare-title" id="compareTitleA">Evidence A</span>
+
+                    <span class="ev-compare-label" id="compareLabelA"></span>
+
+                </div>
+
+            </div>
+
+            <div class="ev-compare-divider">
+
+                <div class="ev-compare-vs">VS</div>
+
+            </div>
+
+            <div class="ev-compare-panel" id="comparePanelB">
+
+                <img id="compareImageB" class="ev-compare-img" src="" alt="Evidence B">
+
+                <div class="ev-compare-meta">
+
+                    <span class="ev-compare-title" id="compareTitleB">Select Evidence B</span>
+
+                    <span class="ev-compare-label" id="compareLabelB"></span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="ev-compare-actions">
+
+            <button class="btn btn-primary" onclick="confirmCompare()">
+
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                    <polyline points="20 6 9 17 4 12"></polyline>
+
+                </svg>
+
+                Confirm Comparison
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+(function() {
+
+    showSkeletonCards("galleryGrid", 6);
+
+    showSkeletonRows("evidenceTimeline", 4);
+
+})();
+
+</script>
+
+</div>
+
+{% endblock %}

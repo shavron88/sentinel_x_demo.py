@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-content fade-in">
+
+<div class="replay-page">
+
+<div class="video-panel chart-loading">
+
+    <div class="loading-spinner small"></div>
+
+    <div class="video-header">
+
+        <h2>🎥 Incident Replay</h2>
+
+        <div class="badge badge-danger">
+
+            HIGH PRIORITY
+
+        </div>
+
+    </div>
+
+    <video
+    id="incidentVideo"
+    controls
+    autoplay
+    style="display:none;">
+
+    <source src="" type="video/mp4">
+
+    </video>
+
+    <div class="timeline-controls" id="timelineControls" style="display:none;">
+
+        <button class="btn btn-outline" onclick="skipBack()">
+
+            ⏪ -10s
+
+        </button>
+
+        <button class="btn btn-primary" onclick="togglePlay()">
+
+            ▶ Play
+
+        </button>
+
+        <button class="btn btn-outline" onclick="skipForward()">
+
+            +10s ⏩
+
+        </button>
+
+    </div>
+
+</div>
+
+<div class="incident-info">
+
+    <h2>Incident Summary</h2>
+
+    <div class="info-card">
+
+        <p>
+
+        <strong>Camera</strong>
+
+        <span id="replayCamera">Camera 01</span>
+
+        </p>
+
+        <p>
+
+        <strong>Event</strong>
+
+        <span id="replayEvent">Fall Detection</span>
+
+        </p>
+
+        <p>
+
+        <strong>Confidence</strong>
+
+        <span id="replayConfidence">97.6%</span>
+
+        </p>
+
+        <p>
+
+        <strong>Duration</strong>
+
+        <span id="replayDuration">18 Seconds</span>
+
+        </p>
+
+        <p>
+
+        <strong>Time</strong>
+
+        <span id="replayTime">10:42 PM</span>
+
+        </p>
+
+        <p>
+
+        <strong>Status</strong>
+
+        <span id="replayStatus">Resolved</span>
+
+        </p>
+
+    </div>
+
+</div>
+
+</div>
+
+<div id="emptyState" style="display:none;"></div>
+
+<script>
+
+(function() {
+
+    showSkeletonCards("timelineControls", 3);
+
+    if (typeof loadReplay === 'function') {
+        loadReplay();
+    } else {
+        // replay.js loads after content block; wait for it
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof loadReplay === 'function') loadReplay();
+        });
+    }
+
+})();
+
+</script>
+
+</div>
+
+{% endblock %}

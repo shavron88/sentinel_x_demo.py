@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-content fade-in">
+
+<section class="camera-page">
+        <div class="camera-left chart-loading">
+
+            <div class="loading-spinner small"></div>
+
+            <img src="/video_feed?camera_name={{ camera_name }}"
+
+                 id="live-camera">
+
+        </div>
+
+    <div class="camera-right">
+
+        <div class="panel">
+
+            <h3>Status</h3>
+
+            <p>🟢 Online</p>
+
+        </div>
+
+        <div class="panel">
+
+            <h3>Resolution</h3>
+
+            <p>640 × 480</p>
+
+        </div>
+
+        <div class="panel">
+
+            <h3>FPS</h3>
+
+            <p id="camera-fps">30</p>
+
+        </div>
+
+        <div class="panel">
+
+            <h3>Threat</h3>
+
+            <p id="threat-level">
+
+                LOW
+
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+<section class="panel">
+
+    <h3>
+
+        Recent Events
+
+    </h3>
+
+    <div id="timeline"></div>
+
+</section>
+
+<div id="emptyState" style="display:none;"></div>
+
+<script>
+
+(function() {
+
+    showSkeletonRows("timeline", 5);
+
+    setTimeout(function() {
+
+        // In production, check if events exist
+
+        // If empty: showEmptyState("emptyState", "No Recent Events", "No events recorded for this camera.", [{label:"Refresh", onclick:"refreshCamera()", class:"btn-primary"}])
+
+    }, 600);
+
+})();
+
+</script>
+
+</div>
+
+{% endblock %}

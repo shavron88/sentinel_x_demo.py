@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SentinelX</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <script>
+        try {
+            var savedTheme = localStorage.getItem('sentinelx-theme');
+            // Force dark theme - clear any saved light theme
+            if (savedTheme === 'light') {
+                localStorage.removeItem('sentinelx-theme');
+                savedTheme = null;
+            }
+            if (savedTheme && ['dark', 'midnight'].indexOf(savedTheme) !== -1) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        } catch (e) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
+
+    <!-- Skeleton stubs — available immediately for inline scripts in content block -->
+    <script>
+    window._loadingQueue = [];
+    ['showSkeletonCards','showSkeletonRows','showSkeletonTable','showEmptyState'].forEach(function(fn){
+        if (!window[fn]) {
+            window[fn] = function(){ window._loadingQueue.push([fn, arguments]); };
+        }
+    });
+    </script>
+
+    <!-- CSS — Reset first, then component styles, then theme system LAST -->
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reset.css') }}?v=20260831">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260831">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}?v=20260831">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}?v=20260831">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}?v=20260831">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}?v=20260831">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}?v=20260831">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}?v=20260831">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/topbar.css') }}?v=20260831">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading.css') }}?v=20260831">
+
+    {% if request.path == '/evidence' %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/evidence.css') }}?v=20260831">
+
+    {% endif %}
+
+    {% if request.path == '/live_wall' %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/livewall.css') }}?v=20260831">
+
+    {% endif %}
+
+    {% if request.path == '/security_map' %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/security_map.css') }}?v=20260831">
+
+    {% endif %}
+
+    {% if request.path == '/threat_center' %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/threat_center.css') }}?v=20260831">
+
+    {% endif %}
+
+    {% if request.path == '/command_center' %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/command_center.css') }}?v=20260831">
+
+    {% endif %}
+
+    {% if request.path == '/copilot' %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/copilot.css') }}?v=20260831">
+
+    {% endif %}
+
+    {% if request.path == '/analytics' %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}?v=20260831">
+
+    {% endif %}
+
+    <!-- Polish layer — visual refinements -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/polish.css') }}?v=20260831">
+
+    <!-- Theme system — MUST load last for cascade override -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme-system.css') }}?v=20260831">
+
+    <!-- Responsive system — mobile-first responsive design -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}?v=20260831">
+
+    <style>
+    /* ═══ Page entrance transition ═══ */
+    .main-content {
+        animation: pageIn 350ms cubic-bezier(.16,1,.3,1) both;
+    }
+    @keyframes pageIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ═══ Sidebar brand entrance ═══ */
+    .sidebar-brand {
+        animation: sidebarBrandIn 500ms cubic-bezier(.16,1,.3,1) both;
+    }
+    @keyframes sidebarBrandIn {
+        from { opacity: 0; transform: translateX(-12px); }
+        to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ═══ Sidebar nav stagger ═══ */
+    .sidebar-nav-link {
+        animation: navItemIn 400ms cubic-bezier(.16,1,.3,1) both;
+    }
+    .sidebar-nav-link:nth-child(1) { animation-delay: 60ms; }
+    .sidebar-nav-link:nth-child(2) { animation-delay: 100ms; }
+    .sidebar-nav-link:nth-child(3) { animation-delay: 140ms; }
+    .sidebar-nav-link:nth-child(4) { animation-delay: 180ms; }
+    .sidebar-nav-link:nth-child(5) { animation-delay: 220ms; }
+    .sidebar-nav-link:nth-child(6) { animation-delay: 260ms; }
+    .sidebar-nav-link:nth-child(7) { animation-delay: 300ms; }
+    .sidebar-nav-link:nth-child(8) { animation-delay: 340ms; }
+    @keyframes navItemIn {
+        from { opacity: 0; transform: translateX(-8px); }
+        to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ═══ Active nav indicator ═══ */
+    .sidebar-nav-link.active::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 50%; transform: translateY(-50%);
+        width: 3px; height: 60%; border-radius: 0 3px 3px 0;
+        background: var(--ev-primary);
+        animation: activeIndicatorIn 300ms cubic-bezier(.16,1,.3,1) both;
+    }
+    @keyframes activeIndicatorIn {
+        from { height: 0; opacity: 0; }
+        to   { height: 60%; opacity: 1; }
+    }
+
+    /* ═══ Theme transition overlay ═══ */
+    body.theme-transitioning::before {
+        content: ''; position: fixed; inset: 0; z-index: 9999;
+        pointer-events: none; background: var(--ev-bg);
+        animation: themeFlash 320ms ease forwards;
+    }
+    @keyframes themeFlash {
+        0%   { opacity: .18; }
+        100% { opacity: 0; }
+    }
+
+    /* ═══ Status dot breathing ═══ */
+    @keyframes statusDotBreathe {
+        0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 6px currentColor; }
+        50%      { transform: scale(1.2); opacity: .75; box-shadow: 0 0 12px currentColor; }
+    }
+    .status-dot { animation: statusDotBreathe 3s ease-in-out infinite; }
+    .sidebar-footer .status-dot { color: var(--ev-success); }
+    </style>
+
+</head>
+
+<body data-page="true">
+
+<div class="page-loading-overlay" id="pageLoadingOverlay">
+
+    <div class="loading-spinner large"></div>
+
+    <p class="page-loading-text">Loading Sentinel X...</p>
+
+</div>
+
+<div class="container">
+
+    <!-- ================= SIDEBAR OVERLAY ================= -->
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <!-- BRAND -->
+
+        <div class="sidebar-brand">
+
+            <div class="sidebar-logo">
+
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#3b82f6" opacity="0.9"></path>
+
+                    <path d="M2 17l10 5 10-5" stroke="#3b82f6" opacity="0.7"></path>
+
+                    <path d="M2 12l10 5 10-5" stroke="#60a5fa" opacity="0.5"></path>
+
+                </svg>
+
+            </div>
+
+            <div class="sidebar-brand-text">
+
+                <h2>SentinelX</h2>
+
+                <p data-i18n="dash.sidebar.subtitle">AI Edge Security</p>
+
+            </div>
+
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- NAVIGATION -->
+
+        <nav class="sidebar-nav">
+
+            <a href="/dashboard" class="sidebar-nav-link {% if request.path=='/dashboard' %}active{% endif %}">
+
+                <span class="sidebar-nav-icon">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+
+                        <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+
+                        <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+
+                        <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+
+                    </svg>
+
+                </span>
+
+                <span class="sidebar-nav-label" data-i18n="dash.nav.dashboard">Dashboard</span>
+
+            </a>
+
+            <a href="/cameras" class="sidebar-nav-link {% if request.path in ('/cameras','/camera_view') %}active{% endif %}">
+
+                <span class="sidebar-nav-icon">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+
+                        <circle cx="12" cy="13" r="4"></circle>
+
+                    </svg>
+
+                </span>
+
+                <span class="sidebar-nav-label" data-i18n="dash.nav.cameras">Cameras</span>
+
+            </a>
+
+            <a href="/incidents" class="sidebar-nav-link {% if request.path=='/incidents' %}active{% endif %}">
+
+                <span class="sidebar-nav-icon">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+
+                    </svg>
+
+                </span>
+
+                <span class="sidebar-nav-label" data-i18n="dash.nav.incidents">Incidents</span>
+
+            </a>
+
+            <a href="/evidence" class="sidebar-nav-link {% if request.path=='/evidence' %}active{% endif %}">
+
+                <span class="sidebar-nav-icon">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+
+                        <path d="M21 15l-5-5L11 19"></path>
+
+                    </svg>
+
+                </span>
+
+                <span class="sidebar-nav-label" data-i18n="dash.nav.evidence">Evidence</span>
+
+            </a>
+
+            <a href="/analytics" class="sidebar-nav-link {% if request.path=='/analytics' %}active{% endif %}">
+
+                <span class="sidebar-nav-icon">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+
+                    </svg>
+
+                </span>
+
+                <span class="sidebar-nav-label" data-i18n="dash.nav.analytics">Analytics</span>
+
+            </a>
+
+            <a href="/reports" class="sidebar-nav-link {% if request.path=='/reports' %}active{% endif %}">
+
+                <span class="sidebar-nav-icon">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+
+                        <polyline points="14 2 14 8 20 8"></polyline>
+
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+
+                        <polyline points="10 9 9 9 8 9"></polyline>
+
+                    </svg>
+
+                </span>
+
+                <span class="sidebar-nav-label" data-i18n="dash.nav.reports">Reports</span>
+
+            </a>
+
+            <a href="/notifications" class="sidebar-nav-link {% if request.path=='/notifications' %}active{% endif %}">
+
+                <span class="sidebar-nav-icon">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9z"></path>
+
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+
+                    </svg>
+
+                </span>
+
+                <span class="sidebar-nav-label" data-i18n="dash.nav.notifications">Notifications</span>
+
+            </a>
+
+            <a href="/settings" class="sidebar-nav-link {% if request.path=='/settings' %}active{% endif %}">
+
+                <span class="sidebar-nav-icon">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <circle cx="12" cy="12" r="3"></circle>
+
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+
+                    </svg>
+
+                </span>
+
+                <span class="sidebar-nav-label" data-i18n="dash.nav.settings">Settings</span>
+
+            </a>
+
+        </nav>
+
+        <!-- FOOTER -->
+
+        <div class="sidebar-footer">
+
+            <div class="system-status">
+
+                <span class="status-dot"></span>
+
+                <span data-i18n="dash.sidebar-online">System Online</span>
+
+            </div>
+
+            <small>SentinelX v1.0</small>
+
+        </div>
+
+    </aside>
+
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <main class="main-content">
+
+        <!-- ===== TOPBAR ===== -->
+
+        <header class="topbar">
+
+            <div class="top-left">
+
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle navigation menu" onclick="toggleSidebar()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+
+                <div class="page-title">
+
+                    <h2 id="pageName" data-i18n="dash.topbar.title">Sentinel X AI Command Center</h2>
+
+                    <span class="breadcrumb">
+
+                        <span data-i18n="dash.topbar.subtitle">
+
+                        AI Edge Surveillance Platform
+
+                    </span>
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="top-right">
+
+                <div class="status-chip status-chip--primary">
+
+                    <span class="status-dot"></span>
+
+                    AI ONLINE
+
+                </div>
+
+                <div class="topbar-controls">
+
+                    <div class="notification-wrapper">
+
+                        <button class="notification-btn" id="notification-btn" aria-label="Notifications">
+
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9z"></path>
+
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+
+                            </svg>
+
+                        </button>
+
+                        <span id="notification-count"></span>
+
+                        <div id="notification-panel">
+
+                            <div class="notification-panel-header">
+
+                                <h4>Notifications</h4>
+
+                                <div class="notification-panel-actions">
+
+                                    <button onclick="markAllAsRead()">Mark all read</button>
+
+                                    <button onclick="clearNotificationHistory()">Clear all</button>
+
+                                </div>
+
+                            </div>
+
+                            <div id="notification-list">
+
+                                <div class="notification-empty">
+
+                                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4">
+
+                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+
+                                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+
+                                    </svg>
+
+                                    <p>No notifications yet</p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <button class="sound-toggle active" id="soundToggle" title="Toggle Sound">
+
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+
+                        </svg>
+
+                    </button>
+
+                    <div class="profile" id="profileMenu">
+
+                    <button class="avatar" id="avatarBtn" type="button" tabindex="0" aria-label="User menu" aria-expanded="false" aria-haspopup="true">
+
+                        <span class="avatar-initials" id="avatarInitials">{{ session.get('username', 'Admin')[:2]|upper }}</span>
+
+                        <span class="avatar-status" aria-hidden="true"></span>
+
+                    </button>
+
+                    <div class="profile-dropdown" id="profileDropdown" role="menu" style="display:none;">
+
+                        <div class="profile-dropdown-header">
+
+                            <div class="profile-dropdown-avatar">
+
+                                <span id="dropdownAvatarInitials">{{ session.get('username', 'Admin')[:2]|upper }}</span>
+
+                            </div>
+
+                            <div class="profile-dropdown-meta">
+
+                                <span class="profile-dropdown-name" id="profileDisplayName">{{ session.get('username', 'Admin')|capitalize }}</span>
+
+                                <span class="profile-dropdown-email" id="profileDisplayEmail">{{ session.get('email', 'admin@sentinelx.ai') }}</span>
+
+                                <span class="profile-dropdown-role" id="profileDisplayRole">{{ session.get('role', 'System Administrator') }}</span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="profile-dropdown-body">
+
+                            <button class="profile-dropdown-item profile-dropdown-signout" id="logoutBtn" type="button" role="menuitem">
+
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+
+                                    <polyline points="16 17 21 12 16 7"></polyline>
+
+                                    <line x1="21" y1="12" x2="9" y2="12"></line>
+
+                                </svg>
+
+                                Sign Out
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+        <!-- PAGE CONTENT -->
+
+        {% block content %}
+
+        {% if error_page %}
+        <div class="page-content fade-in">
+            <div style="display:flex;align-items:center;justify-content:center;min-height:60vh;">
+                <div style="text-align:center;max-width:480px;padding:40px;">
+                    <div style="font-size:72px;font-weight:800;color:var(--ev-primary);line-height:1;margin-bottom:16px;">{{ error_code }}</div>
+                    <h2 style="font-size:22px;font-weight:600;color:var(--ev-text);margin-bottom:8px;">{{ error_message }}</h2>
+                    <p style="color:var(--ev-text-muted);font-size:14px;margin-bottom:24px;" data-i18n="dash.error.notAvailable">The page you are looking for is not available or an error occurred.</p>
+                    <a href="/dashboard" style="display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:var(--ev-primary);color:#fff;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px;transition:background 0.2s;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        <span data-i18n="dash.error.backBtn">Back to Dashboard</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% endblock %}
+
+    </main>
+
+</div>
+
+<!-- ================= ALERT POPUP ================= -->
+
+<div id="alertPopup">
+
+    <div class="alert-popup">
+
+        <div class="alert-popup-header">
+
+            <div class="alert-popup-icon">🚨</div>
+
+            <div class="alert-popup-header-text">
+
+                <h3 id="alertPopupTitle">Critical Alert</h3>
+
+                <p>Immediate attention required</p>
+
+            </div>
+
+        </div>
+
+        <div class="alert-popup-body">
+
+            <div class="alert-popup-message" id="alertPopupMessage"></div>
+
+            <div class="alert-popup-time" id="alertPopupTime"></div>
+
+        </div>
+
+        <div class="alert-popup-footer">
+
+            <button class="alert-popup-btn-view" onclick="window.location.href='/incidents'">View Details</button>
+
+            <button class="alert-popup-btn-ack" onclick="closeAlertPopup()">Acknowledge</button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= TOAST ================= -->
+
+<div id="toast-container"></div>
+
+<!-- ================= JS ================= -->
+
+<script src="{{ url_for('static', filename='js/loading.js') }}?v=20260829"></script>
+
+<script src="{{ url_for('static', filename='js/app.js') }}?v=20260829"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="{{ url_for('static', filename='js/dashboard.js') }}?v=20260829"></script>
+
+<script src="{{ url_for('static', filename='js/alerts.js') }}?v=20260829"></script>
+
+    {% if request.path == '/cameras' or request.path == '/camera_view' %}
+
+<script src="{{ url_for('static', filename='js/camera.js') }}?v=20260829"></script>
+
+    {% endif %}
+
+{% if request.path == '/incidents' %}
+
+<script src="{{ url_for('static', filename='js/incidents.js') }}?v=20260829"></script>
+
+{% endif %}
+
+{% if request.path == '/evidence' %}
+
+<script src="{{ url_for('static', filename='js/evidence.js') }}?v=20260829"></script>
+
+{% endif %}
+
+{% if request.path == '/live_wall' %}
+
+<script src="{{ url_for('static', filename='js/live_wall.js') }}?v=20260829"></script>
+
+{% endif %}
+
+{% if request.path == '/security_map' %}
+
+<script src="{{ url_for('static', filename='js/security_map.js') }}?v=20260829"></script>
+
+{% endif %}
+
+{% if request.path == '/threat_center' %}
+
+<script src="{{ url_for('static', filename='js/threat_center.js') }}?v=20260829"></script>
+
+{% endif %}
+
+{% if request.path == '/command_center' %}
+
+<script src="{{ url_for('static', filename='js/command_center.js') }}?v=20260829"></script>
+
+{% endif %}
+
+{% if request.path == '/copilot' %}
+
+<script src="{{ url_for('static', filename='js/copilot.js') }}?v=20260829"></script>
+
+{% endif %}
+
+{% if request.path == '/replay' %}
+
+<script src="{{ url_for('static', filename='js/replay.js') }}?v=20260829"></script>
+
+{% endif %}
+
+{% if request.path == '/analytics' %}
+
+<script src="{{ url_for('static', filename='js/analytics.js') }}?v=20260829"></script>
+
+{% endif %}
+
+    {% if request.path == '/reports' %}
+
+    <script src="{{ url_for('static', filename='js/reports.js') }}?v=20260829"></script>
+
+    {% endif %}
+
+    <!-- variables.css moved to <head> for correct load order -->
+
+    {% if request.path == '/settings' %}
+
+<script src="{{ url_for('static', filename='js/settings.js') }}?v=20260829"></script>
+
+    {% endif %}
+
+    {% if request.path == '/notifications' %}
+
+<script src="{{ url_for('static', filename='js/notifications.js') }}?v=20260829"></script>
+
+    {% endif %}
+
+<script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+
+</body>
+
+</html>

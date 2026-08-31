@@ -1,0 +1,2539 @@
+/* ==========================================
+   SentinelX — Polish Layer
+   Visual refinements for presentation-ready UI
+   Loaded LAST to override via cascade
+========================================== */
+
+/* ==========================================
+   1. GLOBAL TYPOGRAPHY & BODY
+========================================== */
+
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.01em;
+}
+
+/* ==========================================
+   2. LAYOUT — Main content & dashboard page
+========================================== */
+
+.main-content {
+    padding: 20px 24px 24px;
+}
+
+.dashboard-page {
+    gap: 28px;
+    padding: 0;
+}
+
+/* ==========================================
+   3. TOPBAR — Refined header bar
+========================================== */
+
+.topbar {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 18px;
+    padding: 18px 28px;
+    margin-bottom: 4px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+.top-left h2 {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.breadcrumb {
+    font-size: 13px;
+    font-weight: 400;
+    margin-top: 2px;
+    display: block;
+}
+
+.top-right {
+    gap: 10px;
+}
+
+/* Status chip — refined */
+.status-chip {
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.status-chip .status-dot {
+    width: 7px;
+    height: 7px;
+}
+
+/* Avatar */
+.avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+    font-weight: 700;
+    border: 2px solid rgba(59, 130, 246, 0.3);
+    box-shadow: 0 2px 12px rgba(59, 130, 246, 0.15);
+}
+
+/* ==========================================
+   4. PANELS — Glass card system
+========================================== */
+
+.panel {
+    background: rgba(17, 24, 39, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 18px;
+    padding: 22px 24px;
+    box-shadow:
+        0 4px 24px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.panel:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.panel h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ev-text);
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.panel-header h3 {
+    margin-bottom: 0;
+}
+
+/* ==========================================
+   5. KPI BAR — Metric cards
+========================================== */
+
+.kpi-bar {
+    gap: 16px;
+}
+
+.kpi-card {
+    border-radius: 16px;
+    padding: 20px 22px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(17, 24, 39, 0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+        0 2px 16px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    background: radial-gradient(ellipse at top left, rgba(59, 130, 246, 0.04), transparent 60%);
+    pointer-events: none;
+}
+
+.kpi-card:hover {
+    border-color: rgba(59, 130, 246, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+}
+
+.kpi-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ev-text-dark);
+    margin-bottom: 8px;
+}
+
+.kpi-value {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #f1f5f9;
+    letter-spacing: -0.02em;
+}
+
+.kpi-percent {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--ev-text-muted);
+}
+
+.kpi-total {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--ev-text-dark);
+}
+
+.kpi-indicator {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.kpi-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ev-success);
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+}
+
+.kpi-dot.online {
+    background: var(--ev-success);
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+}
+
+.kpi-dot.high {
+    background: var(--ev-primary);
+    box-shadow: 0 0 6px rgba(59, 130, 246, 0.4);
+}
+
+.kpi-text {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ev-text-muted);
+}
+
+/* ==========================================
+   6. COMMAND CENTER — Main grid layout
+========================================== */
+
+.command-center {
+    gap: 28px;
+}
+
+.left-panel {
+    gap: 28px;
+}
+
+.right-panel {
+    gap: 28px;
+}
+
+/* ==========================================
+   7. CAMERA HERO — Live monitor
+========================================== */
+
+.camera-hero {
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.camera-hero-header {
+    padding: 14px 20px;
+    gap: 12px;
+}
+
+.camera-hero-title h2 {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.camera-hero-footer {
+    padding: 10px 20px;
+    gap: 20px;
+    font-size: 13px;
+}
+
+.camera-hero-footer span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.camera-hero-footer strong {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Camera status panel */
+.camera-status {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.camera-status .status-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+}
+
+.camera-status .status-item span {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ev-text-dark);
+}
+
+.camera-status .status-item strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ev-text);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================
+   8. AI LIVE FEED — Timeline items
+========================================== */
+
+.ai-feed-list {
+    max-height: 380px;
+}
+
+#timeline {
+    gap: 8px;
+    max-height: 380px;
+}
+
+.ai-feed-item {
+    padding: 10px 14px;
+    border-radius: 10px;
+    gap: 10px;
+}
+
+.ai-feed-title {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.ai-feed-meta {
+    margin-top: 4px;
+    font-size: 11px;
+}
+
+.ai-feed-time {
+    font-size: 11px;
+    min-width: 42px;
+}
+
+/* ==========================================
+   9. AI INTELLIGENCE — Risk & recommendations
+========================================== */
+
+.ai-intelligence-panel {
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ai-intelligence-content {
+    gap: 14px;
+}
+
+.ai-risk-card {
+    padding: 16px 18px;
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.ai-risk-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.ai-risk-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ev-text-dark);
+}
+
+.ai-risk-value {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.ai-risk-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+}
+
+.ai-risk-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease;
+}
+
+.ai-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.ai-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    background: rgba(15, 23, 42, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+}
+
+.ai-stat-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ev-text-dark);
+}
+
+.ai-stat-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ev-text);
+}
+
+.ai-recommendation {
+    padding: 12px 14px;
+    background: rgba(15, 23, 42, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ai-rec-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ev-text-dark);
+}
+
+.ai-recommendation p {
+    margin: 0;
+    color: var(--ev-text);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+/* ==========================================
+   10. HEALTH LIST — System status items
+========================================== */
+
+.health-list {
+    gap: 4px;
+}
+
+.health-item {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border-bottom: none;
+    transition: background 0.15s ease;
+}
+
+.health-item:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.health-item span:first-child {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ev-text-muted);
+}
+
+.health-online,
+.health-offline {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 6px;
+}
+
+.health-online {
+    color: var(--ev-success);
+    background: rgba(34, 197, 94, 0.08);
+}
+
+.health-offline {
+    color: var(--ev-danger);
+    background: rgba(239, 68, 68, 0.08);
+}
+
+/* ==========================================
+   11. DEMO SCENARIOS — Trigger buttons
+========================================== */
+
+.demo-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 14px;
+}
+
+.demo-btn {
+    padding: 16px 12px;
+    border-radius: 14px;
+    gap: 10px;
+    background: linear-gradient(160deg, rgba(17, 24, 39, 0.7), rgba(30, 41, 59, 0.6));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.demo-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.demo-btn-critical {
+    border-color: rgba(239, 68, 68, 0.25);
+    background: linear-gradient(160deg, rgba(239, 68, 68, 0.1), rgba(30, 41, 59, 0.6));
+}
+
+.demo-btn-critical:hover {
+    border-color: rgba(239, 68, 68, 0.5);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(239, 68, 68, 0.3);
+}
+
+.demo-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(59, 130, 246, 0.12);
+    color: var(--ev-primary);
+    transition: all 0.3s;
+}
+
+.demo-btn-critical .demo-icon {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--ev-danger);
+}
+
+.demo-btn:hover .demo-icon {
+    background: rgba(59, 130, 246, 0.2);
+    transform: scale(1.05);
+}
+
+.demo-btn-critical:hover .demo-icon {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.demo-label {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--ev-text);
+}
+
+/* ==========================================
+   12. CAMERA CONTROLS
+========================================== */
+
+.camera-controls-grid {
+    gap: 8px;
+}
+
+.camera-controls-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.camera-control-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 10px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.22), rgba(59, 130, 246, 0.06)) !important;
+    color: #e2e8f0 !important;
+    cursor: pointer;
+    gap: 9px;
+    transition: all .25s cubic-bezier(.4, 0, .2, 1);
+}
+
+.camera-control-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+    border-color: rgba(59, 130, 246, 0.45) !important;
+}
+
+.camera-control-btn:active {
+    transform: translateY(0);
+}
+
+.camera-control-btn span {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .2px;
+}
+
+.camera-control-btn svg {
+    width: 22px;
+    height: 22px;
+    transition: transform .25s ease;
+}
+
+.camera-control-btn:hover svg {
+    transform: scale(1.08);
+}
+
+/* Per-action accent colors */
+.camera-control-btn[data-action="record"],
+.camera-control-btn[data-action="snapshot"] {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.22), rgba(239, 68, 68, 0.06)) !important;
+    border-color: rgba(239, 68, 68, 0.22) !important;
+}
+
+.camera-control-btn[data-action="record"]:hover,
+.camera-control-btn[data-action="snapshot"]:hover {
+    border-color: rgba(239, 68, 68, 0.45) !important;
+}
+
+.camera-control-btn[data-action="ptz"] {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.06)) !important;
+    border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+.camera-control-btn[data-action="ptz"]:hover {
+    border-color: rgba(16, 185, 129, 0.45) !important;
+}
+
+.camera-control-btn[data-action="zoom"] {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(99, 102, 241, 0.06)) !important;
+    border-color: rgba(99, 102, 241, 0.2) !important;
+}
+
+.camera-control-btn[data-action="zoom"]:hover {
+    border-color: rgba(99, 102, 241, 0.45) !important;
+}
+
+.camera-control-btn[data-action="ai-tracking"] {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.22), rgba(34, 197, 94, 0.06)) !important;
+    border-color: rgba(34, 197, 94, 0.2) !important;
+}
+
+.camera-control-btn[data-action="ai-tracking"]:hover {
+    border-color: rgba(34, 197, 94, 0.45) !important;
+}
+
+.camera-control-btn[data-action="export"] {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(168, 85, 247, 0.06)) !important;
+    border-color: rgba(168, 85, 247, 0.2) !important;
+}
+
+.camera-control-btn[data-action="export"]:hover {
+    border-color: rgba(168, 85, 247, 0.45) !important;
+}
+
+/* Light theme legibility */
+[data-theme="light"] .camera-control-btn {
+    color: #0f172a !important;
+}
+
+/* ==========================================
+   13. SECURITY MAP
+========================================== */
+
+/* ===== Security Map card (dashboard + page) ===== */
+.map-panel{
+    padding:0;
+    overflow:hidden;
+}
+
+.map-container{
+    position:relative;
+    width:100%;
+    min-height:320px;
+    background:
+        radial-gradient(120% 120% at 50% 0%, rgba(59,130,246,.08), transparent 60%),
+        linear-gradient(160deg, rgba(17,24,39,.95), rgba(30,41,59,.9));
+    padding:18px;
+    border-radius:18px;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,.06);
+    box-shadow:inset 0 0 60px rgba(0,0,0,.35);
+}
+
+.floor-map{
+    width:100%;
+    border-radius:14px;
+    display:block;
+    border:1px solid rgba(255,255,255,.05);
+    box-shadow:0 8px 30px rgba(0,0,0,.35);
+}
+
+.camera-marker,
+.event-marker{
+    position:absolute;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    cursor:pointer;
+    z-index:10;
+    transition:transform .25s cubic-bezier(.4,0,.2,1), box-shadow .25s;
+}
+
+.camera-marker{
+    width:44px;
+    height:44px;
+    font-size:21px !important;
+    background:rgba(15,23,42,.75);
+    border:2px solid rgba(59,130,246,.55);
+    box-shadow:0 0 0 4px rgba(59,130,246,.12), 0 6px 18px rgba(0,0,0,.45);
+    backdrop-filter:blur(6px);
+}
+
+.camera-marker::after{
+    content:"";
+    position:absolute;
+    top:-6px;
+    right:-6px;
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:#22c55e;
+    border:2px solid #0b1220;
+    box-shadow:0 0 8px rgba(34,197,94,.7);
+    animation:pulse 2s infinite;
+}
+
+.camera-marker:hover{
+    transform:scale(1.12);
+}
+
+.event-marker{
+    width:40px;
+    height:40px;
+    font-size:19px !important;
+    background:rgba(15,23,42,.8);
+    border:2px solid rgba(239,68,68,.6);
+    box-shadow:0 0 0 4px rgba(239,68,68,.14), 0 6px 18px rgba(0,0,0,.45);
+    backdrop-filter:blur(6px);
+    animation:markerBlink 1.1s infinite;
+}
+
+.event-marker.person{
+    border-color:rgba(96,165,250,.6);
+    box-shadow:0 0 0 4px rgba(96,165,250,.14), 0 6px 18px rgba(0,0,0,.45);
+}
+
+.event-marker.vehicle{
+    border-color:rgba(250,204,21,.6);
+    box-shadow:0 0 0 4px rgba(250,204,21,.14), 0 6px 18px rgba(0,0,0,.45);
+}
+
+.event-marker:hover{
+    transform:scale(1.12);
+}
+
+.c1{ top:18%; left:24%; }
+.c2{ top:42%; left:67%; }
+.c3{ top:72%; left:30%; }
+.e1{ top:48%; left:52%; }
+.e2{ top:30%; left:39%; }
+.e3{ top:78%; left:74%; }
+
+@keyframes markerBlink{
+    0%, 100%{ opacity:1; }
+    50%{ opacity:.4; }
+}
+
+@keyframes pulse{
+    0%, 100%{ box-shadow:0 0 0 0 rgba(34,197,94,.4); }
+    50%{ box-shadow:0 0 0 6px rgba(34,197,94,0); }
+}
+
+.map-legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+    align-items:center;
+}
+
+.legend-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    font-size:12px;
+    font-weight:600;
+    color:#94a3b8;
+}
+
+.legend-dot{
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    flex:0 0 auto;
+}
+
+.legend-dot.cam{ background:#3b82f6; box-shadow:0 0 6px rgba(59,130,246,.6); }
+.legend-dot.person{ background:#60a5fa; box-shadow:0 0 6px rgba(96,165,250,.6); }
+.legend-dot.vehicle{ background:#facc15; box-shadow:0 0 6px rgba(250,204,21,.6); }
+.legend-dot.alert{ background:#ef4444; box-shadow:0 0 6px rgba(239,68,68,.6); }
+
+.map-tooltip{
+    position:absolute;
+    background:rgba(15,23,42,.96);
+    border:1px solid rgba(59,130,246,.35);
+    border-radius:12px;
+    padding:12px 14px;
+    font-size:12px;
+    color:#e2e8f0;
+    line-height:1.6;
+    z-index:50;
+    pointer-events:none;
+    min-width:160px;
+    box-shadow:0 12px 30px rgba(0,0,0,.5);
+    backdrop-filter:blur(10px);
+    animation:tooltipIn .15s ease;
+}
+
+.map-tooltip strong{
+    display:block;
+    margin-bottom:6px;
+    font-size:13px;
+    color:#fff;
+}
+
+.map-tooltip div{
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+}
+
+@keyframes tooltipIn{
+    from{ opacity:0; transform:translateY(4px); }
+    to{ opacity:1; transform:translateY(0); }
+}
+
+/* ===== Shared iconography ===== */
+.h-icon{
+    width:18px;
+    height:18px;
+    vertical-align:-3px;
+    margin-right:9px;
+    color:var(--ev-primary, #3b82f6);
+    flex:0 0 auto;
+}
+
+.chip-icon{
+    width:14px;
+    height:14px;
+    vertical-align:-2px;
+    margin-right:4px;
+}
+
+.marker-icon{
+    width:55%;
+    height:55%;
+    color:#e2e8f0;
+}
+
+.event-marker svg{
+    color:#fca5a5;
+}
+
+.event-marker.person svg{
+    color:#bfdbfe;
+}
+
+.event-marker.vehicle svg{
+    color:#fde68a;
+}
+
+.ai-dot{
+    display:inline-block;
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    margin-right:6px;
+    vertical-align:1px;
+}
+
+.ai-dot.online{
+    background:#22c55e;
+    box-shadow:0 0 6px rgba(34,197,94,.6);
+}
+
+.ai-dot.offline{
+    background:#ef4444;
+    box-shadow:0 0 6px rgba(239,68,68,.6);
+}
+
+/* ==========================================
+   14. PERFORMANCE GRID
+========================================== */
+
+.performance-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+}
+
+/* Resource usage */
+.resource-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.resource-item {
+    display: grid;
+    grid-template-columns: 60px 1fr 44px;
+    align-items: center;
+    gap: 12px;
+}
+
+.resource-item span {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ev-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.resource-item strong {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ev-text);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.progress {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease;
+}
+
+.cpu-fill { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+.ram-fill { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+.gpu-fill { background: linear-gradient(90deg, #22c55e, #4ade80); }
+.storage-fill { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+
+/* AI performance metrics */
+.ai-perf-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.perf-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+}
+
+.perf-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ev-text-dark);
+}
+
+.perf-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ev-text);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Chart containers */
+.chart-container {
+    position: relative;
+    min-height: 240px;
+    border-radius: 12px;
+}
+
+/* ==========================================
+   15. EVIDENCE — Latest grid
+========================================== */
+
+.latest-evidence-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.latest-evidence-grid img {
+    height: 90px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.latest-evidence-grid img:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* View all link */
+.view-all-link {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ==========================================
+   16. FOOTER
+========================================== */
+
+.dashboard-footer {
+    margin-top: 16px;
+    padding: 20px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--ev-text-dark);
+}
+
+.dashboard-footer strong {
+    color: var(--ev-text-dark);
+    font-weight: 600;
+}
+
+.dashboard-footer p {
+    margin-top: 4px;
+    font-size: 12px;
+}
+
+/* ==========================================
+   17. FEED BADGE — LIVE indicator
+========================================== */
+
+.feed-badge {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+}
+
+.live-badge {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+/* ==========================================
+   18. STATUS DOT — Consistent pulse
+========================================== */
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ev-success);
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+    animation: statusPulse 2s ease-in-out infinite;
+}
+
+.status-dot.online {
+    background: var(--ev-success);
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+}
+
+.status-dot.warning {
+    background: var(--ev-warning);
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.4);
+}
+
+@keyframes statusPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.3);
+        opacity: 0.6;
+    }
+}
+
+/* ==========================================
+   19. DETECTION HISTORY
+========================================== */
+
+.detection-history-section {
+    margin-top: 4px;
+}
+
+.chart-legend {
+    gap: 14px;
+}
+
+.legend-item {
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.legend-dot {
+    width: 7px;
+    height: 7px;
+}
+
+/* ==========================================
+   20. SCROLLBAR — Consistent thin style
+========================================== */
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.15);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.25);
+}
+
+/* ==========================================
+   21. BUTTONS — Consistent styling
+========================================== */
+
+.btn {
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 18px;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--ev-text);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* ==========================================
+   22. RESPONSIVE — Enhanced breakpoints
+========================================== */
+
+@media (max-width: 1280px) {
+    .performance-grid {
+        grid-template-columns: 1fr;
+    }
+    .ai-perf-metrics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 1024px) {
+    .main-content {
+        padding: 16px;
+    }
+    .topbar {
+        padding: 16px 20px;
+        border-radius: 16px;
+    }
+    .top-left h2 {
+        font-size: 20px;
+    }
+    .camera-status {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .resource-item {
+        grid-template-columns: 50px 1fr 40px;
+    }
+    .performance-grid {
+        grid-template-columns: 1fr;
+    }
+    .ai-perf-metrics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        padding: 12px;
+    }
+    .topbar {
+        padding: 14px 16px;
+        gap: 12px;
+    }
+    .top-left h2 {
+        font-size: 18px;
+    }
+    .kpi-value {
+        font-size: 26px;
+    }
+    .camera-status {
+        grid-template-columns: 1fr 1fr;
+    }
+    .camera-controls-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .demo-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .performance-grid {
+        grid-template-columns: 1fr;
+    }
+    .dashboard-footer {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .top-left h2 {
+        font-size: 16px;
+    }
+    .status-chip {
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+    .kpi-value {
+        font-size: 22px;
+    }
+    .panel {
+        padding: 16px 18px;
+        border-radius: 14px;
+    }
+    .camera-status {
+        grid-template-columns: 1fr;
+    }
+    .demo-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .ai-perf-metrics {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* ==========================================
+   23. LOADING OVERLAY — Smoother exit
+========================================== */
+
+.page-loading-overlay {
+    background: var(--ev-bg);
+}
+
+.page-loading-overlay.hidden {
+    transition: opacity 0.6s ease;
+}
+
+/* ==========================================
+   24. CAMERA PAGE — Card refinements
+========================================== */
+
+.camera-manager-header {
+    margin-bottom: 20px;
+}
+
+.camera-manager-header h2 {
+    font-size: 22px;
+}
+
+.camera-grid {
+    gap: 16px;
+}
+
+/* ==========================================
+   25. SETTINGS PAGE — Section refinements
+========================================== */
+
+.settings-page {
+    gap: 24px;
+}
+
+.settings-header {
+    margin-bottom: 8px;
+}
+
+.settings-section {
+    margin-bottom: 4px;
+}
+
+.section-header {
+    margin-bottom: 16px;
+}
+
+/* ==========================================
+   26. SMOOTH TRANSITIONS — Subtle motion
+========================================== */
+
+.panel,
+.kpi-card,
+.camera-control-btn,
+.demo-btn,
+.btn,
+.health-item,
+.ai-feed-item {
+    will-change: auto;
+}
+
+/* ==========================================
+   27. SELECTION & FOCUS — Accessible states
+========================================== */
+
+::selection {
+    background: rgba(59, 130, 246, 0.3);
+    color: white;
+}
+
+:focus-visible {
+    outline: 2px solid rgba(59, 130, 246, 0.5);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* ==========================================
+   28. PAGE CONTENT — Consistent wrapper
+========================================== */
+
+.page-content {
+    animation: fadeInUp 0.35s ease-out;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================
+   29. GENERAL CARDS — .card class polish
+========================================== */
+
+.card {
+    background: rgba(17, 24, 39, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 18px;
+    padding: 22px 24px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    border-color: rgba(255, 255, 255, 0.09);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
+}
+
+.card h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+}
+
+/* ==========================================
+   30. GENERAL TOOLBAR — .toolbar polish
+========================================== */
+
+.toolbar {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.toolbar input[type="text"] {
+    flex: 1;
+    min-width: 200px;
+    padding: 11px 16px;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    color: var(--ev-text);
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.toolbar input[type="text"]:focus {
+    border-color: rgba(59, 130, 246, 0.5);
+    outline: none;
+}
+
+.toolbar input[type="text"]::placeholder {
+    color: var(--ev-text-dark);
+}
+
+/* ==========================================
+   31. INCIDENTS PAGE
+========================================== */
+
+.filter-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--ev-text-muted);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(.4,0,.2,1);
+    position: relative;
+    overflow: hidden;
+}
+
+.filter-btn::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(59, 130, 246, 0.15);
+    transform: translate(-50%, -50%);
+    transition: width 0.4s ease, height 0.4s ease;
+}
+
+.filter-btn:hover::before {
+    width: 200%;
+    height: 200%;
+}
+
+.filter-btn:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: var(--ev-text);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.filter-btn.active {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: var(--ev-primary);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+}
+
+.incident-list {
+    gap: 14px;
+}
+
+.incident-card {
+    background: rgba(17, 24, 39, 0.6);
+    backdrop-filter: blur(12px);
+    border-radius: 14px;
+    padding: 20px 24px;
+    border-left: 5px solid #3b82f6;
+    transition: all 0.3s cubic-bezier(.4,0,.2,1);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-left: 5px solid #3b82f6;
+    position: relative;
+    overflow: hidden;
+}
+
+.incident-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.incident-card:hover::before {
+    opacity: 1;
+}
+
+.incident-card:hover {
+    transform: translateX(6px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(59, 130, 246, 0.1);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.incident-card.high {
+    border-color: var(--ev-danger);
+    background: rgba(239, 68, 68, 0.04);
+}
+
+.incident-card.high:hover {
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 8px 30px rgba(239, 68, 68, 0.15);
+}
+
+.incident-card.medium {
+    border-color: var(--ev-warning);
+    background: rgba(245, 158, 11, 0.04);
+}
+
+.incident-card.medium:hover {
+    border-color: rgba(245, 158, 11, 0.4);
+    box-shadow: 0 8px 30px rgba(245, 158, 11, 0.15);
+}
+
+.incident-card.low {
+    border-color: var(--ev-success);
+    background: rgba(34, 197, 94, 0.04);
+}
+
+.incident-card.low:hover {
+    border-color: rgba(34, 197, 94, 0.4);
+    box-shadow: 0 8px 30px rgba(34, 197, 94, 0.15);
+}
+
+/* ==========================================
+   32. REPORTS PAGE
+========================================== */
+
+.report-toolbar {
+    gap: 16px;
+    align-items: center;
+}
+
+.report-toolbar select {
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 14px;
+}
+
+.report-toolbar button {
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.report-toolbar button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+}
+
+.stat-card {
+    background: rgba(17, 24, 39, 0.65);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 22px;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+}
+
+.stat-card h3 {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ev-text-muted);
+    margin-bottom: 8px;
+}
+
+.stat-card h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.stat-card p {
+    font-size: 13px;
+    color: var(--ev-text-dark);
+    margin-top: 4px;
+}
+
+.stats-grid {
+    gap: 16px;
+}
+
+.report-table {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.report-table thead {
+    background: linear-gradient(135deg, #1e40af, #2563eb);
+}
+
+.report-table th {
+    padding: 14px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.report-table td {
+    padding: 14px 16px;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.report-table tbody tr {
+    transition: background 0.2s;
+}
+
+.report-table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.06);
+}
+
+.export-buttons {
+    gap: 14px;
+}
+
+.export-buttons button {
+    border-radius: 12px;
+    font-size: 14px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.export-buttons button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.incident-item {
+    background: rgba(17, 24, 39, 0.6);
+    backdrop-filter: blur(12px);
+    border-radius: 12px;
+    padding: 16px 18px;
+}
+
+/* ==========================================
+   33. COPILOT PAGE
+========================================== */
+
+.copilot-container {
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    background: rgba(17, 24, 39, 0.65);
+    backdrop-filter: blur(16px);
+}
+
+.chat-window {
+    padding: 24px;
+}
+
+.ai-message {
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 14px 18px;
+    border-radius: 14px 14px 14px 4px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 75%;
+}
+
+.user-message {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    padding: 14px 18px;
+    border-radius: 14px 14px 4px 14px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 75%;
+    box-shadow: 0 2px 12px rgba(37, 99, 235, 0.2);
+}
+
+.chat-input {
+    background: rgba(30, 41, 59, 0.5);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 18px 24px;
+}
+
+.chat-input input {
+    border-radius: 12px;
+    padding: 13px 16px;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.chat-input input:focus {
+    border-color: rgba(59, 130, 246, 0.5);
+    outline: none;
+}
+
+.chat-input button {
+    border-radius: 12px;
+    padding: 13px 22px;
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    font-weight: 600;
+    font-size: 14px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.chat-input button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+}
+
+/* ==========================================
+   34. REPLAY PAGE
+========================================== */
+
+.replay-page {
+    gap: 24px;
+}
+
+.video-panel {
+    background: rgba(17, 24, 39, 0.65);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 18px;
+    padding: 24px;
+}
+
+.video-panel .video-header {
+    margin-bottom: 18px;
+}
+
+.video-panel video {
+    border-radius: 14px;
+}
+
+.timeline-controls {
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.incident-info {
+    background: rgba(17, 24, 39, 0.65);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 18px;
+    padding: 24px;
+}
+
+.info-card {
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.info-card p {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 14px;
+}
+
+.info-card strong {
+    color: var(--ev-text-muted);
+    font-weight: 500;
+    min-width: 100px;
+}
+
+.info-card span {
+    color: var(--ev-text);
+    font-weight: 600;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.badge-danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--ev-danger);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* ==========================================
+   35. THREAT CENTER
+========================================== */
+
+.threat-layout {
+    gap: 22px;
+}
+
+.threat-left.card,
+.threat-right .card {
+    background: rgba(17, 24, 39, 0.65);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 18px;
+    padding: 22px 24px;
+}
+
+.threat-right {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.feed-item {
+    border-radius: 14px;
+    background: rgba(26, 36, 56, 0.6);
+    border-left: 4px solid #2563eb;
+    padding: 16px 18px;
+    transition: transform 0.2s;
+}
+
+.feed-item:hover {
+    transform: translateX(3px);
+}
+
+.feed-item.high {
+    border-color: var(--ev-severity-critical);
+    background: rgba(220, 38, 38, 0.05);
+}
+
+.feed-item.medium {
+    border-color: var(--ev-warning);
+    background: rgba(245, 158, 11, 0.05);
+}
+
+.feed-item.low {
+    border-color: var(--ev-success);
+    background: rgba(34, 197, 94, 0.05);
+}
+
+#riskGauge {
+    font-size: 52px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-top: 16px;
+    transition: color 0.4s;
+}
+
+.ai-log {
+    padding: 12px 14px;
+    background: rgba(26, 36, 56, 0.5);
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* ==========================================
+   36. COMMAND CENTER
+========================================== */
+
+.command-grid {
+    gap: 20px;
+}
+
+.command-grid .card {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ==========================================
+   37. LIVE WALL
+========================================== */
+
+.camera-wall {
+    gap: 18px;
+}
+
+/* Legacy .camera-card styles removed - cameras.html uses exclusive .cam-card styles */
+
+.layout-buttons {
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.layout-buttons button {
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.2s;
+}
+
+.layout-buttons button:hover,
+.layout-buttons button.active {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.4);
+}
+
+/* ==========================================
+   38. SECURITY MAP
+========================================== */
+
+
+
+/* ==========================================
+   39. NOTIFICATIONS PAGE
+========================================== */
+
+.notification-history-container {
+    background: rgba(17, 24, 39, 0.65);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 18px;
+    padding: 24px;
+}
+
+.notification-header {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.notification-toolbar {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.notification-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 14px;
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+}
+
+.notification-search input {
+    background: transparent;
+    border: none;
+    color: var(--ev-text);
+    font-size: 14px;
+    width: 100%;
+    outline: none;
+}
+
+.notification-search svg {
+    color: var(--ev-text-dark);
+    flex-shrink: 0;
+}
+
+.notification-filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.filter-chip {
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--ev-text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-chip:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--ev-text);
+}
+
+.filter-chip.active {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: var(--ev-primary);
+}
+
+.notification-actions-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.notification-stats {
+    font-size: 13px;
+    color: var(--ev-text-muted);
+}
+
+.notification-clear-btn {
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: var(--ev-danger);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.notification-clear-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.notification-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification-history-empty {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--ev-text-dark);
+}
+
+.notification-history-empty svg {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+    opacity: 0.4;
+}
+
+.notification-history-empty h3 {
+    font-size: 16px;
+    color: var(--ev-text-muted);
+    margin-bottom: 8px;
+}
+
+.notification-history-empty p {
+    font-size: 14px;
+}
+
+/* ==========================================
+   40. ANALYTICS PAGE
+========================================== */
+
+.analytics-page {
+    gap: 24px;
+}
+
+.analytics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.analytics-header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.analytics-header p {
+    color: var(--ev-text-dark);
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.analytics-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.analytics-control-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    color: var(--ev-text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.analytics-control-btn:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.25);
+    color: var(--ev-text);
+}
+
+.analytics-control-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.analytics-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.analytics-kpi-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: rgba(17, 24, 39, 0.65);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.analytics-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+}
+
+.analytics-kpi-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(59, 130, 246, 0.12);
+    flex-shrink: 0;
+}
+
+.analytics-kpi-icon svg {
+    width: 22px;
+    height: 22px;
+    color: var(--ev-primary);
+}
+
+.analytics-kpi-icon.success {
+    background: rgba(34, 197, 94, 0.12);
+}
+
+.analytics-kpi-icon.success svg {
+    color: #4ade80;
+}
+
+.analytics-kpi-icon.warning {
+    background: rgba(245, 158, 11, 0.12);
+}
+
+.analytics-kpi-icon.warning svg {
+    color: #fbbf24;
+}
+
+.analytics-kpi-icon.danger {
+    background: rgba(239, 68, 68, 0.12);
+}
+
+.analytics-kpi-icon.danger svg {
+    color: var(--ev-danger);
+}
+
+.analytics-kpi-label {
+    display: block;
+    font-size: 13px;
+    color: var(--ev-text-muted);
+    font-weight: 500;
+}
+
+.analytics-kpi-value {
+    display: block;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--ev-text);
+    margin: 2px 0;
+}
+
+.analytics-kpi-trend {
+    display: block;
+    font-size: 12px;
+    color: var(--ev-text-dark);
+}
+
+.analytics-kpi-trend.positive { color: #4ade80; }
+.analytics-kpi-trend.negative { color: #f87171; }
+
+.analytics-charts-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 18px;
+}
+
+.analytics-card {
+    background: rgba(17, 24, 39, 0.65);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 18px;
+    padding: 22px 24px;
+}
+
+.analytics-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.analytics-card-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.analytics-card-select {
+    padding: 7px 12px;
+    border-radius: 8px;
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--ev-text-muted);
+    font-size: 13px;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+}
+
+.chart-container canvas {
+    width: 100% !important;
+}
+
+.analytics-donut-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.analytics-donut-chart {
+    flex-shrink: 0;
+}
+
+.analytics-donut-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 13px;
+}
+
+.analytics-secondary-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.analytics-timeline-card {
+    background: rgba(17, 24, 39, 0.65);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 18px;
+    padding: 22px 24px;
+}
+
+.analytics-timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.analytics-timeline-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.analytics-timeline-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--ev-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.analytics-timeline-link:hover {
+    color: #93bbfd;
+}
+
+.analytics-timeline-link svg {
+    width: 14px;
+    height: 14px;
+}
+
+.analytics-timeline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Analytics responsive */
+@media (max-width: 1024px) {
+    .analytics-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .analytics-charts-row {
+        grid-template-columns: 1fr;
+    }
+    .analytics-secondary-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .analytics-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+    .analytics-header {
+        flex-direction: column;
+    }
+    .analytics-controls {
+        flex-direction: column;
+    }
+}
+
+/* ==========================================
+   MISSING LAYOUT — bottom-grid
+   layout.css is not loaded; provide the rule
+   here so the dashboard bottom section uses
+   a proper two-column grid.
+========================================== */
+
+.bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .bottom-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==========================================
+   PREMIUM ANIMATION POLISH LAYER
+========================================== */
+
+/* ═══ Card entry animation ═══ */
+@keyframes cardSlideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.kpi-card,
+.incident-card,
+.alert-item,
+.evidence-card {
+    animation: cardSlideUp 400ms cubic-bezier(.16,1,.3,1) both;
+}
+.kpi-card:nth-child(1) { animation-delay: 50ms; }
+.kpi-card:nth-child(2) { animation-delay: 100ms; }
+.kpi-card:nth-child(3) { animation-delay: 150ms; }
+.kpi-card:nth-child(4) { animation-delay: 200ms; }
+
+/* ═══ Premium empty states ═══ */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    text-align: center;
+    animation: cardSlideUp 500ms cubic-bezier(.16,1,.3,1) both;
+}
+.empty-state-icon {
+    width: 64px; height: 64px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: var(--ev-surface-2);
+    color: var(--ev-text-muted);
+    margin-bottom: 20px;
+    font-size: 28px;
+}
+.empty-state-icon svg {
+    width: 28px; height: 28px;
+    stroke: var(--ev-text-muted);
+    opacity: 0.6;
+}
+.empty-state-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ev-text);
+    margin-bottom: 6px;
+}
+.empty-state-desc {
+    font-size: 13px;
+    color: var(--ev-text-muted);
+    max-width: 320px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+.empty-state .btn-sm {
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--ev-primary);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background 200ms, transform 150ms;
+}
+.empty-state .btn-sm:hover {
+    background: var(--ev-primary-hover);
+    transform: translateY(-1px);
+}
+
+/* ═══ Premium error states ═══ */
+.error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 24px;
+    text-align: center;
+    border: 1px solid var(--ev-border);
+    border-radius: var(--ev-radius-sm);
+    background: var(--ev-surface);
+    animation: cardSlideUp 400ms cubic-bezier(.16,1,.3,1) both;
+}
+.error-state-icon {
+    width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: rgba(239,68,68,.1);
+    color: var(--ev-danger);
+    margin-bottom: 16px;
+    font-size: 22px;
+}
+.error-state-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ev-text);
+    margin-bottom: 4px;
+}
+.error-state-desc {
+    font-size: 13px;
+    color: var(--ev-text-muted);
+    max-width: 300px;
+    line-height: 1.5;
+    margin-bottom: 16px;
+}
+.error-state .btn-retry {
+    padding: 7px 18px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    background: transparent;
+    color: var(--ev-primary);
+    border: 1px solid var(--ev-primary);
+    cursor: pointer;
+    transition: all 200ms;
+}
+.error-state .btn-retry:hover {
+    background: var(--ev-primary);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+/* ═══ Enhanced sidebar nav link hover ═══ */
+.sidebar-nav-link {
+    position: relative;
+    transition: background 200ms cubic-bezier(.4,0,.2,1),
+                color 200ms cubic-bezier(.4,0,.2,1);
+}
+.sidebar-nav-link:hover .sidebar-nav-icon {
+    transform: translateX(2px);
+    transition: transform 200ms cubic-bezier(.4,0,.2,1);
+}
+.sidebar-nav-icon {
+    transition: transform 200ms cubic-bezier(.4,0,.2,1);
+}

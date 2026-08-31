@@ -1,0 +1,1122 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-content fade-in">
+
+<div id="dashboardError" style="display:none;"></div>
+
+<div id="emptyState" style="display:none;"></div>
+
+<div class="dashboard-page">
+
+<!-- ================= KPI ================= -->
+
+<section class="kpi-bar">
+
+    <div class="kpi-card threat">
+
+        <div class="kpi-label">Threat Level</div>
+
+        <div class="kpi-value" id="kpi-threat">LOW</div>
+
+        <div class="kpi-indicator">
+
+            <span class="kpi-dot"></span>
+
+            <span class="kpi-text">Secure</span>
+
+        </div>
+
+    </div>
+
+    <div class="kpi-card cameras">
+
+        <div class="kpi-label">Active Cameras</div>
+
+        <div class="kpi-value">
+
+            <span id="kpi-cameras">--</span>
+
+            <span class="kpi-total" id="kpi-cameras-total">/--</span>
+
+        </div>
+
+        <div class="kpi-indicator">
+
+            <span class="kpi-dot" id="kpi-cameras-dot"></span>
+
+            <span class="kpi-text" id="kpi-cameras-text">Checking</span>
+
+        </div>
+
+    </div>
+
+    <div class="kpi-card accuracy">
+
+        <div class="kpi-label">AI Accuracy</div>
+
+        <div class="kpi-value">
+
+            <span id="kpi-accuracy">--</span>
+
+            <span class="kpi-percent">%</span>
+
+        </div>
+
+        <div class="kpi-indicator">
+
+            <span class="kpi-dot" id="kpi-accuracy-dot"></span>
+
+            <span class="kpi-text" id="kpi-accuracy-text">Loading</span>
+
+        </div>
+
+    </div>
+
+    <div class="kpi-card alerts">
+
+        <div class="kpi-label">Alerts</div>
+
+        <div class="kpi-value" id="kpi-alerts">--</div>
+
+        <div class="kpi-indicator">
+
+            <span class="kpi-dot" id="kpi-alerts-dot"></span>
+
+            <span class="kpi-text" id="kpi-alerts-text">Loading</span>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= MAIN GRID ================= -->
+
+<section class="command-center monitoring-layout">
+
+<!-- ================= LIVE CAMERAS (FULL WIDTH BAND) ================= -->
+<div class="live-cameras-band">
+
+<div class="camera-section-head">
+
+    <div class="camera-section-titles">
+
+        <h2>Live Cameras</h2>
+
+        <span class="camera-section-sub">Real-time AI surveillance feeds</span>
+
+    </div>
+
+    <a href="/cameras" class="view-all-link camera-view-all">
+
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h6v6"></path>
+            <path d="M10 14 21 3"></path>
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+        </svg>
+
+        View All Cameras
+
+    </a>
+
+</div>
+
+<div class="dual-camera-grid" id="dualCameraGrid">
+
+<div class="camera-hero" id="camera-card-Camera_01" data-camera-name="Camera_01">
+
+    <div class="camera-hero-header">
+
+        <div class="camera-hero-title">
+
+            <span class="live-badge">● LIVE</span>
+
+            <h2>CAMERA 01</h2>
+
+        </div>
+
+        <div class="camera-hero-status">
+
+            <span class="status-chip small ai-chip">
+
+                <span class="status-dot" id="cam-dot-Camera_01"></span>
+
+                AI
+
+            </span>
+
+            <span class="status-chip small">
+
+                <svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m23 7-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>WEBCAM
+
+            </span>
+
+            <span class="status-chip small" id="cam-zone-Camera_01">
+
+                <svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Main Entrance
+
+            </span>
+
+        </div>
+
+    </div>
+
+    <div class="camera-hero-body">
+
+        <!-- Live MJPEG feed with real YOLO/ByteTrack overlays baked into frames -->
+        <img
+
+        src="{{ url_for('video_feed', camera_name='Camera_01') }}"
+
+        id="live-camera"
+
+        alt="Live Camera"
+
+        style="width: 100%; height: 100%; object-fit: cover;"
+
+        >
+
+    </div>
+
+    <div class="camera-hero-metrics">
+
+        <div class="metric">
+
+            <span>FPS</span>
+
+            <strong id="cam-fps-Camera_01">0</strong>
+
+        </div>
+
+        <div class="metric">
+
+            <span>Resolution</span>
+
+            <strong id="cam-resolution-Camera_01">--</strong>
+
+        </div>
+
+        <div class="metric">
+
+            <span>Latency</span>
+
+            <strong id="cam-latency-Camera_01">--</strong>
+
+        </div>
+
+        <div class="metric">
+
+            <span>Health</span>
+
+            <strong id="cam-health-Camera_01">--</strong>
+
+        </div>
+
+        <div class="metric">
+
+            <span>Persons</span>
+
+            <strong id="cam-persons-Camera_01">0</strong>
+
+        </div>
+
+        <div class="metric">
+
+            <span>Vehicles</span>
+
+            <strong id="cam-vehicles-Camera_01">0</strong>
+
+        </div>
+
+        <div class="metric">
+
+            <span>Detections</span>
+
+            <strong id="cam-detections-Camera_01">0</strong>
+
+        </div>
+
+        <div class="metric">
+
+            <span>Recording</span>
+
+            <strong id="cam-recording-Camera_01">OFF</strong>
+
+        </div>
+
+    </div>
+
+    <div class="camera-hero-controls">
+
+        <button class="cam-btn snapshot" data-camera="Camera_01" data-action="snapshot">Snapshot</button>
+
+        <button class="cam-btn record" data-camera="Camera_01" data-action="record">Record</button>
+
+        <button class="cam-btn replay" data-camera="Camera_01" data-action="replay" style="visibility:hidden;">Replay</button>
+
+    </div>
+
+    <div class="camera-hero-footer">
+
+        <span class="ai-active" id="cam-ai-Camera_01"><span class="ai-dot online"></span> AI ACTIVE</span>
+
+    </div>
+
+</div>
+
+<!-- ================= CAMERA 02: RECORDED CCTV VIDEO FILE ================= -->
+
+<div class="camera-hero" id="camera-card-Recorded_CCTV" data-camera-name="Recorded_CCTV">
+
+    <div class="camera-hero-header">
+
+        <div class="camera-hero-title">
+
+            <span class="live-badge">● LIVE</span>
+
+            <h2>RECORDED_CCTV</h2>
+
+        </div>
+
+        <div class="camera-hero-status">
+
+            <span class="status-chip small ai-chip">
+
+                <span class="status-dot" id="cam-dot-Recorded_CCTV"></span>
+
+                AI
+
+            </span>
+
+            <span class="status-chip small">
+
+                <svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 7h5M17 17h5"/></svg>VIDEO FILE
+
+            </span>
+
+            <span class="status-chip small" id="cam-zone-Recorded_CCTV">
+
+                <svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Demo Zone
+
+            </span>
+
+        </div>
+
+    </div>
+
+    <div class="camera-hero-body">
+
+        <img
+
+        src="{{ url_for('video_feed', camera_name='Recorded_CCTV') }}"
+
+        id="recorded-camera"
+
+        alt="Recorded CCTV"
+
+        style="width: 100%; height: 100%; object-fit: cover;"
+
+        >
+
+    </div>
+
+    <div class="camera-hero-metrics">
+
+        <div class="metric">
+
+            <span>FPS</span>
+
+            <strong id="cam-fps-Recorded_CCTV">0</strong>
+
+        </div>
+
+        <div class="metric">
+
+            <span>Resolution</span>
+
+            <strong id="cam-resolution-Recorded_CCTV">--</strong>
+
+        </div>
+
+        <div class="metric">
+
+            <span>Latency</span>
+
+            <strong id="cam-latency-Recorded_CCTV">--</strong>
+
+        </div>
+
+        <div class="metric">
+
+            <span>Health</span>
+
+            <strong id="cam-health-Recorded_CCTV">--</strong>
+
+        </div>
+
+        <div class="metric">
+
+            <span>Persons</span>
+
+            <strong id="cam-persons-Recorded_CCTV">0</strong>
+
+        </div>
+
+        <div class="metric">
+
+            <span>Vehicles</span>
+
+            <strong id="cam-vehicles-Recorded_CCTV">0</strong>
+
+        </div>
+
+        <div class="metric">
+
+            <span>Detections</span>
+
+            <strong id="cam-detections-Recorded_CCTV">0</strong>
+
+        </div>
+
+        <div class="metric">
+
+            <span>Recording</span>
+
+            <strong id="cam-recording-Recorded_CCTV">OFF</strong>
+
+        </div>
+
+    </div>
+
+    <div class="camera-hero-controls">
+
+        <button class="cam-btn snapshot" data-camera="Recorded_CCTV" data-action="snapshot">Snapshot</button>
+
+        <button class="cam-btn record" data-camera="Recorded_CCTV" data-action="record">Record</button>
+
+        <button class="cam-btn replay" data-camera="Recorded_CCTV" data-action="replay">Replay</button>
+
+    </div>
+
+    <div class="camera-hero-footer">
+
+        <span class="ai-active" id="cam-ai-Recorded_CCTV"><span class="ai-dot online"></span> AI ACTIVE</span>
+
+    </div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ================= MONITORING TWO-COLUMN ================= -->
+<div class="monitoring-grid">
+
+    <!-- ================= LEFT: EVIDENCE GALLERY ================= -->
+    <div class="monitor-col">
+
+        <div class="panel">
+
+            <div class="panel-header">
+
+                <h3><svg class="h-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5a2 2 0 0 0-2.8 0L4 21"/></svg>Evidence Gallery</h3>
+
+                <a href="/evidence" class="view-all-link">View All →</a>
+
+            </div>
+
+            <div id="gallery" class="evidence-gallery-grid">
+
+                <!-- Populated by dashboard.js -->
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= RIGHT: AI LIVE FEED + STATUS ================= -->
+    <div class="monitor-col">
+
+        <div class="panel">
+
+            <div class="panel-header">
+
+                <h3><svg class="h-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>AI Live Feed</h3>
+
+                <span class="feed-badge">LIVE</span>
+
+            </div>
+
+            <div id="timeline" class="ai-feed-list">
+
+                <!-- Populated by JS -->
+
+            </div>
+
+        </div>
+
+        <div class="panel">
+
+            <div class="panel-header">
+
+                <h3><svg class="h-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>AI System Status</h3>
+
+            </div>
+
+            <div class="ai-status-cards">
+
+                <div class="status-card" id="sys-status-ai">
+                    <span class="status-card-dot" id="sys-dot-ai"></span>
+                    <span class="status-card-label">AI Engine</span>
+                    <span id="sys-val-ai" class="status-card-value">Checking...</span>
+                </div>
+
+                <div class="status-card" id="sys-status-camera">
+                    <span class="status-card-dot" id="sys-dot-camera"></span>
+                    <span class="status-card-label">Camera</span>
+                    <span id="sys-val-camera" class="status-card-value">Checking...</span>
+                </div>
+
+                <div class="status-card" id="sys-status-yolo">
+                    <span class="status-card-dot" id="sys-dot-yolo"></span>
+                    <span class="status-card-label">YOLO Model</span>
+                    <span id="sys-val-yolo" class="status-card-value">Checking...</span>
+                </div>
+
+                <div class="status-card" id="sys-status-db">
+                    <span class="status-card-dot" id="sys-dot-db"></span>
+                    <span class="status-card-label">Database</span>
+                    <span id="sys-val-db" class="status-card-value">Checking...</span>
+                </div>
+
+                <div class="status-card" id="sys-status-detection">
+                    <span class="status-card-dot" id="sys-dot-detection"></span>
+                    <span class="status-card-label">Detection Engine</span>
+                    <span id="sys-val-detection" class="status-card-value">Checking...</span>
+                </div>
+
+                <div class="status-card" id="sys-status-dashboard">
+                    <span class="status-card-dot online" id="sys-dot-dashboard"></span>
+                    <span class="status-card-label">Dashboard</span>
+                    <span id="sys-val-dashboard" class="status-card-value">Active</span>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="panel ai-intelligence-panel">
+
+            <div class="panel-header">
+
+                <h3><svg class="h-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>AI Incident Intelligence</h3>
+
+                <span class="ai-status-dot"></span>
+
+            </div>
+
+            <div class="ai-intelligence-content">
+
+                <div class="ai-risk-card">
+
+                    <div class="ai-risk-header">
+
+                        <span class="ai-risk-label">Current Risk</span>
+
+                        <span class="ai-risk-value" id="ai-risk-level">LOW</span>
+
+                    </div>
+
+                    <div class="ai-risk-bar">
+
+                        <div class="ai-risk-fill" id="ai-risk-fill"></div>
+
+                    </div>
+
+                </div>
+
+                <div class="ai-stats-grid">
+
+                    <div class="ai-stat">
+
+                        <span class="ai-stat-label">Active Detections</span>
+
+                        <span class="ai-stat-value" id="ai-active-detections">3 Persons</span>
+
+                    </div>
+
+                    <div class="ai-stat">
+
+                        <span class="ai-stat-label">Confidence</span>
+
+                        <span class="ai-stat-value" id="ai-confidence">98.4%</span>
+
+                    </div>
+
+                </div>
+
+                <div class="ai-recommendation">
+
+                    <span class="ai-rec-label">Recommendation</span>
+
+                    <p id="ai-recommendation">Continue Monitoring</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</section>
+
+<!-- ================= DEMO SCENARIOS ================= -->
+
+<section class="demo-section" style="margin-top: 22px;">
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <h3>
+
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;">
+
+                    <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+
+                    <line x1="7" y1="2" x2="7" y2="22"></line>
+
+                    <line x1="17" y1="2" x2="17" y2="22"></line>
+
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+
+                    <line x1="2" y1="7" x2="7" y2="7"></line>
+
+                    <line x1="2" y1="17" x2="7" y2="17"></line>
+
+                    <line x1="17" y1="17" x2="22" y2="17"></line>
+
+                    <line x1="17" y1="7" x2="22" y2="7"></line>
+
+                </svg>
+
+                Demo Scenarios
+
+            </h3>
+
+            <span class="feed-badge">SYNTHETIC</span>
+
+        </div>
+
+        <p style="color: var(--ev-text-muted); font-size:13px;margin:0 0 16px 0;">Trigger controlled demo events to test the full pipeline: event → alert → evidence → dashboard.</p>
+
+        <div class="demo-grid">
+
+            <button class="demo-btn" onclick="triggerDemo('person')">
+
+                <span class="demo-icon">
+
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+
+                        <circle cx="12" cy="7" r="4"></circle>
+
+                    </svg>
+
+                </span>
+
+                <span class="demo-label">Person Detection</span>
+
+            </button>
+
+            <button class="demo-btn" onclick="triggerDemo('crowd')">
+
+                <span class="demo-icon">
+
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+
+                        <circle cx="12" cy="7" r="4"></circle>
+
+                        <path d="M16 11h2"></path>
+
+                        <path d="M20 11h2"></path>
+
+                    </svg>
+
+                </span>
+
+                <span class="demo-label">Crowd</span>
+
+            </button>
+
+            <button class="demo-btn demo-btn-critical" onclick="triggerDemo('restricted')">
+
+                <span class="demo-icon">
+
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+
+                    </svg>
+
+                </span>
+
+                <span class="demo-label">Restricted Area</span>
+
+            </button>
+
+            <button class="demo-btn" onclick="triggerDemo('abandoned')">
+
+                <span class="demo-icon">
+
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+
+                    </svg>
+
+                </span>
+
+                <span class="demo-label">Abandoned Object</span>
+
+            </button>
+
+            <button class="demo-btn demo-btn-critical" onclick="triggerDemo('fall')">
+
+                <span class="demo-icon">
+
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+
+                    </svg>
+
+                </span>
+
+                <span class="demo-label">Fall</span>
+
+            </button>
+
+            <button class="demo-btn demo-btn-critical" onclick="triggerDemo('weapon')">
+
+                <span class="demo-icon">
+
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+
+                    </svg>
+
+                </span>
+
+                <span class="demo-label">Weapon Detection</span>
+
+            </button>
+
+            <button class="demo-btn" onclick="triggerDemo('line_crossing')">
+
+                <span class="demo-icon">
+
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                        <polyline points="17 1 21 5 17 9"></polyline>
+
+                        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+
+                        <polyline points="7 21 3 17 7 13"></polyline>
+
+                        <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+
+                    </svg>
+
+                </span>
+
+                <span class="demo-label">Line Crossing</span>
+
+            </button>
+
+        </div>
+
+        <div id="demoStatus" style="margin-top:12px;font-size:13px;color: var(--ev-text-dark);display:none;"></div>
+
+    </div>
+
+</section>
+
+<script>
+function triggerDemo(scenario) {
+    const statusEl = document.getElementById('demoStatus');
+    statusEl.style.display = 'block';
+    statusEl.textContent = 'Triggering scenario...';
+    statusEl.style.color = 'var(--ev-text-muted)';
+    
+    fetch('/api/demo/trigger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scenario: scenario, camera: 'Camera-1', zone: 'RESTRICTED' })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            statusEl.textContent = 'Scenario triggered: ' + scenario + ' — check Events, Alerts, and Evidence.';
+            statusEl.style.color = 'var(--ev-success)';
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 5000);
+        } else {
+            statusEl.textContent = 'Error: ' + (data.error || 'Unknown error');
+            statusEl.style.color = 'var(--ev-danger)';
+        }
+    })
+    .catch(e => {
+        statusEl.textContent = 'Error: ' + e.message;
+        statusEl.style.color = 'var(--ev-danger)';
+    });
+}
+</script>
+
+<!-- ================= BOTTOM GRID ================= -->
+
+<section class="bottom-grid">
+
+    <!-- ================= CAMERA CONTROLS ================= -->
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+                <h3><svg class="h-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m23 7-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Camera Controls</h3>
+
+        </div>
+
+        <div class="camera-controls-grid">
+
+            <button class="camera-control-btn" data-action="snapshot">
+
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+
+                    <circle cx="12" cy="13" r="4"></circle>
+
+                </svg>
+
+                <span>Snapshot</span>
+
+            </button>
+
+            <button class="camera-control-btn" data-action="record">
+
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <circle cx="12" cy="12" r="10"></circle>
+
+                    <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
+
+                </svg>
+
+                <span>Record</span>
+
+            </button>
+
+            <button class="camera-control-btn" data-action="ptz">
+
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <circle cx="12" cy="12" r="3"></circle>
+
+                    <path d="M12 2v4"></path>
+
+                    <path d="M12 18v4"></path>
+
+                    <path d="M2 12h4"></path>
+
+                    <path d="M18 12h4"></path>
+
+                </svg>
+
+                <span>PTZ</span>
+
+            </button>
+
+            <button class="camera-control-btn" data-action="zoom">
+
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <circle cx="11" cy="11" r="8"></circle>
+
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+
+                    <line x1="11" y1="8" x2="11" y2="14"></line>
+
+                    <line x1="8" y1="11" x2="14" y2="11"></line>
+
+                </svg>
+
+                <span>Zoom</span>
+
+            </button>
+
+            <button class="camera-control-btn" data-action="ai-tracking">
+
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <path d="M12 2a10 10 0 1 0 10 10"></path>
+
+                    <path d="M12 12l4-4"></path>
+
+                    <circle cx="12" cy="12" r="2"></circle>
+
+                </svg>
+
+                <span>AI Tracking</span>
+
+            </button>
+
+            <button class="camera-control-btn" data-action="export">
+
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+
+                    <polyline points="7 10 12 15 17 10"></polyline>
+
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+
+                </svg>
+
+                <span>Export</span>
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- ================= SECURITY MAP ================= -->
+
+    <div class="panel map-panel">
+
+        <div class="panel-header">
+
+            <h3><svg class="h-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3z"/><path d="M9 3v15M15 6v15"/></svg>Security Map</h3>
+
+            <div class="map-legend">
+
+                <span class="legend-chip"><span class="legend-dot cam"></span>Cameras</span>
+
+                <span class="legend-chip"><span class="legend-dot person"></span>Person</span>
+
+                <span class="legend-chip"><span class="legend-dot vehicle"></span>Vehicle</span>
+
+                <span class="legend-chip"><span class="legend-dot alert"></span>Alert</span>
+
+            </div>
+
+        </div>
+
+        <div class="map-container">
+
+            <img
+                src="{{ url_for('static', filename='images/floor_plan.svg') }}"
+                class="floor-map"
+                alt="Floor Map">
+
+            <div class="camera-marker c1" title="Camera 01"><svg class="marker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m23 7-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+
+            <div class="camera-marker c2" title="Camera 02"><svg class="marker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m23 7-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+
+            <div class="camera-marker c3" title="Camera 03"><svg class="marker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m23 7-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+
+            <div class="event-marker e1 alert" title="Alert"><svg class="marker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+
+            <div class="event-marker e2 person" title="Person"><svg class="marker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+
+            <div class="event-marker e3 vehicle" title="Vehicle"><svg class="marker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M5 17a2 2 0 0 1-2-2V9l2-5h14l2 5v6a2 2 0 0 1-2 2M7 17v2M17 17v2"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/></svg></div>
+
+            <div id="mapTooltip" class="map-tooltip" style="display:none;"></div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= SYSTEM PERFORMANCE ================= -->
+
+<!-- ================= AI PERFORMANCE ================= -->
+
+<section class="performance-grid">
+    <div class="panel ai-performance-panel">
+
+        <div class="panel-header ai-performance-header">
+            <h3>AI performance</h3>
+        </div>
+
+        <!-- AI PERFORMANCE METRICS -->
+        <div class="ai-perf-metrics" id="aiPerfMetrics">
+
+            <div class="perf-item">
+                <span class="perf-label">STATUS</span>
+                <span class="perf-value perf-status-value" id="perf-status">--</span>
+            </div>
+
+            <div class="perf-item">
+                <span class="perf-label">FPS</span>
+                <span class="perf-value" id="perf-fps">--</span>
+            </div>
+
+            <div class="perf-item">
+                <span class="perf-label">INFERENCE</span>
+                <span class="perf-value" id="perf-inference">--</span>
+            </div>
+
+            <div class="perf-item">
+                <span class="perf-label">QUEUE</span>
+                <span class="perf-value" id="perf-queue">--</span>
+            </div>
+
+        </div>
+
+        <!-- AI PERFORMANCE TREND -->
+        <div class="chart-container ai-performance-chart" id="perfChartContainer">
+
+            <div class="loading-spinner small" id="perfSpinner"></div>
+
+            <canvas id="performanceChart"></canvas>
+
+        </div>
+
+        <div id="perfError" class="perf-error" style="display:none;">
+            AI performance data unavailable
+        </div>
+
+    </div>
+</section>
+
+<!-- ================= DETECTION HISTORY ================= -->
+
+<section class="detection-history-section">
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+                <h3><svg class="h-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="12" y="6" width="3" height="12"/><rect x="17" y="13" width="3" height="5"/></svg>Detection History</h3>
+
+            <div class="chart-legend">
+
+                <span class="legend-item persons">
+
+                    <span class="legend-dot"></span>
+
+                    Persons
+
+                </span>
+
+                <span class="legend-item vehicles">
+
+                    <span class="legend-dot"></span>
+
+                    Vehicles
+
+                </span>
+
+                <span class="legend-item alerts">
+
+                    <span class="legend-dot"></span>
+
+                    Alerts
+
+                </span>
+
+            </div>
+
+        </div>
+
+        <div class="chart-container" id="detectionChartContainer">
+
+            <div class="loading-spinner small" id="detectionSpinner"></div>
+
+            <canvas id="detectionChart"></canvas>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="dashboard-footer">
+
+    <div>
+
+        <strong>Sentinel X AI Edge Platform</strong>
+
+        <p>
+
+            Version 1.0 • Real-Time Surveillance Intelligence
+
+        </p>
+
+    </div>
+
+    <div>
+
+        Powered by
+
+        <strong>
+
+            YOLO11 • OpenCV • Flask • SQLite
+
+        </strong>
+
+    </div>
+
+</footer>
+
+</div>
+
+</div>
+
+<script>
+
+(function() {
+
+    if (typeof showSkeletonCards === "function") {
+        showSkeletonCards("gallery", 4);
+    }
+    if (typeof showSkeletonRows === "function") {
+        showSkeletonRows("timeline", 5);
+    }
+
+    setTimeout(function() {
+
+        // In production, populate with real data here
+
+    }, 600);
+
+})();
+
+</script>
+
+{% endblock %}

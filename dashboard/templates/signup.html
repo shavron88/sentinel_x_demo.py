@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Sentinel-X — Create Account</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}?v=20260829">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Tabler Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+    <script>
+        try {
+            var savedTheme = localStorage.getItem('sentinelx-theme');
+            if (savedTheme && ['dark', 'light', 'midnight'].indexOf(savedTheme) !== -1) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else {
+                document.documentElement.setAttribute('data-theme', 'midnight');
+            }
+        } catch (e) {
+            document.documentElement.setAttribute('data-theme', 'midnight');
+        }
+    </script>
+
+    <style>
+        /* ==========================================
+            CSS CUSTOM PROPERTIES
+        ========================================== */
+        :root {
+            --page-bg: #0A0E17;
+            --card-surface: #111827;
+            --input-surface: #161F32;
+            --border-default: rgba(148,163,196,0.12);
+            --border-strong: rgba(148,163,196,0.24);
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            --accent-blue: #3B82F6;
+            --accent-text: #60A5FA;
+            --accent-dim: rgba(59,130,246,0.12);
+            --success-green: #22C55E;
+            --success-dim: rgba(34,197,94,0.1);
+            --error-red: #EF4444;
+            --error-dim: rgba(239,68,68,0.08);
+        }
+
+        [data-theme="light"] {
+            --page-bg: #f1f5f9;
+            --card-surface: #ffffff;
+            --input-surface: #f8fafc;
+            --border-default: rgba(0,0,0,0.08);
+            --border-strong: rgba(0,0,0,0.15);
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #94a3b8;
+            --accent-blue: #2563eb;
+            --accent-text: #2563eb;
+            --accent-dim: rgba(37,99,235,0.1);
+            --success-green: #16a34a;
+            --success-dim: rgba(22,163,74,0.1);
+            --error-red: #dc2626;
+            --error-dim: rgba(239,68,68,0.06);
+        }
+
+        /* ==========================================
+            RESET & BASE
+        ========================================== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html {
+            font-family: 'Inter', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--page-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            padding: 24px 16px;
+        }
+
+        /* Custom scrollbar — WebKit */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(10, 14, 23, 0.6);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(62, 123, 250, 0.25);
+            border-radius: 3px;
+            border: 1px solid rgba(62, 123, 250, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(62, 123, 250, 0.45);
+        }
+
+        /* Custom scrollbar — Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(62, 123, 250, 0.25) rgba(10, 14, 23, 0.6);
+        }
+
+        [data-theme="light"] ::-webkit-scrollbar-track {
+            background: rgba(241, 245, 249, 0.6);
+        }
+
+        [data-theme="light"] ::-webkit-scrollbar-thumb {
+            background: rgba(37, 99, 235, 0.25);
+            border-color: rgba(37, 99, 235, 0.1);
+        }
+
+        [data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+            background: rgba(37, 99, 235, 0.45);
+        }
+
+        [data-theme="light"] * {
+            scrollbar-color: rgba(37, 99, 235, 0.25) rgba(241, 245, 249, 0.6);
+        }
+
+        /* ==========================================
+            BACKGROUND SCENE
+        ========================================== */
+        .scene {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .glow {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.18;
+        }
+        .glow--blue { width: 520px; height: 520px; background: #3B82F6; top: -12%; left: -8%; }
+        .glow--green { width: 400px; height: 400px; background: #22C55E; bottom: -10%; right: -6%; opacity: 0.10; }
+
+        [data-theme="light"] .glow { opacity: 0.06; }
+
+        .scanline {
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(148,163,184,0.015) 2px,
+                rgba(148,163,184,0.015) 4px
+            );
+        }
+        [data-theme="light"] .scanline { opacity: 0; }
+
+        #particleCanvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ==========================================
+            LAYOUT
+        ========================================== */
+        .auth-wrap {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* ==========================================
+            BRAND
+        ========================================== */
+        .brand {
+            text-align: center;
+            opacity: 0;
+            animation: fieldIn 0.5s ease 0.05s forwards;
+        }
+
+        .brand-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: var(--accent-dim);
+            border: 1px solid rgba(59,130,246,0.15);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            color: var(--accent-blue);
+            font-size: 22px;
+        }
+
+        .brand-title {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: var(--text-primary);
+        }
+        .brand-title .accent { color: var(--accent-blue); }
+
+        .brand-subtitle {
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.28em;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .brand-tagline {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        /* ==========================================
+            CARD
+        ========================================== */
+        .card {
+            width: 100%;
+            background: var(--card-surface);
+            border: 1px solid var(--border-default);
+            border-radius: 16px;
+            padding: 36px 32px 28px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+            opacity: 0;
+            animation: fieldIn 0.5s ease 0.12s forwards;
+        }
+
+        [data-theme="light"] .card {
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .card-header {
+            margin-bottom: 24px;
+        }
+
+        .card-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .card-header p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* ==========================================
+            ALERT / ERROR
+        ========================================== */
+        .alert-error {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: var(--error-dim);
+            border: 1px solid rgba(239,68,68,0.15);
+            border-radius: 10px;
+            margin-bottom: 18px;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--error-red);
+        }
+        .alert-error.visible { display: flex; }
+        .alert-error i { font-size: 16px; flex-shrink: 0; }
+
+        .alert-success {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: var(--success-dim);
+            border: 1px solid rgba(34,197,94,0.15);
+            border-radius: 10px;
+            margin-bottom: 18px;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--success-green);
+        }
+        .alert-success.visible { display: flex; }
+        .alert-success i { font-size: 16px; flex-shrink: 0; }
+
+        /* ==========================================
+            FORM FIELDS
+        ========================================== */
+        .field {
+            margin-bottom: 16px;
+            opacity: 0;
+            animation: fieldIn 0.45s ease forwards;
+        }
+        .field:nth-child(1) { animation-delay: 0.18s; }
+        .field:nth-child(2) { animation-delay: 0.24s; }
+        .field:nth-child(3) { animation-delay: 0.30s; }
+        .field:nth-child(4) { animation-delay: 0.36s; }
+
+        .field label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            letter-spacing: 0.02em;
+        }
+        .field label i { font-size: 14px; color: var(--text-muted); }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-wrap input {
+            width: 100%;
+            height: 42px;
+            padding: 0 14px;
+            background: var(--input-surface);
+            border: 1px solid var(--border-default);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 13px;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input-wrap input::placeholder {
+            color: var(--text-muted);
+            font-size: 12.5px;
+        }
+
+        .input-wrap input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        /* Password wrapper with toggle */
+        .pw-wrap {
+            display: flex;
+            gap: 6px;
+        }
+        .pw-wrap .input-wrap { flex: 1; }
+
+        .pw-toggle {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--input-surface);
+            border: 1px solid var(--border-default);
+            border-radius: 10px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+            flex-shrink: 0;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .pw-toggle:hover {
+            border-color: var(--border-strong);
+            color: var(--text-secondary);
+        }
+
+        /* ==========================================
+            BUTTON
+        ========================================== */
+        .btn-signup {
+            position: relative;
+            width: 100%;
+            height: 44px;
+            border: none;
+            border-radius: 10px;
+            background: var(--accent-blue);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            overflow: hidden;
+            transition: background 0.2s, transform 0.1s;
+            opacity: 0;
+            animation: fieldIn 0.45s ease 0.42s forwards;
+        }
+
+        .btn-signup:hover { background: #2B63E0; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(59,130,246,.25); }
+        .btn-signup:active { transform: translateY(0) scale(0.97); box-shadow: none; }
+        .btn-signup:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .btn-signup::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+            transform: skewX(-20deg);
+            animation: shine 3.2s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes shine {
+            0%, 100% { left: -100%; }
+            50% { left: 150%; }
+        }
+
+        .btn-signup i { font-size: 18px; }
+        .btn-loader { display: none; }
+        .btn-signup.is-loading .btn-text { display: none; }
+        .btn-signup.is-loading .btn-loader { display: block; }
+
+        /* ==========================================
+            DIVIDER
+        ========================================== */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 18px 0 14px;
+            opacity: 0;
+            animation: fieldIn 0.45s ease 0.48s forwards;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--border-default);
+        }
+
+        .divider span {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        /* ==========================================
+            FOOTER LINKS
+        ========================================== */
+        .auth-footer {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+            opacity: 0;
+            animation: fieldIn 0.45s ease 0.54s forwards;
+        }
+
+        .auth-footer a {
+            color: var(--accent-text);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .auth-footer a:hover { text-decoration: underline; }
+
+        .back-link {
+            text-align: center;
+            margin-top: 8px;
+            opacity: 0;
+            animation: fieldIn 0.45s ease 0.58s forwards;
+        }
+
+        .back-link a {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .back-link a:hover { color: var(--text-secondary); }
+
+        /* ==========================================
+            PASSWORD STRENGTH
+        ========================================== */
+        .pw-strength {
+            height: 3px;
+            border-radius: 2px;
+            background: var(--border-default);
+            margin-top: 6px;
+            overflow: hidden;
+        }
+        .pw-strength-bar {
+            height: 100%;
+            width: 0;
+            border-radius: 2px;
+            transition: width 0.25s, background 0.25s;
+        }
+        .pw-strength-label {
+            font-size: 10.5px;
+            font-weight: 500;
+            margin-top: 4px;
+            color: var(--text-muted);
+        }
+
+        /* ==========================================
+            ANIMATIONS
+        ========================================== */
+        @keyframes fieldIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .shake {
+            animation: shakeCard 0.45s ease;
+        }
+        @keyframes shakeCard {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-6px); }
+            40% { transform: translateX(6px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+
+        .auth-exit {
+            animation: authExit 0.5s ease forwards;
+        }
+        @keyframes authExit {
+            to { opacity: 0; transform: translateY(-16px) scale(0.97); }
+        }
+
+        /* ==========================================
+            RESPONSIVE
+        ========================================== */
+        @media (max-width: 480px) {
+            .auth-wrap { max-width: 360px; padding: 0; }
+            .card { padding: 28px 22px 22px; border-radius: 14px; }
+            .brand-title { font-size: 19px; }
+            .btn-signup { height: 42px; font-size: 13px; }
+        }
+
+        @media (max-width: 360px) {
+            body { padding: 16px 10px; }
+            .card { padding: 24px 18px 20px; }
+            .btn-signup { height: 40px; font-size: 12px; border-radius: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- ====== BACKGROUND SCENE ====== -->
+    <div class="scene" aria-hidden="true">
+        <div class="glow glow--blue"></div>
+        <div class="glow glow--green"></div>
+        <div class="scanline"></div>
+        <canvas id="particleCanvas"></canvas>
+    </div>
+
+    <!-- ====== MAIN CONTENT ====== -->
+    <main class="auth-wrap" id="authMain">
+        <!-- Brand -->
+        <div class="brand">
+            <div class="brand-icon">
+                <i class="ti ti-shield-check"></i>
+            </div>
+            <h1 class="brand-title">SENTINEL<span class="accent">X</span></h1>
+            <p class="brand-subtitle">AI EDGE SURVEILLANCE PLATFORM</p>
+            <p class="brand-tagline">Create your operator account.</p>
+        </div>
+
+        <!-- Card -->
+        <div class="card" id="signupCard">
+            <div class="card-header">
+                <h2>Create account</h2>
+                <p>Register a new Sentinel-X operator account.</p>
+            </div>
+
+            <div class="alert-error" id="signupError" role="alert" aria-live="assertive">
+                <i class="ti ti-circle-x"></i>
+                <span id="signupErrorText">Registration failed</span>
+            </div>
+
+            <div class="alert-success" id="signupSuccess" role="status">
+                <i class="ti ti-circle-check"></i>
+                <span id="signupSuccessText">Account created successfully</span>
+            </div>
+
+            <form id="signupForm" autocomplete="on" novalidate>
+                <!-- Username -->
+                <div class="field">
+                    <label for="username">
+                        <i class="ti ti-user"></i>
+                        <span>Username</span>
+                    </label>
+                    <div class="input-wrap">
+                        <input type="text" id="username" name="username"
+                               placeholder="Choose a username" required
+                               autocomplete="username" autofocus
+                               minlength="3" maxlength="50">
+                    </div>
+                </div>
+
+                <!-- Email (optional) -->
+                <div class="field">
+                    <label for="email">
+                        <i class="ti ti-mail"></i>
+                        <span>Email <span style="font-weight:400;color:var(--text-muted)">(optional)</span></span>
+                    </label>
+                    <div class="input-wrap">
+                        <input type="email" id="email" name="email"
+                               placeholder="your@email.com"
+                               autocomplete="email">
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="field">
+                    <label for="password">
+                        <i class="ti ti-lock"></i>
+                        <span>Password</span>
+                    </label>
+                    <div class="pw-wrap">
+                        <div class="input-wrap">
+                            <input type="password" id="password" name="password"
+                                   placeholder="Create a password" required
+                                   autocomplete="new-password"
+                                   minlength="4">
+                        </div>
+                        <button type="button" class="pw-toggle" id="pwToggle"
+                                aria-label="Toggle password visibility" tabindex="0">
+                            <i class="ti ti-eye" id="eyeIcon"></i>
+                        </button>
+                    </div>
+                    <div class="pw-strength"><div class="pw-strength-bar" id="pwBar"></div></div>
+                    <div class="pw-strength-label" id="pwLabel"></div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="field">
+                    <label for="confirmPassword">
+                        <i class="ti ti-lock-check"></i>
+                        <span>Confirm Password</span>
+                    </label>
+                    <div class="input-wrap">
+                        <input type="password" id="confirmPassword" name="confirmPassword"
+                               placeholder="Re-enter your password" required
+                               autocomplete="new-password">
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="btn-signup" id="signupBtn">
+                    <span class="btn-text">
+                        <i class="ti ti-user-plus"></i>
+                        <span>Create account</span>
+                    </span>
+                    <span class="btn-loader" aria-hidden="true">
+                        <i class="ti ti-loader-2"></i>
+                    </span>
+                </button>
+            </form>
+
+            <!-- Divider -->
+            <div class="divider">
+                <span>Already registered</span>
+            </div>
+
+            <div class="auth-footer" style="opacity:1;animation:none;">
+                <a href="/login">Sign in to your account</a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="auth-footer">
+            <p>Sentinel-X — Intelligent video surveillance</p>
+        </footer>
+
+        <div class="back-link">
+            <a href="/"><i class="ti ti-arrow-left" style="font-size:12px"></i> <span>Back to Sentinel-X</span></a>
+        </div>
+    </main>
+
+    <script>
+    (function() {
+        "use strict";
+
+        var form         = document.getElementById("signupForm");
+        var userEl       = document.getElementById("username");
+        var emailEl      = document.getElementById("email");
+        var passEl       = document.getElementById("password");
+        var confirmEl    = document.getElementById("confirmPassword");
+        var btn          = document.getElementById("signupBtn");
+        var errorBox     = document.getElementById("signupError");
+        var errorText    = document.getElementById("signupErrorText");
+        var successBox   = document.getElementById("signupSuccess");
+        var successText  = document.getElementById("signupSuccessText");
+        var pwToggle     = document.getElementById("pwToggle");
+        var eyeIcon      = document.getElementById("eyeIcon");
+        var pwBar        = document.getElementById("pwBar");
+        var pwLabel      = document.getElementById("pwLabel");
+        var canvas       = document.getElementById("particleCanvas");
+
+        /* ==========================================
+            PASSWORD SHOW / HIDE
+        ========================================== */
+        pwToggle.addEventListener("click", function() {
+            var isPassword = passEl.type === "password";
+            passEl.type = isPassword ? "text" : "password";
+            eyeIcon.className = isPassword ? "ti ti-eye-off" : "ti ti-eye";
+        });
+
+        /* ==========================================
+            PASSWORD STRENGTH INDICATOR
+        ========================================== */
+        passEl.addEventListener("input", function() {
+            var val = passEl.value;
+            var score = 0;
+            if (val.length >= 4) score++;
+            if (val.length >= 8) score++;
+            if (/[A-Z]/.test(val)) score++;
+            if (/[0-9]/.test(val)) score++;
+            if (/[^A-Za-z0-9]/.test(val)) score++;
+
+            var pct, color, label;
+            if (val.length === 0) { pct = 0; color = 'transparent'; label = ''; }
+            else if (score <= 1)  { pct = 20; color = '#ef4444'; label = 'Weak'; }
+            else if (score <= 2)  { pct = 40; color = '#f59e0b'; label = 'Fair'; }
+            else if (score <= 3)  { pct = 60; color = '#3b82f6'; label = 'Good'; }
+            else if (score <= 4)  { pct = 80; color = '#22c55e'; label = 'Strong'; }
+            else                  { pct = 100; color = '#16a34a'; label = 'Very Strong'; }
+
+            pwBar.style.width = pct + '%';
+            pwBar.style.background = color;
+            pwLabel.textContent = label;
+            pwLabel.style.color = color === 'transparent' ? '' : color;
+        });
+
+        /* ==========================================
+            FORM SUBMISSION
+        ========================================== */
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+            hideMessages();
+            setLoading(true);
+
+            var username = userEl.value.trim();
+            var email    = emailEl.value.trim();
+            var password = passEl.value;
+            var confirm  = confirmEl.value;
+
+            if (!username || !password) {
+                showError("Please fill in all required fields.");
+                setLoading(false);
+                return;
+            }
+            if (username.length < 3) {
+                showError("Username must be at least 3 characters long.");
+                setLoading(false);
+                return;
+            }
+            if (password.length < 4) {
+                showError("Password must be at least 4 characters long.");
+                setLoading(false);
+                return;
+            }
+            if (password !== confirm) {
+                showError("Passwords do not match.");
+                setLoading(false);
+                confirmEl.focus();
+                return;
+            }
+
+            var body = { username: username, password: password };
+            if (email) body.email = email;
+
+            fetch("/api/auth/signup", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body)
+            })
+            .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+            .then(function(result) {
+                if (result.ok) {
+                    showSuccess(result.data.message || "Account created successfully. Redirecting...");
+                    setLoading(false);
+                    form.reset();
+                    pwBar.style.width = '0';
+                    pwLabel.textContent = '';
+                    setTimeout(function() {
+                        document.getElementById("authMain").classList.add("auth-exit");
+                        setTimeout(function() { window.location.href = "/login"; }, 500);
+                    }, 1500);
+                } else {
+                    showError(result.data.message || "Registration failed. Please try again.");
+                    setLoading(false);
+                    passEl.value = "";
+                    confirmEl.value = "";
+                    passEl.focus();
+                }
+            })
+            .catch(function() {
+                showError("Connection error. Please check your network and try again.");
+                setLoading(false);
+            });
+        });
+
+        /* ==========================================
+            UI HELPERS
+        ========================================== */
+        function setLoading(loading) {
+            btn.disabled = loading;
+            btn.classList.toggle("is-loading", loading);
+        }
+
+        function showError(msg) {
+            successBox.classList.remove("visible");
+            errorText.textContent = msg;
+            errorBox.classList.add("visible");
+            var card = document.getElementById("signupCard");
+            card.classList.add("shake");
+            setTimeout(function() { card.classList.remove("shake"); }, 500);
+        }
+
+        function showSuccess(msg) {
+            errorBox.classList.remove("visible");
+            successText.textContent = msg;
+            successBox.classList.add("visible");
+        }
+
+        function hideMessages() {
+            errorBox.classList.remove("visible");
+            successBox.classList.remove("visible");
+        }
+
+        /* ==========================================
+            PARTICLES (Canvas)
+        ========================================== */
+        var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        if (!prefersReducedMotion && canvas && canvas.getContext) {
+            var ctx = canvas.getContext("2d");
+            var particles = [];
+            var PARTICLE_COUNT = 20;
+            var animId;
+
+            function resizeCanvas() {
+                canvas.width  = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+
+            function createParticle(randomY) {
+                return {
+                    x: Math.random() * canvas.width,
+                    y: randomY ? Math.random() * canvas.height : canvas.height + 10,
+                    vy: -(Math.random() * 0.35 + 0.15),
+                    r: Math.random() * 1.5 + 1.5,
+                    life: Math.random(),
+                    speed: Math.random() * 0.006 + 0.004,
+                    delay: Math.random() * 8
+                };
+            }
+
+            window.addEventListener("resize", resizeCanvas);
+            resizeCanvas();
+
+            for (var i = 0; i < PARTICLE_COUNT; i++) {
+                particles.push(createParticle(true));
+            }
+
+            function animateParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "rgba(59, 130, 246, 0.35)";
+
+                for (var i = 0; i < particles.length; i++) {
+                    var p = particles[i];
+                    p.y += p.vy;
+                    p.life += p.speed;
+
+                    var alpha = Math.sin(p.life) * 0.4;
+                    if (alpha < 0) alpha = 0;
+
+                    ctx.globalAlpha = alpha;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    if (p.y < -10 || alpha <= 0) {
+                        particles[i] = createParticle(false);
+                    }
+                }
+
+                animId = requestAnimationFrame(animateParticles);
+            }
+
+            animateParticles();
+        }
+    })();
+    </script>
+</body>
+</html>
