@@ -400,9 +400,24 @@ def verify_and_complete_signup(username, password, email, code):
         print(f"DB verify error: {e}")
         return False, "Verification failed"
 
-    # Re-use signup() logic so password rules apply uniformly
-    ok, info = signup(username, password, email)
-    return ok, info
+    # Insert the verified user into the database
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM admin_users WHERE username = ? OR email = ?", (username, email))
+        if cursor.fetchone():
+            conn.close()
+            return False, "Username or email already exists"
+        cursor.execute(
+            "INSERT INTO admin_users (username, password_hash, email, is_verified) VALUES (?, ?, ?, 1)",
+            (username, password_hash, email)
+        )
+        conn.commit()
+        conn.close()
+        return True, "Account successfully verified and created! You can now log in."
+    except Exception as e:
+        print(f"Final signup database error: {e}")
+        return False, "Failed to create account. Please try again."
 
 
 def get_csrf_token():
