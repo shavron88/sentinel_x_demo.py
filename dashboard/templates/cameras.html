@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block content %}
 
@@ -182,12 +182,15 @@
 }
 
 .cam-card-footer .cm-btn {
-    flex: 1 !important;
+    flex: 1 1 auto !important;
     justify-content: center !important;
-    padding: 8px 12px !important;
+    padding: 8px 10px !important;
     font-size: 12px !important;
     min-height: 36px !important;
+    min-width: 0 !important;
 }
+.cam-card-footer a { flex: 1 1 auto; min-width: 0; text-decoration: none; display: flex; }
+.cam-card-footer { flex-wrap: wrap !important; }
 
 .status-online { color: #22c55e; }
 .status-offline { color: #ef4444; }
@@ -207,7 +210,11 @@
 }
 
 .modal-overlay.active {
-    display: flex;
+    display: flex !important;
+}
+.modal-overlay.active .modal {
+    display: flex !important;
+    flex-direction: column;
 }
 
 .modal {
@@ -403,381 +410,481 @@
     <div id="emptyState" class="empty-state" style="display:none;"></div>
 </div>
 
-<!-- Add Camera Modal -->
-<div class="modal-overlay" id="addCameraModal">
-    <div class="modal">
-        <div class="modal-header">
-            <h3>Add New Camera</h3>
-            <button class="modal-close" onclick="closeAddCameraModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <label>Camera Name</label>
-                <input type="text" id="camName" placeholder="e.g. Front Entrance" />
-            </div>
-            <div class="form-group">
-                <label>Camera Type</label>
-                <select id="camType" onchange="updateCameraPlaceholder()">
-                    <option value="webcam">Webcam (Local)</option>
-                    <option value="rtsp">IP Camera / RTSP</option>
-                    <option value="http">HTTP Stream / MJPEG</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Stream Source</label>
-                <input type="text" id="camSource" placeholder="0 for webcam, or rtsp://192.168.1.100:554/stream" />
-                <p class="help-text" id="camSourceHelp">Enter 0 for the default local webcam.</p>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Zone / Location</label>
-                    <input type="text" id="camZone" placeholder="e.g. Main Entrance" value="General Area" />
-                </div>
-                <div class="form-group">
-                    <label>Reconnect Delay (s)</label>
-                    <input type="number" id="camReconnect" value="5" min="1" max="60" />
-                </div>
-            </div>
-            <div class="form-group">
-                <label>RTSP Transport</label>
-                <select id="camTransport">
-                    <option value="tcp">TCP (Reliable)</option>
-                    <option value="udp">UDP (Low Latency)</option>
-                </select>
-            </div>
-            <div class="test-result" id="testResult"></div>
-        </div>
-        <div class="modal-footer">
-            <button class="cm-btn cm-btn-secondary" onclick="testCameraConnection()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                </svg>
-                Test Connection
-            </button>
-            <button class="cm-btn cm-btn-secondary" onclick="closeAddCameraModal()">Cancel</button>
-            <button class="cm-btn cm-btn-primary" onclick="addCamera()">Add Camera</button>
-        </div>
-    </div>
-</div>
+<!-- Add Camera Modal (moved into <body> by JS for reliable top-level stacking) -->
+<div id="addCameraModalRoot" data-add-camera-root style="display:none;"></div>
 
 <script>
-function updateCameraPlaceholder() {
-    const type = document.getElementById('camType').value;
-    const input = document.getElementById('camSource');
-    const help = document.getElementById('camSourceHelp');
-    if (type === 'webcam') {
-        input.placeholder = '0 for default webcam, 1 for external';
-        help.textContent = 'Enter 0 for the default local webcam, 1 for external USB camera.';
-    } else if (type === 'rtsp') {
-        input.placeholder = 'rtsp://192.168.1.100:554/stream';
-        help.textContent = 'Full RTSP URL from your CCTV / NVR.';
-    } else {
-        input.placeholder = 'http://192.168.1.100:8080/video';
-        help.textContent = 'HTTP MJPEG or HLS stream URL.';
+/* ============================================================
+   Sentinel-X Â· Cameras page â€” rebuilt for reliable Add Camera
+   - Modal is built into a top-level host (document.body)
+   - All interactions go through delegated listeners
+   - No reliance on inline onclick, external CSS, or sessionStorage
+============================================================ */
+(function () {
+    "use strict";
+
+    /* ---------- CSRF helpers (idempotent) ---------- */
+    function getCSRF() {
+        try { if (window.__SENTINELX_CSRF__) return window.__SENTINELX_CSRF__; } catch (e) {}
+        try { return sessionStorage.getItem("sentinelx_csrf"); } catch (e) { return null; }
     }
-}
-
-function openAddCameraModal() {
-    document.getElementById('addCameraModal').classList.add('active');
-    document.getElementById('camName').value = '';
-    document.getElementById('camSource').value = '';
-    document.getElementById('camZone').value = 'General Area';
-    document.getElementById('testResult').style.display = 'none';
-}
-
-function closeAddCameraModal() {
-    document.getElementById('addCameraModal').classList.remove('active');
-}
-
-async function testCameraConnection() {
-    const source = document.getElementById('camSource').value.trim();
-    const resultEl = document.getElementById('testResult');
-    if (!source) {
-        resultEl.className = 'test-result error';
-        resultEl.textContent = 'Please enter a stream source.';
-        resultEl.style.display = 'block';
-        return;
+    function setCSRF(t) {
+        try { window.__SENTINELX_CSRF__ = t; } catch (e) {}
+        try { sessionStorage.setItem("sentinelx_csrf", t); } catch (e) {}
     }
-    resultEl.className = 'test-result';
-    resultEl.textContent = 'Testing connection...';
-    resultEl.style.display = 'block';
-    try {
-        const response = await fetch('/api/camera/test-connection', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ source: source })
-        });
-        const data = await response.json();
-        if (data.success) {
-            resultEl.className = 'test-result success';
-            resultEl.textContent = `Connection successful! Resolution: ${data.resolution || 'Unknown'}, FPS: ${data.fps || '--'}`;
+    var _csrfRefresh = null;
+    function ensureCSRF() {
+        var t = getCSRF();
+        if (t) return Promise.resolve(t);
+        if (_csrfRefresh) return _csrfRefresh;
+        _csrfRefresh = fetch("/api/auth/csrf-token", { credentials: "same-origin" })
+            .then(function (r) { return r && r.ok ? r.json() : null; })
+            .then(function (d) { return (d && d.csrf_token) ? (setCSRF(d.csrf_token), d.csrf_token) : null; })
+            .catch(function () { return null; })
+            .then(function (v) { _csrfRefresh = null; return v; });
+        return _csrfRefresh;
+    }
+    async function fetchWithCSRF(url, options) {
+        options = options || {};
+        options.credentials = options.credentials || "same-origin";
+        var headers = options.headers || {};
+        var token = await ensureCSRF();
+        if (token) headers["X-CSRF-Token"] = token;
+        options.headers = headers;
+        var res = await fetch(url, options);
+        if (res.status === 401 || res.status === 403) {
+            try { window.__SENTINELX_CSRF__ = null; sessionStorage.removeItem("sentinelx_csrf"); } catch (e) {}
+            var fresh = await ensureCSRF();
+            if (fresh) {
+                headers["X-CSRF-Token"] = fresh;
+                options.headers = headers;
+                res = await fetch(url, options);
+            }
+        }
+        return res;
+    }
+
+    /* ---------- Modal host & DOM ---------- */
+    var HOST_ID = "addCameraModal";
+    function buildModalDOM() {
+        var existing = document.getElementById(HOST_ID);
+        if (existing) return existing;
+        var overlay = document.createElement("div");
+        overlay.id = HOST_ID;
+        overlay.setAttribute("data-add-camera-modal", "1");
+        overlay.style.cssText = [
+            "position:fixed", "inset:0", "display:none",
+            "align-items:center", "justify-content:center",
+            "background:rgba(2,6,23,.65)", "backdrop-filter:blur(6px)",
+            "z-index:2147483600", "padding:16px"
+        ].join(";");
+        overlay.innerHTML = [
+            '<div data-add-camera-card style="background:#0f172a;color:#e2e8f0;width:100%;max-width:520px;max-height:92vh;overflow:auto;border:1px solid rgba(59,130,246,.25);border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,.6);display:flex;flex-direction:column;">',
+                '<div style="display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid rgba(59,130,246,.15);">',
+                    '<h3 style="margin:0;font-size:18px;color:#f1f5f9;">Add New Camera</h3>',
+                    '<button type="button" data-add-camera-action="close" aria-label="Close" style="background:none;border:none;color:#94a3b8;font-size:22px;line-height:1;cursor:pointer;padding:6px 10px;border-radius:8px;">&times;</button>',
+                '</div>',
+                '<div style="padding:20px 22px;display:flex;flex-direction:column;gap:14px;">',
+                    '<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.3px;">Camera Name',
+                        '<input type="text" id="camName" placeholder="e.g. Front Entrance" style="padding:10px 14px;border-radius:10px;border:1px solid rgba(59,130,246,.2);background:#0a1428;color:#f1f5f9;font-size:14px;font-family:inherit;box-sizing:border-box;" />',
+                    '</label>',
+                    '<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.3px;">Camera Type',
+                        '<select id="camType" data-add-camera-action="type" style="padding:10px 14px;border-radius:10px;border:1px solid rgba(59,130,246,.2);background:#0a1428;color:#f1f5f9;font-size:14px;font-family:inherit;box-sizing:border-box;">',
+                            '<option value="webcam">Webcam (Local)</option>',
+                            '<option value="rtsp">IP Camera / RTSP</option>',
+                            '<option value="http">HTTP Stream / MJPEG</option>',
+                        '</select>',
+                    '</label>',
+                    '<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.3px;">Stream Source',
+                        '<input type="text" id="camSource" placeholder="0 for webcam, or rtsp://192.168.1.100:554/stream" style="padding:10px 14px;border-radius:10px;border:1px solid rgba(59,130,246,.2);background:#0a1428;color:#f1f5f9;font-size:14px;font-family:inherit;box-sizing:border-box;" />',
+                        '<small id="camSourceHelp" style="color:#64748b;font-size:12px;">Enter 0 for the default local webcam.</small>',
+                    '</label>',
+                    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">',
+                        '<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.3px;">Zone / Location',
+                            '<input type="text" id="camZone" value="General Area" style="padding:10px 14px;border-radius:10px;border:1px solid rgba(59,130,246,.2);background:#0a1428;color:#f1f5f9;font-size:14px;font-family:inherit;box-sizing:border-box;" />',
+                        '</label>',
+                        '<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.3px;">Reconnect (s)',
+                            '<input type="number" id="camReconnect" value="5" min="1" max="60" style="padding:10px 14px;border-radius:10px;border:1px solid rgba(59,130,246,.2);background:#0a1428;color:#f1f5f9;font-size:14px;font-family:inherit;box-sizing:border-box;" />',
+                        '</label>',
+                    '</div>',
+                    '<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.3px;">RTSP Transport',
+                        '<select id="camTransport" style="padding:10px 14px;border-radius:10px;border:1px solid rgba(59,130,246,.2);background:#0a1428;color:#f1f5f9;font-size:14px;font-family:inherit;box-sizing:border-box;">',
+                            '<option value="tcp">TCP (Reliable)</option>',
+                            '<option value="udp">UDP (Low Latency)</option>',
+                        '</select>',
+                    '</label>',
+                    '<div id="testResult" style="display:none;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;"></div>',
+                '</div>',
+                '<div style="display:flex;gap:10px;justify-content:flex-end;padding:14px 22px;border-top:1px solid rgba(59,130,246,.15);flex-wrap:wrap;">',
+                    '<button type="button" data-add-camera-action="test" style="background:rgba(59,130,246,.12);color:#e2e8f0;border:1px solid rgba(59,130,246,.25);padding:9px 16px;border-radius:10px;font-weight:600;cursor:pointer;font-size:13px;">Test Connection</button>',
+                    '<button type="button" data-add-camera-action="cancel" style="background:rgba(59,130,246,.12);color:#e2e8f0;border:1px solid rgba(59,130,246,.25);padding:9px 16px;border-radius:10px;font-weight:600;cursor:pointer;font-size:13px;">Cancel</button>',
+                    '<button type="button" data-add-camera-action="save" style="background:linear-gradient(135deg,#3b82f6,#60a5fa);color:#fff;border:none;padding:9px 18px;border-radius:10px;font-weight:700;cursor:pointer;font-size:13px;box-shadow:0 4px 14px rgba(59,130,246,.3);">Add Camera</button>',
+                '</div>',
+            '</div>'
+        ].join("");
+        document.body.appendChild(overlay);
+        return overlay;
+    }
+
+    function setResult(kind, msg) {
+        var el = document.getElementById("testResult");
+        if (!el) return;
+        var styles = {
+            success: "background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.3);",
+            error:   "background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3);",
+            info:    "background:rgba(59,130,246,.12);color:#60a5fa;border:1px solid rgba(59,130,246,.3);"
+        }[kind] || "background:rgba(148,163,184,.08);color:#94a3b8;border:1px solid rgba(148,163,184,.2);";
+        el.style.cssText = "padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;display:block;" + styles;
+        el.textContent = msg;
+    }
+
+    function getVal(id) {
+        var el = document.getElementById(id);
+        return el ? el.value : "";
+    }
+
+    /* ---------- Open / Close ---------- */
+    function openAddCameraModal() {
+        var overlay = buildModalDOM();
+        overlay.style.display = "flex";
+        var n = document.getElementById("camName"); if (n) n.value = "";
+        var s = document.getElementById("camSource"); if (s) s.value = "";
+        var z = document.getElementById("camZone"); if (z) z.value = "General Area";
+        var r = document.getElementById("camReconnect"); if (r) r.value = "5";
+        var tr = document.getElementById("testResult"); if (tr) tr.style.display = "none";
+        var t = document.getElementById("camType"); if (t) t.value = "webcam";
+        updateCameraPlaceholder();
+        if (n) setTimeout(function(){ n.focus(); }, 30);
+    }
+    function closeAddCameraModal() {
+        var overlay = document.getElementById(HOST_ID);
+        if (overlay) overlay.style.display = "none";
+    }
+
+    function updateCameraPlaceholder() {
+        var type = getVal("camType");
+        var input = document.getElementById("camSource");
+        var help = document.getElementById("camSourceHelp");
+        if (!input || !help) return;
+        if (type === "rtsp") {
+            input.placeholder = "rtsp://192.168.1.100:554/stream";
+            help.textContent = "Full RTSP URL from your CCTV / NVR.";
+        } else if (type === "http") {
+            input.placeholder = "http://192.168.1.100:8080/video";
+            help.textContent = "HTTP MJPEG or HLS stream URL.";
         } else {
-            resultEl.className = 'test-result error';
-            resultEl.textContent = `Connection failed: ${data.error || 'Unknown error'}`;
+            input.placeholder = "0 for default webcam, 1 for external";
+            help.textContent = "Enter 0 for the default local webcam, 1 for external USB camera.";
         }
-    } catch (e) {
-        resultEl.className = 'test-result error';
-        resultEl.textContent = `Test error: ${e.message}`;
-    }
-}
-
-async function addCamera() {
-    const name = document.getElementById('camName').value.trim();
-    const type = document.getElementById('camType').value;
-    const source = document.getElementById('camSource').value.trim();
-    const zone = document.getElementById('camZone').value.trim();
-    const reconnect = parseInt(document.getElementById('camReconnect').value) || 5;
-    const transport = document.getElementById('camTransport').value;
-
-    if (!name || !source) {
-        showToast('Validation', 'Camera name and source are required.', 'warning');
-        return;
     }
 
-    const payload = {
-        name: name,
-        type: type,
-        source: source,
-        zone: zone,
-        reconnect_delay: reconnect,
-        rtsp_transport: transport,
-        is_rtsp: type === 'rtsp' ? 1 : 0
-    };
-
-    try {
-        const response = await fetch('/api/camera/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        const data = await response.json();
-        if (data.success) {
-            showToast('Camera Added', `Camera "${name}" has been added successfully.`, 'success');
-            closeAddCameraModal();
-            loadCameras();
-        } else {
-            showToast('Error', data.error || 'Failed to add camera.', 'error');
+    /* ---------- Network actions ---------- */
+    async function testCameraConnection() {
+        var source = getVal("camSource").trim();
+        if (!source) { setResult("error", "Please enter a stream source."); return; }
+        setResult("info", "Testing connection...");
+        try {
+            var response = await fetchWithCSRF("/api/camera/test-connection", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ source: source })
+            });
+            var data = await response.json().catch(function(){ return {}; });
+            if (response.status === 403) { setResult("error", "Security token expired. Please refresh the page."); return; }
+            if (data.success) {
+                setResult("success", "Connection successful! Resolution: " + (data.resolution || "Unknown") + ", FPS: " + (data.fps || "--"));
+            } else {
+                setResult("error", "Connection failed: " + (data.error || "Unknown error"));
+            }
+        } catch (e) {
+            setResult("error", "Test error: " + e.message);
         }
-    } catch (e) {
-        showToast('Error', `Failed to add camera: ${e.message}`, 'error');
     }
-}
 
-async function removeCamera(name) {
-    if (!confirm(`Remove camera "${name}"? This will stop the stream.`)) return;
-    try {
-        const response = await fetch(`/api/camera/remove/${encodeURIComponent(name)}`, { method: 'DELETE' });
-        const data = await response.json();
-        if (data.success) {
-            showToast('Camera Removed', `Camera "${name}" removed.`, 'info');
-            loadCameras();
-        } else {
-            showToast('Error', data.error || 'Failed to remove camera.', 'error');
-        }
-    } catch (e) {
-        showToast('Error', `Failed to remove camera: ${e.message}`, 'error');
-    }
-}
+    async function addCamera() {
+        var name = getVal("camName").trim();
+        var type = getVal("camType");
+        var source = getVal("camSource").trim();
+        var zone = getVal("camZone").trim();
+        var reconnect = parseInt(getVal("camReconnect"), 10) || 5;
+        var transport = getVal("camTransport");
 
-async function startCamera(name) {
-    try {
-        const response = await fetch(`/api/camera/start/${encodeURIComponent(name)}`, { method: 'POST' });
-        const data = await response.json();
-        if (data.success) {
-            showToast('Camera Started', `Camera "${name}" is starting.`, 'success');
-            loadCameras();
-        } else {
-            showToast('Error', data.error || 'Failed to start camera.', 'error');
-        }
-    } catch (e) {
-        showToast('Error', `Failed to start camera: ${e.message}`, 'error');
-    }
-}
-
-async function stopCamera(name) {
-    try {
-        const response = await fetch(`/api/camera/stop/${encodeURIComponent(name)}`, { method: 'POST' });
-        const data = await response.json();
-        if (data.success) {
-            showToast('Camera Stopped', `Camera "${name}" stopped.`, 'info');
-            loadCameras();
-        } else {
-            showToast('Error', data.error || 'Failed to stop camera.', 'error');
-        }
-    } catch (e) {
-        showToast('Error', `Failed to stop camera: ${e.message}`, 'error');
-    }
-}
-
-async function loadCameras() {
-    const grid = document.getElementById("camera-grid");
-    if (!grid) return;
-    grid.innerHTML = "";
-    
-    // Show skeleton loading
-    for (let i = 0; i < 4; i++) {
-        const skeleton = document.createElement("div");
-        skeleton.className = "cam-card";
-        skeleton.innerHTML = `
-            <div style="padding:16px 20px;">
-                <div style="width:60%;height:16px;background:rgba(255,255,255,0.1);border-radius:4px;margin-bottom:12px;"></div>
-                <div style="width:100%;height:18px;background:rgba(255,255,255,0.05);border-radius:4px;margin-bottom:8px;"></div>
-                <div style="width:100%;height:18px;background:rgba(255,255,255,0.05);border-radius:4px;margin-bottom:8px;"></div>
-                <div style="width:100%;height:18px;background:rgba(255,255,255,0.05);border-radius:4px;"></div>
-            </div>
-        `;
-        grid.appendChild(skeleton);
-    }
-    
-    try {
-        const response = await fetch("/api/cameras");
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        let cameras = [];
-        if (Array.isArray(data)) {
-            cameras = data;
-        } else if (data && typeof data === 'object') {
-            cameras = Object.entries(data).map(([name, cam]) => ({
-                id: name,
-                name: cam.name || name,
-                location: cam.zone || cam.location || 'Unknown',
-                status: cam.status || 'OFFLINE',
-                stream: `/video_feed?camera_name=${encodeURIComponent(cam.name || name)}`,
-                resolution: cam.resolution || '640x480',
-                fps: cam.fps || 0,
-                latency: cam.latency || 0,
-                health: cam.health || 'UNKNOWN',
-                is_recording: cam.is_recording || false,
-                is_rtsp: cam.is_rtsp || false,
-                type: cam.is_rtsp ? 'rtsp' : 'webcam'
-            }));
-        }
-        
-        // Remove skeletons
-        grid.innerHTML = "";
-        
-        if (cameras.length === 0) {
-            document.getElementById("emptyState").style.display = "block";
-            document.getElementById("emptyState").innerHTML = `
-                <div style="font-size:48px;margin-bottom:16px;opacity:0.6;">📹</div>
-                <h3 style="color:#f1f5f9;margin:0 0 8px 0;">No Cameras Found</h3>
-                <p style="color:#94a3b8;margin:0 0 20px 0;">Get started by adding your first camera.</p>
-                <button class="cm-btn cm-btn-primary" onclick="openAddCameraModal()">Add Camera</button>
-            `;
+        if (!name || !source) {
+            setResult("error", "Camera name and source are required.");
+            showToast("Validation", "Camera name and source are required.", "warning");
             return;
         }
-        
-        cameras.forEach((camera, index) => {
-            const card = document.createElement("div");
+
+        var payload = {
+            name: name, type: type, source: source, zone: zone,
+            reconnect_delay: reconnect, rtsp_transport: transport,
+            is_rtsp: type === "rtsp" ? 1 : 0
+        };
+        try {
+            var response = await fetchWithCSRF("/api/camera/add", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            var data = await response.json().catch(function(){ return {}; });
+            if (response.status === 403) {
+                showToast("Error", "Security token expired. Please refresh the page.", "warning");
+                return;
+            }
+            if (data.success) {
+                showToast("Camera Added", "Camera \"" + name + "\" has been added successfully.", "success");
+                closeAddCameraModal();
+                if (typeof window.loadCameras === "function") window.loadCameras();
+                else if (typeof loadCameras === "function") loadCameras();
+            } else {
+                setResult("error", data.error || "Failed to add camera.");
+                showToast("Error", data.error || "Failed to add camera.", "error");
+            }
+        } catch (e) {
+            setResult("error", "Failed to add camera: " + e.message);
+            showToast("Error", "Failed to add camera: " + e.message, "error");
+        }
+    }
+
+    /* ---------- Camera card actions (delegated) ---------- */
+    async function removeCamera(name) {
+        if (!window.confirm('Remove camera "' + name + '"? This will stop the stream.')) return;
+        try {
+            var r = await fetchWithCSRF("/api/camera/remove/" + encodeURIComponent(name), { method: "DELETE" });
+            var d = await r.json().catch(function(){ return {}; });
+            if (d.success) {
+                showToast("Camera Removed", "Camera \"" + name + "\" removed.", "info");
+                if (typeof loadCameras === "function") loadCameras();
+            } else {
+                showToast("Error", d.error || "Failed to remove camera.", "error");
+            }
+        } catch (e) { showToast("Error", "Failed to remove camera: " + e.message, "error"); }
+    }
+    async function startCamera(name) {
+        try {
+            var r = await fetchWithCSRF("/api/camera/start/" + encodeURIComponent(name), { method: "POST" });
+            var d = await r.json().catch(function(){ return {}; });
+            if (d.success) { showToast("Camera Started", "Camera \"" + name + "\" is starting.", "success"); loadCameras(); }
+            else showToast("Error", d.error || "Failed to start camera.", "error");
+        } catch (e) { showToast("Error", "Failed to start camera: " + e.message, "error"); }
+    }
+    async function stopCamera(name) {
+        try {
+            var r = await fetchWithCSRF("/api/camera/stop/" + encodeURIComponent(name), { method: "POST" });
+            var d = await r.json().catch(function(){ return {}; });
+            if (d.success) { showToast("Camera Stopped", "Camera \"" + name + "\" stopped.", "info"); loadCameras(); }
+            else showToast("Error", d.error || "Failed to stop camera.", "error");
+        } catch (e) { showToast("Error", "Failed to stop camera: " + e.message, "error"); }
+    }
+    async function takeSnapshot(name) {
+        try {
+            var r = await fetchWithCSRF("/api/camera/snapshot", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ camera_name: name })
+            });
+            var d = await r.json().catch(function(){ return {}; });
+            if (d.success) showToast("Snapshot", "Snapshot captured successfully", "success");
+            else showToast("Snapshot", d.error || "Failed to capture snapshot", "error");
+        } catch (e) { showToast("Snapshot", "Failed to capture snapshot", "error"); }
+    }
+
+    /* ---------- Grid render ---------- */
+    function escapeHtml(text) {
+        if (text == null) return "";
+        return String(text).replace(/[&<>"']/g, function (c) {
+            return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
+        });
+    }
+
+    function renderCameras(cameras) {
+        var grid = document.getElementById("camera-grid");
+        if (!grid) return;
+        grid.innerHTML = "";
+        var empty = document.getElementById("emptyState");
+        if (!cameras.length) {
+            if (empty) {
+                empty.style.display = "block";
+                empty.innerHTML = '<div style="font-size:48px;margin-bottom:16px;opacity:.6;">ðŸ“¹</div>' +
+                    '<h3 style="color:#f1f5f9;margin:0 0 8px 0;">No Cameras Found</h3>' +
+                    '<p style="color:#94a3b8;margin:0 0 20px 0;">Get started by adding your first camera.</p>' +
+                    '<button type="button" data-add-camera-action="open" style="background:linear-gradient(135deg,#3b82f6,#60a5fa);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:600;cursor:pointer;">Add Camera</button>';
+            }
+            return;
+        }
+        if (empty) empty.style.display = "none";
+        cameras.forEach(function (camera) {
+            var card = document.createElement("div");
             card.className = "cam-card";
-            const isOnline = camera.status === "ONLINE";
-            const typeClass = camera.type === 'rtsp' ? 'cam-type-rtsp' : camera.type === 'http' ? 'cam-type-http' : 'cam-type-webcam';
-            const typeLabel = camera.type === 'rtsp' ? 'RTSP' : camera.type === 'http' ? 'HTTP' : 'WEBCAM';
-            card.innerHTML = `
-                <div class="cam-card-header">
-                    <div>
-                        <h3>${escapeHtml(camera.name)}</h3>
-                        <span class="cam-type ${typeClass}">${typeLabel}</span>
-                    </div>
-                    <span class="${isOnline ? 'status-online' : camera.status === 'CONNECTING' ? 'status-connecting' : 'status-offline'}">
-                        ● ${camera.status}
-                    </span>
-                </div>
-                <div class="cam-card-body">
-                    <div class="meta-row">
-                        <span class="meta-label">Location</span>
-                        <span class="meta-value">${escapeHtml(camera.location)}</span>
-                    </div>
-                    <div class="meta-row">
-                        <span class="meta-label">Resolution</span>
-                        <span class="meta-value">${camera.resolution}</span>
-                    </div>
-                    <div class="meta-row">
-                        <span class="meta-label">FPS</span>
-                        <span class="meta-value">${camera.fps}</span>
-                    </div>
-                    <div class="meta-row">
-                        <span class="meta-label">Latency</span>
-                        <span class="meta-value">${camera.latency} ms</span>
-                    </div>
-                    <div class="meta-row">
-                        <span class="meta-label">Health</span>
-                        <span class="meta-value">${camera.health}</span>
-                    </div>
-                </div>
-                <div class="cam-card-footer">
-                    ${isOnline ? `
-                        <a href="/camera_view?camera=${encodeURIComponent(camera.name)}" style:none;"><button class="cm-btn cm-btn-primary">Live</button></a>
-                        <button class="cm-btn cm-btn-secondary" onclick="stopCamera('${escapeHtml(camera.name)}')">Stop</button>
-                    ` : `
-                        <button class="cm-btn cm-btn-primary" onclick="startCamera('${escapeHtml(camera.name)}')">Start</button>
-                        <button class="cm-btn cm-btn-secondary" onclick="removeCamera('${escapeHtml(camera.name)}')">Remove</button>
-                    `}
-                    <button class="cm-btn cm-btn-secondary" onclick="takeSnapshot('${escapeHtml(camera.name)}')">Snapshot</button>
-                </div>
-            `;
+            var isOnline = camera.status === "ONLINE";
+            var typeClass = camera.type === "rtsp" ? "cam-type-rtsp" : camera.type === "http" ? "cam-type-http" : "cam-type-webcam";
+            var typeLabel = camera.type === "rtsp" ? "RTSP" : camera.type === "http" ? "HTTP" : "WEBCAM";
+            var escName = escapeHtml(camera.name);
+            card.innerHTML = [
+                '<div class="cam-card-header">',
+                    '<div>',
+                        '<h3>' + escName + '</h3>',
+                        '<span class="cam-type ' + typeClass + '">' + typeLabel + '</span>',
+                    '</div>',
+                    '<span class="' + (isOnline ? "status-online" : camera.status === "CONNECTING" ? "status-connecting" : "status-offline") + '">â— ' + escapeHtml(camera.status) + '</span>',
+                '</div>',
+                '<div class="cam-card-body">',
+                    row("Location", camera.location),
+                    row("Resolution", camera.resolution),
+                    row("FPS", camera.fps),
+                    row("Latency", camera.latency + " ms"),
+                    row("Health", camera.health),
+                '</div>',
+                '<div class="cam-card-footer">',
+                    isOnline
+                        ? '<a href="/camera_view?camera=' + encodeURIComponent(camera.name) + '" style="flex:1 1 auto;min-width:0;text-decoration:none;display:flex;"><button type="button" class="cm-btn cm-btn-primary">Live</button></a>'
+                          + '<a href="/replay" style="flex:1 1 auto;min-width:0;text-decoration:none;display:flex;"><button type="button" class="cm-btn cm-btn-secondary">Replay</button></a>'
+                          + '<button type="button" class="cm-btn cm-btn-secondary" data-camera-action="stop" data-name="' + escName + '">Stop</button>'
+                        : '<button type="button" class="cm-btn cm-btn-primary" data-camera-action="start" data-name="' + escName + '">Start</button>'
+                          + '<button type="button" class="cm-btn cm-btn-secondary" data-camera-action="remove" data-name="' + escName + '">Remove</button>',
+                    '<button type="button" class="cm-btn cm-btn-secondary" data-camera-action="snapshot" data-name="' + escName + '">Snapshot</button>',
+                '</div>'
+            ].join("");
             grid.appendChild(card);
         });
-    } catch (err) {
+    }
+    function row(label, value) {
+        return '<div class="meta-row"><span class="meta-label">' + escapeHtml(label) + '</span><span class="meta-value">' + escapeHtml(value == null ? "--" : value) + '</span></div>';
+    }
+
+    async function loadCameras() {
+        var grid = document.getElementById("camera-grid");
+        if (!grid) return;
         grid.innerHTML = "";
-        document.getElementById("emptyState").style.display = "block";
-        document.getElementById("emptyState").innerHTML = `
-            <div style="font-size:48px;margin-bottom:16px;opacity:0.6;">⚠️</div>
-            <h3 style="color:#f1f5f9;margin:0 0 8px 0;">Unable to Load Cameras</h3>
-            <p style="color:#94a3b8;margin:0 0 20px 0;">The camera service could not be reached.</p>
-            <button class="cm-btn cm-btn-primary" onclick="loadCameras()">Retry</button>
-        `;
-    }
-}
-
-loadCameras();
-
-async function takeSnapshot(cameraName) {
-    try {
-        const response = await fetch("/api/camera/snapshot", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ camera_name: cameraName })
-        });
-        const data = await response.json();
-        if (data.success) {
-            showToast("Snapshot", "Snapshot captured successfully", "success");
-        } else {
-            showToast("Snapshot", data.error || "Failed to capture snapshot", "error");
+        for (var i = 0; i < 4; i++) {
+            var sk = document.createElement("div");
+            sk.className = "cam-card";
+            sk.innerHTML = '<div style="padding:16px 20px;"><div style="width:60%;height:16px;background:rgba(255,255,255,.1);border-radius:4px;margin-bottom:12px;"></div><div style="width:100%;height:18px;background:rgba(255,255,255,.05);border-radius:4px;margin-bottom:8px;"></div><div style="width:100%;height:18px;background:rgba(255,255,255,.05);border-radius:4px;margin-bottom:8px;"></div><div style="width:100%;height:18px;background:rgba(255,255,255,.05);border-radius:4px;"></div></div>';
+            grid.appendChild(sk);
         }
-    } catch (err) {
-        showToast("Snapshot", "Failed to capture snapshot", "error");
+        try {
+            var response = await fetchWithCSRF("/api/cameras");
+            if (response.status === 401) { window.location.href = "/login"; return; }
+            if (!response.ok) throw new Error("HTTP " + response.status);
+            var data = await response.json();
+            var cameras = [];
+            if (Array.isArray(data)) cameras = data;
+            else if (data && typeof data === "object") {
+                Object.keys(data).forEach(function (k) {
+                    var cam = data[k] || {};
+                    cameras.push({
+                        id: k, name: cam.name || k,
+                        location: cam.zone || cam.location || "Unknown",
+                        status: cam.status || "OFFLINE",
+                        resolution: cam.resolution || "640x480",
+                        fps: cam.fps || 0, latency: cam.latency || 0,
+                        health: cam.health || "UNKNOWN",
+                        is_rtsp: cam.is_rtsp || false,
+                        type: cam.is_rtsp ? "rtsp" : "webcam"
+                    });
+                });
+            }
+            renderCameras(cameras);
+        } catch (err) {
+            grid.innerHTML = "";
+            var empty = document.getElementById("emptyState");
+            if (empty) {
+                empty.style.display = "block";
+                empty.innerHTML = '<div style="font-size:48px;margin-bottom:16px;opacity:.6;">âš ï¸</div><h3 style="color:#f1f5f9;margin:0 0 8px 0;">Unable to Load Cameras</h3><p style="color:#94a3b8;margin:0 0 20px 0;">The camera service could not be reached.</p><button type="button" data-add-camera-action="retry" style="background:linear-gradient(135deg,#3b82f6,#60a5fa);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:600;cursor:pointer;">Retry</button>';
+            }
+        }
     }
-}
 
-function showToast(title, message, type) {
-    const toast = document.createElement("div");
-    toast.style.cssText = `
-        position: fixed;
-        bottom: 24px;
-        right: 24px;
-        background: #1b2432;
-        border: 1px solid rgba(59, 130, 246, 0.2);
-        border-radius: 12px;
-        padding: 16px 20px;
-        color: #f1f5f9;
-        font-size: 14px;
-        z-index: 9999;
-        animation: slideIn 0.3s ease;
-        max-width: 360px;
-    `;
-    toast.innerHTML = `
-        <div style="font-weight: 600; margin-bottom: 4px;">${title}</div>
-        <div style="color: #94a3b8;">${message}</div>
-    `;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-        toast.style.opacity = "0";
-        toast.style.transform = "translateY(10px)";
-        toast.style.transition = "all 0.3s ease";
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
+    /* ---------- Toast ---------- */
+    function showToast(title, message, type) {
+        var t = document.createElement("div");
+        t.style.cssText = "position:fixed;bottom:24px;right:24px;background:#1b2432;border:1px solid rgba(59,130,246,.2);border-radius:12px;padding:14px 18px;color:#f1f5f9;font-size:14px;z-index:2147483600;max-width:360px;box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transform:translateY(8px);transition:all .25s ease;";
+        t.innerHTML = '<div style="font-weight:600;margin-bottom:4px;">' + escapeHtml(title) + '</div><div style="color:#94a3b8;">' + escapeHtml(message) + '</div>';
+        document.body.appendChild(t);
+        requestAnimationFrame(function(){ t.style.opacity = "1"; t.style.transform = "translateY(0)"; });
+        setTimeout(function(){ t.style.opacity = "0"; t.style.transform = "translateY(10px)"; setTimeout(function(){ t.remove(); }, 300); }, 3000);
+    }
+
+    /* ---------- Wiring ---------- */
+    function bindGlobal() {
+        // Open: any element with data-add-camera-action="open" (header button, empty-state, etc.)
+        document.addEventListener("click", function (ev) {
+            var t = ev.target;
+            if (!t || !t.closest) return;
+            var trigger = t.closest('[data-add-camera-action="open"]');
+            if (trigger) { ev.preventDefault(); openAddCameraModal(); return; }
+            var a = t.closest('[data-add-camera-action]');
+            if (a) {
+                var action = a.getAttribute("data-add-camera-action");
+                if (action === "close" || action === "cancel") { ev.preventDefault(); closeAddCameraModal(); return; }
+                if (action === "test")   { ev.preventDefault(); testCameraConnection(); return; }
+                if (action === "save")   { ev.preventDefault(); addCamera(); return; }
+                if (action === "retry")  { ev.preventDefault(); loadCameras(); return; }
+            }
+            // Type select changes
+            var sel = t.closest('#camType');
+            if (sel && t === sel) updateCameraPlaceholder();
+
+            // Camera card actions
+            var ca = t.closest('[data-camera-action]');
+            if (ca) {
+                ev.preventDefault();
+                var name = ca.getAttribute("data-name");
+                var act = ca.getAttribute("data-camera-action");
+                if (act === "remove") removeCamera(name);
+                else if (act === "start") startCamera(name);
+                else if (act === "stop") stopCamera(name);
+                else if (act === "snapshot") takeSnapshot(name);
+            }
+        });
+
+        // ESC closes modal
+        document.addEventListener("keydown", function (ev) {
+            if (ev.key === "Escape") closeAddCameraModal();
+        });
+
+        // Click on backdrop closes
+        document.addEventListener("click", function (ev) {
+            var overlay = document.getElementById(HOST_ID);
+            if (overlay && overlay.style.display !== "none" && ev.target === overlay) closeAddCameraModal();
+        }, true);
+
+        // Fallback: if any "Add Camera" inline-onclick button still exists, ensure it works.
+        // We replace its onclick by re-routing through our delegated handler.
+        Array.prototype.forEach.call(document.querySelectorAll('button'), function (b) {
+            var oc = b.getAttribute && b.getAttribute('onclick');
+            if (oc && /openAddCameraModal/.test(oc)) {
+                b.removeAttribute('onclick');
+                b.setAttribute('data-add-camera-action', 'open');
+            }
+            if (b.getAttribute && b.getAttribute('onclick') && /closeAddCameraModal/.test(b.getAttribute('onclick'))) {
+                b.removeAttribute('onclick');
+                b.setAttribute('data-add-camera-action', 'close');
+            }
+        });
+    }
+
+    /* ---------- Public API ---------- */
+    window.openAddCameraModal = openAddCameraModal;
+    window.closeAddCameraModal = closeAddCameraModal;
+    window.addCamera = addCamera;
+    window.testCameraConnection = testCameraConnection;
+    window.loadCameras = loadCameras;
+    window.startCamera = startCamera;
+    window.stopCamera = stopCamera;
+    window.removeCamera = removeCamera;
+    window.takeSnapshot = takeSnapshot;
+    window.updateCameraPlaceholder = updateCameraPlaceholder;
+    window.showToast = showToast;
+
+    function init() {
+        bindGlobal();
+        loadCameras();
+    }
+
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+    else init();
+})();
 </script>
 
 {% endblock %}

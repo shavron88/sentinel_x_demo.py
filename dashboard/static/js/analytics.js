@@ -103,13 +103,10 @@ function toggleDropdown(dropdown) {
 }
 
 function positionDropdown(dropdown) {
-    // On mobile, the CSS handles centering - skip JS positioning
+    // On mobile the CSS handles centering with !important — only set width.
     if (window.innerWidth <= 768) {
-        dropdown.style.position = 'fixed';
-        dropdown.style.top = '50%';
-        dropdown.style.left = '50%';
-        dropdown.style.right = 'auto';
-        dropdown.style.transform = 'translate(-50%, -50%)';
+        dropdown.style.width = "calc(100vw - 32px)";
+        dropdown.style.maxWidth = "360px";
         return;
     }
     
@@ -161,7 +158,13 @@ function initDateRangePicker() {
     start.setDate(start.getDate() - 7);
     dateRange.start = start;
     dateRange.end = end;
-    
+
+    // Populate the date inputs so the user can see/edit the active range
+    const startInput = document.getElementById("date-start");
+    const endInput = document.getElementById("date-end");
+    if (startInput) startInput.value = start.toISOString().split("T")[0];
+    if (endInput) endInput.value = end.toISOString().split("T")[0];
+
     updateDateRangeDisplay();
     
     dateBtn.addEventListener("click", (e) => {
@@ -210,23 +213,37 @@ function initDateRangePicker() {
     
     // Custom date range
     const applyBtn = document.getElementById("apply-date-range");
+    const applyDateRange = () => {
+        const startInput = document.getElementById("date-start");
+        const endInput = document.getElementById("date-end");
+
+        if (startInput && startInput.value) {
+            dateRange.start = new Date(startInput.value + "T00:00:00");
+        }
+        if (endInput && endInput.value) {
+            // Inclusive end-of-day
+            const endDate = new Date(endInput.value + "T00:00:00");
+            endDate.setHours(23, 59, 59, 999);
+            dateRange.end = endDate;
+        }
+
+        updateDateRangeDisplay();
+        closeAllDropdowns();
+        loadAnalytics();
+    };
     if (applyBtn) {
-        applyBtn.addEventListener("click", () => {
-            const startInput = document.getElementById("date-start");
-            const endInput = document.getElementById("date-end");
-            
-            if (startInput && startInput.value) {
-                dateRange.start = new Date(startInput.value);
-            }
-            if (endInput && endInput.value) {
-                dateRange.end = new Date(endInput.value);
-            }
-            
-            updateDateRangeDisplay();
-            closeAllDropdowns();
-            loadAnalytics();
-        });
+        applyBtn.addEventListener("click", applyDateRange);
     }
+    // Pressing Enter inside a date input should also apply.
+    ["date-start", "date-end"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                applyDateRange();
+            }
+        });
+    });
 }
 
 function updateDateRangeDisplay() {
@@ -305,20 +322,20 @@ function initFilters() {
 }
 
 function updateFilterOptions() {
-    // This will be populated with available options from the data
+    // Populate from real backend data (already loaded into globals by loadAnalytics()).
     const eventTypeContainer = document.getElementById("filter-event-types");
     const severityContainer = document.getElementById("filter-severity");
     const cameraContainer = document.getElementById("filter-cameras");
-    
-    if (eventTypeContainer && window._availableEventTypes) {
+
+    if (eventTypeContainer && Array.isArray(window._availableEventTypes) && window._availableEventTypes.length) {
         eventTypeContainer.innerHTML = window._availableEventTypes.map(type => `
             <label class="filter-option">
                 <input type="checkbox" class="filter-event-type" value="${escapeHtml(type)}" ${activeFilters.eventTypes.includes(type) ? "checked" : ""}>
-                <span>${escapeHtml(type)}</span>
+                <span>${escapeHtml(type.replace(/_/g, " "))}</span>
             </label>
         `).join("");
     }
-    
+
     if (severityContainer) {
         const severities = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
         severityContainer.innerHTML = severities.map(sev => `
@@ -328,8 +345,8 @@ function updateFilterOptions() {
             </label>
         `).join("");
     }
-    
-    if (cameraContainer && window._availableCameras) {
+
+    if (cameraContainer && Array.isArray(window._availableCameras) && window._availableCameras.length) {
         cameraContainer.innerHTML = window._availableCameras.map(cam => `
             <label class="filter-option">
                 <input type="checkbox" class="filter-camera" value="${escapeHtml(cam)}" ${activeFilters.cameras.includes(cam) ? "checked" : ""}>
@@ -337,6 +354,19 @@ function updateFilterOptions() {
             </label>
         `).join("");
     }
+}
+
+// Normalise an event's event_type against a user-selected filter value.
+// The UI may use either the raw backend type ("PERSON_DETECTED") or a
+// human label ("PERSON"). Match either prefix or substring.
+function matchesEventType(eventType, selected) {
+    if (!selected || !eventType) return false;
+    const ev = String(eventType).toUpperCase().replace(/[_-]/g, "_");
+    const sel = String(selected).toUpperCase().replace(/[_-]/g, "_");
+    if (ev === sel) return true;
+    if (sel.length >= 3 && ev.indexOf(sel) !== -1) return true;
+    if (sel.length >= 3 && sel.indexOf(ev) !== -1) return true;
+    return false;
 }
 
 function updateFilterBadge() {
@@ -406,15 +436,20 @@ async function loadAnalytics() {
             fetchAnalyticsData(),
             fetchEvents()
         ]);
-        
-        // Store available filter options
+
+        // Store available filter options from real data.
         window._availableEventTypes = [...new Set(events.map(e => e.event_type).filter(Boolean))];
         window._availableCameras = [...new Set(events.map(e => e.camera).filter(Boolean))];
-        
-        // Apply client-side filters
+
+        // Refresh filter dropdown to reflect actual data.
+        updateFilterOptions();
+
+        // Apply client-side filters.
         let filteredEvents = events;
         if (activeFilters.eventTypes.length > 0) {
-            filteredEvents = filteredEvents.filter(e => activeFilters.eventTypes.includes(e.event_type));
+            filteredEvents = filteredEvents.filter(e =>
+                activeFilters.eventTypes.some(sel => matchesEventType(e.event_type, sel))
+            );
         }
         if (activeFilters.severity.length > 0) {
             filteredEvents = filteredEvents.filter(e => activeFilters.severity.includes((e.severity || "LOW").toUpperCase()));
@@ -422,7 +457,7 @@ async function loadAnalytics() {
         if (activeFilters.cameras.length > 0) {
             filteredEvents = filteredEvents.filter(e => activeFilters.cameras.includes(e.camera));
         }
-        
+
         renderKPIs(stats, filteredEvents);
         renderTrendChart(filteredEvents);
         renderDonutChart(stats, filteredEvents);
@@ -430,7 +465,8 @@ async function loadAnalytics() {
         renderZones(filteredEvents);
         renderHeatmap(filteredEvents);
         renderTimeline(filteredEvents);
-        
+        renderActiveSummary();
+
     } catch(e) {
         console.error("Analytics load error:", e);
         showEmptyState();
@@ -948,14 +984,89 @@ document.addEventListener("DOMContentLoaded", () => {
     initDateRangePicker();
     initFilters();
     loadAnalytics();
-    
+    renderActiveSummary();
+
     // Close dropdowns on Escape key
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
             closeAllDropdowns();
         }
     });
+
+    // Reflect date input changes into the displayed chip so the user
+    // sees feedback while typing rather than only after pressing Apply.
+    ["date-start", "date-end"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("input", renderActiveSummary);
+    });
 });
+
+// Render a small "Active filters / date range" pill that lives in the header.
+// Gives the user immediate visual confirmation that filters actually applied.
+function renderActiveSummary() {
+    const wrap = document.getElementById("analytics-active-summary");
+    if (!wrap) return;
+
+    const dateStart = document.getElementById("date-start");
+    const dateEnd = document.getElementById("date-end");
+    const startStr = dateStart && dateStart.value ? dateStart.value : "";
+    const endStr = dateEnd && dateEnd.value ? dateEnd.value : "";
+
+    const totalActive =
+        activeFilters.eventTypes.length +
+        activeFilters.severity.length +
+        activeFilters.cameras.length +
+        (startStr ? 1 : 0) +
+        (endStr ? 1 : 0);
+
+    const parts = [];
+    if (startStr && endStr) {
+        parts.push(`<span class="active-summary-chip"><strong>Date:</strong> ${escapeHtml(startStr)} → ${escapeHtml(endStr)}</span>`);
+    } else if (startStr) {
+        parts.push(`<span class="active-summary-chip"><strong>From:</strong> ${escapeHtml(startStr)}</span>`);
+    } else if (endStr) {
+        parts.push(`<span class="active-summary-chip"><strong>Until:</strong> ${escapeHtml(endStr)}</span>`);
+    }
+    if (activeFilters.severity.length) {
+        parts.push(`<span class="active-summary-chip"><strong>Severity:</strong> ${escapeHtml(activeFilters.severity.join(", "))}</span>`);
+    }
+    if (activeFilters.eventTypes.length) {
+        parts.push(`<span class="active-summary-chip"><strong>Types:</strong> ${escapeHtml(activeFilters.eventTypes.length)}</span>`);
+    }
+    if (activeFilters.cameras.length) {
+        parts.push(`<span class="active-summary-chip"><strong>Cameras:</strong> ${escapeHtml(activeFilters.cameras.length)}</span>`);
+    }
+
+    if (parts.length === 0) {
+        wrap.innerHTML = `<span class="active-summary-empty">No filters applied — showing last 7 days</span>`;
+    } else {
+        wrap.innerHTML = parts.join("");
+    }
+    wrap.dataset.count = String(totalActive);
+}
+
+// Hook into existing flows so the summary updates whenever filters change.
+// (loadAnalytics() itself calls renderActiveSummary() at the end of its try-block.)
+updateFilterBadge = function () {
+    const badge = document.getElementById("filter-badge");
+    const totalFilters = activeFilters.eventTypes.length + activeFilters.severity.length + activeFilters.cameras.length;
+    if (badge) {
+        if (totalFilters > 0) {
+            badge.textContent = totalFilters;
+            badge.style.display = "inline";
+        } else {
+            badge.style.display = "none";
+        }
+    }
+    renderActiveSummary();
+};
+updateDateRangeDisplay = function () {
+    const display = document.getElementById("date-range-display");
+    if (!display || !dateRange.start || !dateRange.end) return;
+    const formatDate = (d) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    display.textContent = `${formatDate(dateRange.start)} – ${formatDate(dateRange.end)}`;
+    renderActiveSummary();
+};
 
 // Watch for theme changes and re-apply chart colors for analytics charts
 if (typeof refreshChartsOnThemeChange === 'function') refreshChartsOnThemeChange();

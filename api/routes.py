@@ -1,11 +1,13 @@
 from flask import Blueprint, jsonify
 from system.monitor import SystemMonitor
 from database.db import get_all_events
+from api.auth import require_auth
 
 system_bp = Blueprint('system_api', __name__)
 sys_monitor = SystemMonitor()
 
 @system_bp.route('/api/system', methods=['GET'])
+@require_auth
 def get_system_metrics():
     return jsonify({
         "status": "success",
@@ -14,6 +16,7 @@ def get_system_metrics():
 
 
 @system_bp.route('/api/incidents', methods=['GET'])
+@require_auth
 def get_incidents():
     """Returns recent incidents/events for the incidents page."""
     try:

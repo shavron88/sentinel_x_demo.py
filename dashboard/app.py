@@ -265,7 +265,7 @@ _PUBLIC_ENDPOINTS = frozenset({
     "api_login", "api_signup_request_code", "api_signup", "api_auth_status",
     "api_logout", "api_csrf_token",
     "not_found_error", "internal_error", "handle_exception",
-    "health_bp.get_system_health", "api_health_status",
+    "health_bp.get_system_health",
 })
 
 _PUBLIC_PREFIXES = ("static",)
@@ -492,6 +492,7 @@ def ai_summary_endpoint():
         }), 200
 
 @app.route("/api/v1/health")
+@require_auth
 def api_health_status():
     return jsonify({
         "system": sys_monitor.get_stats(),
@@ -501,6 +502,7 @@ def api_health_status():
 
 
 @app.route("/api/demo/scenarios", methods=["GET"])
+@require_auth
 def api_demo_scenarios():
     from events.demo_controller import demo_controller
     return jsonify({
@@ -509,6 +511,8 @@ def api_demo_scenarios():
 
 
 @app.route("/api/demo/trigger", methods=["POST"])
+@require_auth
+@require_csrf
 def api_demo_trigger():
     from events.demo_controller import demo_controller
     data = request.get_json() or {}

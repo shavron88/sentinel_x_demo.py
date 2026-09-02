@@ -673,24 +673,28 @@ function selectEvidence(item, cardElement){
     }
 
     const preview = document.getElementById("previewImage");
+    if (preview) preview.src = item.image || '';
 
-    preview.src = item.image || '';
+    const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+    };
 
-    document.getElementById("summaryEvent").textContent = getEventLabel(item.event);
+    setText("summaryEvent", getEventLabel(item.event));
 
     const confidence = item.confidence ? parseFloat(item.confidence).toFixed(1) + '%' : '--%';
 
-    document.getElementById("summaryConfidence").textContent = confidence;
+    setText("summaryConfidence", confidence);
 
-    document.getElementById("summaryCamera").textContent = item.camera || 'Camera 01';
+    setText("summaryCamera", item.camera || 'Camera 01');
 
-    document.getElementById("summaryTracking").textContent = item.trackingId ? `#TX-${item.trackingId}` : '--';
+    setText("summaryTracking", item.trackingId ? `#TX-${item.trackingId}` : '--');
 
-    document.getElementById("summaryThreat").textContent = getSeverity(item.severity || item.event).toUpperCase();
+    setText("summaryThreat", getSeverity(item.severity || item.event).toUpperCase());
 
-    document.getElementById("summaryZone").textContent = item.location || 'Unknown';
+    setText("summaryZone", item.location || 'Unknown');
 
-    document.getElementById("summaryTime").textContent = formatTime(item.time);
+    setText("summaryTime", formatTime(item.time));
 
     const ring = document.getElementById("confidenceRing");
 

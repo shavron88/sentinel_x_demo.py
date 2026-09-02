@@ -2,91 +2,176 @@
 
 {% block content %}
 
-<div class="page-content fade-in">
+<div class="page-content fade-in live-camera-page">
 
-<section class="camera-page">
-        <div class="camera-left chart-loading">
+    <div class="live-header">
+        <div class="live-header-left">
+            <div class="live-badge">
+                <span class="live-dot"></span>
+                <span>LIVE</span>
+            </div>
+            <div class="live-title">
+                <h2 id="liveCameraName">{{ camera_name }}</h2>
+                <span class="live-subtitle">Real-time AI surveillance stream</span>
+            </div>
+        </div>
+        <div class="live-header-right">
+            <button class="live-icon-btn" id="liveSnapshotBtn" type="button" title="Capture Snapshot" aria-label="Snapshot">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <span>Snapshot</span>
+            </button>
+            <button class="live-icon-btn" id="liveReplayBtn" type="button" title="Open Replay" aria-label="Replay" onclick="window.location.href='/replay'">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 19 5 3"/></svg>
+                <span>Replay</span>
+            </button>
+            <button class="live-icon-btn live-icon-btn--primary" id="liveFullscreenBtn" type="button" title="Fullscreen" aria-label="Fullscreen">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                <span>Fullscreen</span>
+            </button>
+        </div>
+    </div>
 
-            <div class="loading-spinner small"></div>
+    <div class="live-layout">
 
+        <div class="live-viewport" id="liveViewport">
+            <div class="live-viewport-overlay-top">
+                <span class="live-rec-dot"></span>
+                <span>REC</span>
+                <span class="live-viewport-sep">·</span>
+                <span id="liveCameraLabel2">{{ camera_name }}</span>
+            </div>
+            <div class="live-viewport-overlay-bottom" id="liveStreamTime">Connecting...</div>
             <img src="/video_feed?camera_name={{ camera_name }}"
-
-                 id="live-camera">
-
+                 id="live-camera"
+                 alt="Live camera stream for {{ camera_name }}"
+                 class="live-stream">
+            <div class="live-viewport-loader" id="liveViewportLoader">
+                <div class="loading-spinner small"></div>
+                <span>Initializing stream...</span>
+            </div>
         </div>
 
-    <div class="camera-right">
+        <aside class="live-side">
 
-        <div class="panel">
+            <div class="live-panel">
+                <div class="live-panel-title">
+                    <span class="live-panel-dot live-panel-dot--ok"></span>
+                    <span>Status</span>
+                </div>
+                <div class="live-panel-value" id="camera-status">Online</div>
+            </div>
 
-            <h3>Status</h3>
+            <div class="live-panel">
+                <div class="live-panel-title">
+                    <span>Resolution</span>
+                </div>
+                <div class="live-panel-value">640 × 480</div>
+            </div>
 
-            <p>🟢 Online</p>
+            <div class="live-panel">
+                <div class="live-panel-title">
+                    <span>FPS</span>
+                </div>
+                <div class="live-panel-value" id="camera-fps">30</div>
+            </div>
 
-        </div>
+            <div class="live-panel">
+                <div class="live-panel-title">
+                    <span>Threat</span>
+                </div>
+                <div class="live-panel-value live-panel-value--ok" id="threat-level">LOW</div>
+            </div>
 
-        <div class="panel">
+            <div class="live-panel live-panel--wide">
+                <div class="live-panel-title">
+                    <span>Camera</span>
+                </div>
+                <div class="live-panel-meta">
+                    <div><span>Name</span><strong id="liveCameraMeta">{{ camera_name }}</strong></div>
+                    <div><span>Zone</span><strong>Primary Zone</strong></div>
+                    <div><span>Mode</span><strong>AI Active</strong></div>
+                </div>
+            </div>
 
-            <h3>Resolution</h3>
-
-            <p>640 × 480</p>
-
-        </div>
-
-        <div class="panel">
-
-            <h3>FPS</h3>
-
-            <p id="camera-fps">30</p>
-
-        </div>
-
-        <div class="panel">
-
-            <h3>Threat</h3>
-
-            <p id="threat-level">
-
-                LOW
-
-            </p>
-
-        </div>
+        </aside>
 
     </div>
 
-</section>
+    <section class="live-panel live-panel--events">
+        <div class="live-panel-title">
+            <span>Recent Events</span>
+            <span class="live-panel-hint">Latest activity for this camera</span>
+        </div>
+        <div id="timeline" class="live-timeline"></div>
+    </section>
 
-<section class="panel">
+    <div id="emptyState" style="display:none;"></div>
 
-    <h3>
-
-        Recent Events
-
-    </h3>
-
-    <div id="timeline"></div>
-
-</section>
-
-<div id="emptyState" style="display:none;"></div>
+</div>
 
 <script>
-
 (function() {
+    const img = document.getElementById('live-camera');
+    const loader = document.getElementById('liveViewportLoader');
+    const timeEl = document.getElementById('liveStreamTime');
 
-    showSkeletonRows("timeline", 5);
+    if (img) {
+        img.addEventListener('load', function() {
+            if (loader) loader.style.display = 'none';
+            if (timeEl) {
+                const now = new Date();
+                const hh = String(now.getHours()).padStart(2, '0');
+                const mm = String(now.getMinutes()).padStart(2, '0');
+                const ss = String(now.getSeconds()).padStart(2, '0');
+                timeEl.textContent = now.toLocaleDateString() + ' · ' + hh + ':' + mm + ':' + ss;
+            }
+        });
+        img.addEventListener('error', function() {
+            if (loader) loader.innerHTML = '<span style="color:#ef4444;">Stream unavailable</span>';
+        });
+    }
 
+    const fsBtn = document.getElementById('liveFullscreenBtn');
+    if (fsBtn) {
+        fsBtn.addEventListener('click', function() {
+            const target = document.getElementById('liveViewport');
+            if (!target) return;
+            const doc = document;
+            const isFs = doc.fullscreenElement;
+            if (!isFs) {
+                (target.requestFullscreen || target.webkitRequestFullscreen || function(){}).call(target);
+            } else {
+                (doc.exitFullscreen || doc.webkitExitFullscreen || function(){}).call(doc);
+            }
+        });
+    }
+
+    const snapBtn = document.getElementById('liveSnapshotBtn');
+    if (snapBtn) {
+        snapBtn.addEventListener('click', async function() {
+            try {
+                const csrf = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+                const r = await fetch('/api/camera/snapshot', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+                    body: JSON.stringify({ camera_name: '{{ camera_name }}' })
+                });
+                if (r.ok) {
+                    snapBtn.classList.add('live-icon-btn--ok');
+                    setTimeout(function(){ snapBtn.classList.remove('live-icon-btn--ok'); }, 1200);
+                }
+            } catch (e) {}
+        });
+    }
+
+    if (typeof showSkeletonRows === 'function') showSkeletonRows('timeline', 5);
     setTimeout(function() {
-
-        // In production, check if events exist
-
-        // If empty: showEmptyState("emptyState", "No Recent Events", "No events recorded for this camera.", [{label:"Refresh", onclick:"refreshCamera()", class:"btn-primary"}])
-
-    }, 600);
-
+        const tl = document.getElementById('timeline');
+        if (tl && !tl.innerHTML.trim()) {
+            tl.innerHTML = '<div class="live-timeline-empty">No recent events for this camera.</div>';
+        }
+    }, 800);
 })();
-
 </script>
 
 </div>

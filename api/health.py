@@ -2,8 +2,9 @@ import time
 import psutil
 import sqlite3
 import logging
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, session
 from database.db import DB_PATH, get_all_cameras
+from api.auth import is_authenticated
 
 health_bp = Blueprint("health_bp", __name__)
 APP_START_TIME = time.time()
@@ -26,8 +27,22 @@ def check_database():
 @health_bp.route("/health", methods=["GET"])
 @health_bp.route("/api/health", methods=["GET"])
 def get_system_health():
-    """Comprehensive System, Hardware, Database and Camera Stream Diagnostics."""
-    
+    """Comprehensive System, Hardware, Database and Camera Stream Diagnostics.
+
+    Public (unauthenticated) requests receive only minimal status — no
+    hardware metrics, no database latency, no camera counts.  Authenticated
+    dashboard users receive the full diagnostic payload.
+    """
+    uptime_seconds = int(time.time() - APP_START_TIME)
+    timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+    if not is_authenticated():
+        return jsonify({
+            "status": "HEALTHY",
+            "timestamp": timestamp,
+            "uptime_seconds": uptime_seconds
+        }), 200
+
     # 1. CPU & Memory Stats
     cpu_percent = psutil.cpu_percent(interval=None)
     ram = psutil.virtual_memory()
@@ -37,16 +52,14 @@ def get_system_health():
     cameras = get_all_cameras()
     total_cams = len(cameras)
     online_cams = sum(1 for c in cameras if c.get("status") == "ONLINE")
-    
+
     avg_fps = round(sum(c.get("fps", 0) for c in cameras) / total_cams, 1) if total_cams > 0 else 0.0
     avg_latency = round(sum(c.get("latency", 0) for c in cameras) / total_cams, 1) if total_cams > 0 else 0.0
 
     # 3. Overall System Uptime
-    uptime_seconds = int(time.time() - APP_START_TIME)
-
     health_status = {
         "status": "HEALTHY",
-        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "timestamp": timestamp,
         "uptime_seconds": uptime_seconds,
         "hardware": {
             "cpu_usage_percent": cpu_percent,
@@ -61,7 +74,7 @@ def get_system_health():
                 "percent": disk.percent
             },
             "gpu": {
-                "available": False,  # Updated dynamically if PyTorch/CUDA is present
+                "available": False,
                 "name": "N/A",
                 "usage_percent": 0
             }

@@ -6,6 +6,7 @@ from api.auth import require_auth
 gallery_bp = Blueprint('gallery_api', __name__, url_prefix='/api')
 
 @gallery_bp.route('/cameras', methods=['GET'])
+@require_auth
 def api_get_cameras():
     """Returns all cameras from DB merged with active camera streams."""
     try:
@@ -63,6 +64,7 @@ def api_get_cameras():
         return jsonify({"success": False, "error": str(e)}), 500
 
 @gallery_bp.route('/gallery', methods=['GET'])
+@require_auth
 def api_get_gallery():
     """Fetches recorded evidence images and video logs."""
     try:
@@ -76,6 +78,7 @@ def api_get_gallery():
 
 
 @gallery_bp.route('/evidence', methods=['GET'])
+@require_auth
 def api_get_evidence():
     """Fetches evidence joined with event data for the evidence page."""
     try:

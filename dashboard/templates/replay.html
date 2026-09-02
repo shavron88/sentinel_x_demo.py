@@ -2,140 +2,154 @@
 
 {% block content %}
 
-<div class="page-content fade-in">
+<div class="page-content fade-in replay-page-wrap">
 
-<div class="replay-page">
-
-<div class="video-panel chart-loading">
-
-    <div class="loading-spinner small"></div>
-
-    <div class="video-header">
-
-        <h2>🎥 Incident Replay</h2>
-
-        <div class="badge badge-danger">
-
-            HIGH PRIORITY
-
+    <header class="replay-header">
+        <div class="replay-header-left">
+            <div class="replay-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 19 5 3"></polygon>
+                </svg>
+            </div>
+            <div class="replay-titles">
+                <h1 class="replay-title">Incident Replay</h1>
+                <span class="replay-subtitle">Review captured footage and incident metadata</span>
+            </div>
         </div>
+        <div class="replay-header-right">
+            <span class="replay-priority" id="replayPriority">
+                <span class="replay-priority-dot"></span>
+                <span id="replayPriorityText">HIGH PRIORITY</span>
+            </span>
+            <button class="replay-btn replay-btn-ghost" type="button" onclick="history.back()" aria-label="Back">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                <span>Back</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="replay-grid">
+
+        <section class="replay-video-card">
+            <div class="replay-video-viewport" id="replayViewport">
+                <div class="replay-video-overlay-top">
+                    <span class="replay-rec-dot"></span>
+                    <span>REPLAY</span>
+                    <span class="replay-sep">·</span>
+                    <span id="replayOverlayCamera">Camera</span>
+                </div>
+                <div class="replay-video-overlay-bottom" id="replayOverlayTime">--</div>
+
+                <video id="incidentVideo" controls preload="metadata" playsinline>
+                    <source src="" type="video/mp4">
+                </video>
+
+                <img id="replayPoster" class="replay-poster" alt="Replay frame" style="display:none;">
+
+                <div class="replay-viewport-loader" id="replayViewportLoader">
+                    <div class="loading-spinner small"></div>
+                    <span>Loading replay...</span>
+                </div>
+
+                <div class="replay-viewport-empty" id="replayViewportEmpty" style="display:none;">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5">
+                        <polygon points="5 3 19 12 5 19 5 3"></polygon>
+                    </svg>
+                    <h3>No replay available</h3>
+                    <p id="replayViewportEmptyMsg">No video or image evidence was found.</p>
+                    <button class="replay-btn replay-btn-ghost" type="button" onclick="history.back()">Back</button>
+                </div>
+            </div>
+
+            <div class="replay-controls" id="replayControls" style="display:none;">
+                <button class="replay-icon-btn" type="button" onclick="skipBack()" aria-label="Skip back 10 seconds" title="-10s">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="11 19 2 12 11 5 11 19"></polygon>
+                        <polygon points="22 19 13 12 22 5 22 19"></polygon>
+                    </svg>
+                    <span>-10s</span>
+                </button>
+                <button class="replay-icon-btn replay-icon-btn--primary" type="button" id="replayPlayBtn" onclick="togglePlay()" aria-label="Play / Pause">
+                    <svg id="replayPlayIcon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                        <polygon points="6 4 20 12 6 20 6 4"></polygon>
+                    </svg>
+                    <span id="replayPlayText">Play</span>
+                </button>
+                <button class="replay-icon-btn" type="button" onclick="skipForward()" aria-label="Skip forward 10 seconds" title="+10s">
+                    <span>+10s</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 19 22 12 13 5 13 19"></polygon>
+                        <polygon points="2 19 11 12 2 5 2 19"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <aside class="replay-side">
+
+            <div class="replay-panel">
+                <div class="replay-panel-title">
+                    <span class="replay-panel-dot"></span>
+                    <span>Incident Summary</span>
+                </div>
+                <div class="replay-summary">
+                    <div class="replay-summary-row">
+                        <span class="replay-summary-label">Event</span>
+                        <strong class="replay-summary-value" id="replayEvent">--</strong>
+                    </div>
+                    <div class="replay-summary-row">
+                        <span class="replay-summary-label">Camera</span>
+                        <strong class="replay-summary-value" id="replayCamera">--</strong>
+                    </div>
+                    <div class="replay-summary-row">
+                        <span class="replay-summary-label">Time</span>
+                        <strong class="replay-summary-value" id="replayTime">--</strong>
+                    </div>
+                    <div class="replay-summary-row">
+                        <span class="replay-summary-label">Severity</span>
+                        <strong class="replay-summary-value" id="replayStatus">--</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="replay-panel">
+                <div class="replay-panel-title">
+                    <span>Detection Details</span>
+                </div>
+                <div class="replay-summary">
+                    <div class="replay-summary-row">
+                        <span class="replay-summary-label">Confidence</span>
+                        <strong class="replay-summary-value" id="replayConfidence">--</strong>
+                    </div>
+                    <div class="replay-summary-row">
+                        <span class="replay-summary-label">Duration</span>
+                        <strong class="replay-summary-value" id="replayDuration">--</strong>
+                    </div>
+                    <div class="replay-summary-row">
+                        <span class="replay-summary-label">Status</span>
+                        <strong class="replay-summary-value" id="replayResolve">--</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="replay-panel replay-panel-actions">
+                <button class="replay-btn replay-btn-primary" type="button" id="replayDownloadBtn" style="display:none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>Download</span>
+                </button>
+                <button class="replay-btn replay-btn-ghost" type="button" onclick="history.back()">Back to Incidents</button>
+            </div>
+
+        </aside>
 
     </div>
-
-    <video
-    id="incidentVideo"
-    controls
-    autoplay
-    style="display:none;">
-
-    <source src="" type="video/mp4">
-
-    </video>
-
-    <div class="timeline-controls" id="timelineControls" style="display:none;">
-
-        <button class="btn btn-outline" onclick="skipBack()">
-
-            ⏪ -10s
-
-        </button>
-
-        <button class="btn btn-primary" onclick="togglePlay()">
-
-            ▶ Play
-
-        </button>
-
-        <button class="btn btn-outline" onclick="skipForward()">
-
-            +10s ⏩
-
-        </button>
-
-    </div>
-
-</div>
-
-<div class="incident-info">
-
-    <h2>Incident Summary</h2>
-
-    <div class="info-card">
-
-        <p>
-
-        <strong>Camera</strong>
-
-        <span id="replayCamera">Camera 01</span>
-
-        </p>
-
-        <p>
-
-        <strong>Event</strong>
-
-        <span id="replayEvent">Fall Detection</span>
-
-        </p>
-
-        <p>
-
-        <strong>Confidence</strong>
-
-        <span id="replayConfidence">97.6%</span>
-
-        </p>
-
-        <p>
-
-        <strong>Duration</strong>
-
-        <span id="replayDuration">18 Seconds</span>
-
-        </p>
-
-        <p>
-
-        <strong>Time</strong>
-
-        <span id="replayTime">10:42 PM</span>
-
-        </p>
-
-        <p>
-
-        <strong>Status</strong>
-
-        <span id="replayStatus">Resolved</span>
-
-        </p>
-
-    </div>
-
-</div>
-
-</div>
-
-<div id="emptyState" style="display:none;"></div>
-
-<script>
-
-(function() {
-
-    showSkeletonCards("timelineControls", 3);
-
-    if (typeof loadReplay === 'function') {
-        loadReplay();
-    } else {
-        // replay.js loads after content block; wait for it
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof loadReplay === 'function') loadReplay();
-        });
-    }
-
-})();
-
-</script>
 
 </div>
 

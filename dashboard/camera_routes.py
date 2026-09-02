@@ -1,6 +1,7 @@
 import sys
 from flask import Blueprint, jsonify, request, session
 from camera.camera_manager import camera_manager
+from api.auth import require_auth, require_csrf
 
 camera_bp = Blueprint('camera', __name__, url_prefix='/api/camera')
 
@@ -11,6 +12,8 @@ def _get_current_user_id():
 
 
 @camera_bp.route('/snapshot', methods=['POST'])
+@require_auth
+@require_csrf
 def handle_snapshot():
     data = request.get_json() or {}
     cam_name = data.get('camera_name', 'Camera_01')
@@ -26,6 +29,8 @@ def handle_snapshot():
 
 
 @camera_bp.route('/start-record', methods=['POST'])
+@require_auth
+@require_csrf
 def handle_start_record():
     data = request.get_json() or {}
     cam_name = data.get('camera_name', 'Camera_01')
@@ -41,6 +46,8 @@ def handle_start_record():
 
 
 @camera_bp.route('/stop-record', methods=['POST'])
+@require_auth
+@require_csrf
 def handle_stop_record():
     data = request.get_json() or {}
     cam_name = data.get('camera_name', 'Camera_01')
@@ -56,6 +63,7 @@ def handle_stop_record():
 
 
 @camera_bp.route('/status', methods=['GET'])
+@require_auth
 def handle_status():
     cam_name = request.args.get('camera_name', 'Camera_01')
     # Prefer the full pipeline status (includes per-camera AI detection summary)
@@ -71,6 +79,8 @@ def handle_status():
 
 
 @camera_bp.route('/restart', methods=['POST'])
+@require_auth
+@require_csrf
 def handle_restart():
     data = request.get_json() or {}
     cam_name = data.get('camera_name', 'Camera_01')
@@ -83,6 +93,8 @@ def handle_restart():
 
 
 @camera_bp.route('/add', methods=['POST'])
+@require_auth
+@require_csrf
 def handle_add_camera():
     data = request.get_json() or {}
     name = data.get('name', '').strip()
@@ -126,6 +138,8 @@ def handle_add_camera():
 
 
 @camera_bp.route('/remove/<path:name>', methods=['DELETE'])
+@require_auth
+@require_csrf
 def handle_remove_camera(name):
     try:
         camera_manager.remove_camera(name)
@@ -141,6 +155,8 @@ def handle_remove_camera(name):
 
 
 @camera_bp.route('/start/<path:name>', methods=['POST'])
+@require_auth
+@require_csrf
 def handle_start_camera(name):
     try:
         pipeline = camera_manager.get_pipeline(name)
@@ -153,6 +169,8 @@ def handle_start_camera(name):
 
 
 @camera_bp.route('/stop/<path:name>', methods=['POST'])
+@require_auth
+@require_csrf
 def handle_stop_camera(name):
     try:
         pipeline = camera_manager.get_pipeline(name)
@@ -165,6 +183,8 @@ def handle_stop_camera(name):
 
 
 @camera_bp.route('/test-connection', methods=['POST'])
+@require_auth
+@require_csrf
 def handle_test_connection():
     data = request.get_json() or {}
     source = data.get('source', '').strip()

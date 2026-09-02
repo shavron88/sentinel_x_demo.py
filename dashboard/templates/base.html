@@ -103,6 +103,12 @@
 
     {% endif %}
 
+    {% if request.path == '/replay' %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/replay.css') }}?v=20260901">
+
+    {% endif %}
+
     <!-- Polish layer — visual refinements -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/polish.css') }}?v=20260831">
 
@@ -111,6 +117,8 @@
 
     <!-- Responsive system — mobile-first responsive design -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}?v=20260831">
+
+    <!-- variables.css comment removed — variables are in theme-system.css -->
 
     <style>
     /* ═══ Page entrance transition ═══ */

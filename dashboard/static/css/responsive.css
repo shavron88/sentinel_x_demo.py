@@ -563,20 +563,40 @@ html {
 .ai-feed-item {
     padding: 8px 12px;
     border-radius: 8px;
-    gap: 8px;
+    gap: 6px;
+}
+
+.ai-feed-item .ai-feed-content {
+    min-width: 0;
+}
+
+.ai-feed-time {
+    font-size: 10px;
+    min-width: 36px;
+    flex-shrink: 0;
 }
 
 .ai-feed-title {
     font-size: 12px;
+    -webkit-line-clamp: 1;
 }
 
 .ai-feed-meta {
     font-size: 10px;
 }
 
-.ai-feed-time {
+.ai-feed-badge {
+    font-size: 9px;
+    flex-shrink: 0;
+}
+
+.ai-feed-img {
+    width: 50px;
+    height: 50px;
+}
+
+.ai-feed-more {
     font-size: 10px;
-    min-width: 36px;
 }
 
 @media (min-width: 768px) {
@@ -587,10 +607,17 @@ html {
 
     .ai-feed-item {
         padding: 10px 14px;
+        gap: 8px;
     }
 
     .ai-feed-title {
         font-size: 13px;
+        -webkit-line-clamp: 2;
+    }
+
+    .ai-feed-img {
+        width: 60px;
+        height: 60px;
     }
 }
 

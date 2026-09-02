@@ -188,35 +188,61 @@ async function loadAIFeed() {
 
             const timestamp = item.timestamp || item.time || "";
 
+            const thumbnail = item.thumbnail || item.image_url || "";
+
+            const extraDetails = item.details || item.description || "";
+
             const timeStr = (function() {
                 if (!timestamp) return "--:--";
                 var d = new Date(timestamp);
                 return isNaN(d.getTime()) ? "--:--" : d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
             })();
 
+            const truncateTitle = event.length > 80;
+            const shortEvent = truncateTitle ? event.slice(0, 80) + "..." : event;
+            const hasExtra = extraDetails || thumbnail;
+
             const div = document.createElement("div");
 
             div.className = `ai-feed-item feed-${severity.toLowerCase()}`;
 
-            div.innerHTML = `
+            let html = '';
 
-                <span class="ai-feed-time">${timeStr}</span>
+            // Optional thumbnail image with containment
+            if (thumbnail) {
+                html += '<div class="ai-feed-img"><img src="' + escapeHtml(thumbnail) + '" alt="Evidence thumbnail" onerror="this.style.display=\'none\';this.closest(\'.ai-feed-img\').style.display=\'none\';"></div>';
+            }
 
-                <div class="ai-feed-content">
+            html += '<span class="ai-feed-time">' + escapeHtml(timeStr) + '</span>';
 
-                    <div class="ai-feed-title">${event}</div>
+            html += '<div class="ai-feed-content">';
 
-                    <div class="ai-feed-meta">
+            // Truncated title (always shown, CSS line-clamp limits to 2 lines)
+            html += '<div class="ai-feed-title">' + escapeHtml(shortEvent) + '</div>';
 
-                        <span><svg class="chip-icon" style="width:12px;height:12px;vertical-align:-1px;margin-right:3px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${zone}</span>
+            // Show More button for long descriptions
+            if (truncateTitle) {
+                html += '<span class="ai-feed-more" onclick="document.getElementById(\'extra-' + index + '\').classList.add(\'visible\'); this.style.display=\'none\';">Show More</span>';
+                html += '<div class="ai-feed-extra" id="extra-' + index + '">' + escapeHtml(event.slice(80)) + '</div>';
+            }
 
-                    </div>
+            // Extra details if present
+            if (extraDetails) {
+                html += '<div class="ai-feed-extra">' + escapeHtml(extraDetails) + '</div>';
+            }
 
-                </div>
+            html += '<div class="ai-feed-meta">';
+            html += '<span><svg class="chip-icon" style="width:12px;height:12px;vertical-align:-1px;margin-right:3px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' + escapeHtml(zone) + '</span>';
 
-                <span class="ai-feed-badge ${severity.toLowerCase()}">${severity}</span>
+            if (hasExtra) {
+                html += '<span><svg class="chip-icon" style="width:12px;height:12px;vertical-align:-1px;margin-right:3px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4v4a4 4 0 1 0 0-8V8a4 4 0 0 0 0 8z"/></svg>Details</span>';
+            }
 
-            `;
+            html += '</div>';  // end ai-feed-meta
+            html += '</div>';  // end ai-feed-content
+            html += '<span class="ai-feed-badge ' + severity.toLowerCase() + '">' + escapeHtml(severity) + '</span>';
+
+            div.innerHTML = html;
 
             feed.appendChild(div);
 

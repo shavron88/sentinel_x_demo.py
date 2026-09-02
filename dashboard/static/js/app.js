@@ -24,13 +24,9 @@ function restoreTheme() {
         document.documentElement.setAttribute('data-theme', 'dark');
     }
 }
-    } catch (e) {
-        document.documentElement.setAttribute('data-theme', 'midnight');
-    }
-}
 
 /* ==========================================
-   CHART THEME HELPER
+    CHART THEME HELPER
    Returns colors adapted to current theme.
    Shared by dashboard.js and analytics.js.
 ========================================== */
