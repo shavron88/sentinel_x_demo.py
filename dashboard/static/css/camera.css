@@ -1591,6 +1591,9 @@
     grid-template-columns:minmax(0,1fr) 280px;
     gap:18px;
     align-items:stretch;
+    max-width:1600px;
+    margin:0 auto;
+    width:100%;
 }
 
 .live-viewport{
@@ -1602,6 +1605,7 @@
     border:1px solid var(--ev-border, rgba(148,163,184,.18));
     box-shadow:0 12px 36px rgba(0,0,0,.45);
     min-width:0;
+    max-height:calc(100vh - 220px);
 }
 
 .live-stream{
@@ -1791,13 +1795,18 @@
 .live-viewport:-webkit-full-screen{
     width:100vw;
     height:100vh;
+    max-height:100vh;
     aspect-ratio:auto;
     border-radius:0;
     border:none;
+    overflow:hidden;
 }
 .live-viewport:fullscreen .live-stream,
 .live-viewport:-webkit-full-screen .live-stream{
+    width:100%;
+    height:100%;
     object-fit:contain;
+    object-position:center;
 }
 
 /* Light theme adaptations for live camera */

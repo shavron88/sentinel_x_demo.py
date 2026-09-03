@@ -26,7 +26,8 @@ except ImportError:
 
 
 def start_ai():
-    pass
+    from core.engine import run_engine
+    run_engine()
 
 
 if __name__ == "__main__":

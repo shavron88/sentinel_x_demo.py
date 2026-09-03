@@ -5,7 +5,12 @@ import sys
 import threading
 import logging
 from datetime import datetime
+from typing import List
 from database.db import save_camera, update_camera_status, get_camera, get_all_cameras
+
+from camera.video_evidence import EvidenceVideoWatcher
+from camera.video_perspective import VideoPerspectiveValidator
+from camera.video_preprocessor import VideoPreprocessor
 
 logger = logging.getLogger("SentinelX.CameraManager")
 
@@ -42,6 +47,8 @@ class CameraStream:
         self.network_errors = 0
         self.decode_errors = 0
         self.last_error = None
+        self._last_error_time = 0.0
+        self._last_db_sync = 0.0
 
         # Recording & Snapshot State
         self.is_recording = False
@@ -93,6 +100,7 @@ class CameraStream:
                     logger.warning(f"[{self.name}] cv2 capture release error during restart (ignored): {e}")
                 self.cap = None
         self.status = "RECONNECTING"
+        self._sync_db()
 
     def _is_rtsp(self):
         url = str(self.ip_url)
@@ -234,17 +242,30 @@ class CameraStream:
                         continue
                     else:
                         self.status = "ONLINE"
+                        self.health = "HEALTHY"
                         w = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
                         h = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
                         self.resolution = f"{w}x{h}" if w > 0 else "1920x1080"
                         logger.info(f"[{self.name}] Connected successfully ({self.resolution})")
+                        self._sync_db()
                         # Native frame rate pacing for video files (real-time playback)
                         if self._is_video:
                             vfps = self.cap.get(cv2.CAP_PROP_FPS)
                             self._video_frame_delay = (1.0 / vfps) if (vfps and vfps > 0) else 0.0
 
                 ret, frame = self.cap.read()
-                self.latency = round((time.time() - ping_start) * 1000, 2)  # ms
+                read_time = time.time() - ping_start
+                self.latency = round(read_time * 1000, 2)  # ms
+
+                if read_time > 5.0:
+                    logger.warning(f"[{self.name}] Frame read timeout ({read_time:.1f}s), releasing capture")
+                    self.last_error = f"Read timeout ({read_time:.1f}s)"
+                    self._last_error_time = time.time()
+                    self.status = "RECONNECTING"
+                    self._safe_release()
+                    self._sync_db()
+                    time.sleep(1.0)
+                    continue
 
                 if not ret:
                     # Video file reached EOF — loop back to frame 0 so it behaves
@@ -259,14 +280,17 @@ class CameraStream:
                                 self.status = "ONLINE"
                                 self.network_errors = 0
                                 self.reconnects = 0
+                                self._sync_db()
                                 continue
                         # If seek failed, release and let the top of the loop reopen
                         self.status = "RECONNECTING"
                         self._safe_release()
+                        self._sync_db()
                         continue
 
                     # Live stream disconnect — reconnect with backoff
                     self.last_error = "Frame read failed"
+                    self._last_error_time = time.time()
                     logger.warning(f"[{self.name}] Frame drop / network interruption.")
                     self.status = "DISCONNECTED"
                     self.health = "POOR"
@@ -317,10 +341,12 @@ class CameraStream:
 
             except Exception as e:
                 self.last_error = str(e)
+                self._last_error_time = time.time()
                 logger.error(f"[{self.name}] capture loop error: {e}")
                 self.status = "ERROR"
                 self.health = "CRITICAL"
                 self.decode_errors += 1
+                self._safe_release()
                 self._sync_db()
                 time.sleep(self.reconnect_delay)
 
@@ -411,6 +437,11 @@ class CameraStream:
         }
 
     def _sync_db(self):
+        now = time.time()
+        if now - self._last_db_sync < 2.0:
+            return
+        self._last_db_sync = now
+        
         uptime_sec = int(time.time() - self.start_time) if self.start_time else 0
         try:
             update_camera_status(
@@ -432,7 +463,17 @@ class CameraStream:
 
 class CameraPipeline:
     """Per-camera pipeline: CameraStream + Queue + Worker + Event State."""
-    def __init__(self, name, ip_url, zone="DEFAULT", rtsp_config=None, reconnect_delay=5, max_queue_size=30):
+    def __init__(
+        self,
+        name,
+        ip_url,
+        zone="DEFAULT",
+        rtsp_config=None,
+        reconnect_delay=5,
+        max_queue_size=30,
+        validator=None,
+        preprocessor=None,
+    ):
         self.name = name
         self.zone = zone
         self.max_queue_size = max_queue_size
@@ -481,30 +522,39 @@ class CameraPipeline:
         self.last_detections = []  # [{label, confidence}]
         self.last_detection_time = 0.0
 
-    def start(self, model_path=None):
+        # Perspective validation and preprocessing
+        self.validator = validator
+        self.preprocessor = preprocessor
+
+    def start(self, model_path=None, skip_worker=False, shared_engine=None):
         """Starts the camera pipeline."""
         if self.is_running:
             return
 
         from ai.health import AIHealthMonitor
         from ai.inference import YOLOInferenceEngine
-        from ai.worker import YOLOWorker
         from config import MODEL_PATH
 
         if model_path is None:
             model_path = MODEL_PATH
 
         self.health = AIHealthMonitor()
-        self.engine = YOLOInferenceEngine(model_path=model_path, health_monitor=self.health, camera_id=self.name)
-        self.worker = YOLOWorker(self.queue, self.engine, self.health, on_result=self._on_inference_result)
+        if shared_engine is not None:
+            self.engine = shared_engine
+        else:
+            self.engine = YOLOInferenceEngine(model_path=model_path, health_monitor=self.health, camera_id=self.name)
+
+        if not skip_worker:
+            from ai.worker import YOLOWorker
+            self.worker = YOLOWorker(self.queue, self.engine, self.health, on_result=self._on_inference_result)
+            self.worker.start()
 
         self.stream.start()
-        self.worker.start()
         self.is_running = True
 
-        # Start frame-forwarding thread (CameraStream → Detection Queue)
-        self._frame_thread = threading.Thread(target=self._frame_forward_loop, daemon=True)
-        self._frame_thread.start()
+        if not skip_worker:
+            self._frame_thread = threading.Thread(target=self._frame_forward_loop, daemon=True)
+            self._frame_thread.start()
 
     def stop(self):
         """Stops the camera pipeline."""
@@ -693,6 +743,9 @@ class CameraPipeline:
                 if self._frame_id % frame_skip != 0:
                     continue
 
+                if self.preprocessor is not None:
+                    frame = self.preprocessor.process(frame)
+
                 self.queue.push_frame(self._frame_id, frame)
                 _time.sleep(interval)
 
@@ -741,21 +794,107 @@ class CameraManager:
         if cls._instance is None:
             cls._instance = super(CameraManager, cls).__new__(cls)
             cls._instance.pipelines = {}
+            cls._instance._video_watcher = EvidenceVideoWatcher(
+                watch_dir="evidence/videos",
+                poll_interval=5.0
+            )
+            cls._instance._video_watcher.register_callback(cls._instance._on_new_video_evidence)
+            cls._instance._validator = VideoPerspectiveValidator()
+            cls._instance._preprocessor = VideoPreprocessor()
+            cls._instance._shared_engine = None
+            cls._instance._shared_engine_health = None
+            cls._instance._default_camera_created = True
         return cls._instance
+
+    def _get_shared_engine(self):
+        if self._shared_engine is None:
+            from ai.health import AIHealthMonitor
+            from ai.inference import YOLOInferenceEngine
+            from config import MODEL_PATH
+            self._shared_engine_health = AIHealthMonitor()
+            self._shared_engine = YOLOInferenceEngine(
+                model_path=MODEL_PATH,
+                health_monitor=self._shared_engine_health,
+                camera_id="shared"
+            )
+        return self._shared_engine
 
     def _ensure_default_camera(self):
         if not self._default_camera_created and "Camera_01" not in self.pipelines:
-            pipeline = self.add_camera(name="Camera_01", ip_url=1, zone="Main Entrance", auto_start=True)
+            pipeline = self.add_camera(
+                name="Camera_01",
+                ip_url=1,
+                zone="Main Entrance",
+                auto_start=True,
+                validator=self._validator,
+                preprocessor=self._preprocessor,
+            )
             self._default_camera_created = True
             return pipeline
         return self.pipelines.get("Camera_01")
+
+    def _on_new_video_evidence(self, filepath: str):
+        """Callback from EvidenceVideoWatcher when a new video file appears."""
+        try:
+            filename = os.path.basename(filepath)
+            base_name = os.path.splitext(filename)[0]
+            camera_name = f"Evidence_{base_name}"
+
+            if camera_name in self.pipelines:
+                logger.info(f"[VideoEvidence] Camera '{camera_name}' already registered.")
+                return
+
+            shared_engine = self._get_shared_engine()
+            logger.info(f"[VideoEvidence] Registering new evidence camera: {camera_name} -> {filepath}")
+            pipeline = self.add_camera(
+                name=camera_name,
+                ip_url=filepath,
+                zone="Evidence",
+                auto_start=True,
+                validator=self._validator,
+                preprocessor=self._preprocessor,
+                skip_worker=True,
+                shared_engine=shared_engine,
+            )
+            try:
+                save_camera(
+                    name=camera_name,
+                    stream_url=filepath,
+                    location="Evidence",
+                    status="ONLINE",
+                    user_id=self._current_user_id or 1,
+                    is_rtsp=0
+                )
+            except Exception as db_err:
+                logger.error(f"[VideoEvidence] Failed to save camera to DB: {db_err}")
+        except Exception as e:
+            logger.error(f"[VideoEvidence] Callback error: {e}")
+
+    def start_video_watcher(self):
+        if hasattr(self, '_video_watcher') and self._video_watcher:
+            self._video_watcher.start()
+
+    def stop_video_watcher(self):
+        if hasattr(self, '_video_watcher') and self._video_watcher:
+            self._video_watcher.stop()
+
+    def get_video_evidence_cameras(self) -> List[str]:
+        if not hasattr(self, '_video_watcher') or not self._video_watcher:
+            return []
+        files = self._video_watcher.get_known_files()
+        names = []
+        for filepath in files:
+            filename = os.path.basename(filepath)
+            base_name = os.path.splitext(filename)[0]
+            names.append(f"Evidence_{base_name}")
+        return names
 
     def load_cameras_for_user(self, user_id):
         """Stop all cameras and load only the specified user's cameras from DB."""
         self.stop_all()
         self._current_user_id = user_id
         self._default_camera_created = False
-        
+
         try:
             from database.db import get_all_cameras
             cameras = get_all_cameras(user_id=user_id)
@@ -764,12 +903,14 @@ class CameraManager:
                     name=cam.get("name", ""),
                     ip_url=cam.get("stream_url", ""),
                     zone=cam.get("location", "General Area"),
-                    auto_start=True
+                    auto_start=True,
+                    validator=self._validator,
+                    preprocessor=self._preprocessor,
                 )
         except Exception as e:
             print(f"Error loading cameras for user {user_id}: {e}")
 
-    def add_camera(self, name, ip_url, zone="DEFAULT", rtsp_config=None, reconnect_delay=5, max_queue_size=30, auto_start=True):
+    def add_camera(self, name, ip_url, zone="DEFAULT", rtsp_config=None, reconnect_delay=5, max_queue_size=30, auto_start=True, validator=None, preprocessor=None, skip_worker=False, shared_engine=None):
         """Adds a new camera with its own independent pipeline."""
         if name in self.pipelines:
             self.remove_camera(name)
@@ -780,12 +921,14 @@ class CameraManager:
             zone=zone,
             rtsp_config=rtsp_config,
             reconnect_delay=reconnect_delay,
-            max_queue_size=max_queue_size
+            max_queue_size=max_queue_size,
+            validator=validator,
+            preprocessor=preprocessor,
         )
         self.pipelines[name] = pipeline
 
         if auto_start:
-            pipeline.start()
+            pipeline.start(skip_worker=skip_worker, shared_engine=shared_engine)
         if name == "Camera_01":
             self._default_camera_created = True
         return pipeline
@@ -839,6 +982,7 @@ class CameraManager:
         for name in list(self.pipelines.keys()):
             self.remove_camera(name)
         self._default_camera_created = False
+        self.stop_video_watcher()
 
     def release(self):
         """Alias for stop_all for backward compatibility."""

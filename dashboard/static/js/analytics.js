@@ -83,12 +83,26 @@ function closeAllDropdowns() {
 
 function toggleDropdown(dropdown) {
     const isShown = dropdown.classList.contains('show');
-    const backdrop = createBackdrop();
+    const isMobile = window.innerWidth <= 768;
     
     // Close all other dropdowns first
     document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
         if (menu !== dropdown) menu.classList.remove('show');
     });
+    
+    // On mobile, don't use backdrop - just toggle the popover
+    if (isMobile) {
+        if (isShown) {
+            dropdown.classList.remove('show');
+        } else {
+            dropdown.classList.add('show');
+            positionDropdown(dropdown);
+        }
+        return;
+    }
+    
+    // Desktop: use backdrop
+    const backdrop = createBackdrop();
     
     if (isShown) {
         dropdown.classList.remove('show');
@@ -96,20 +110,11 @@ function toggleDropdown(dropdown) {
     } else {
         dropdown.classList.add('show');
         backdrop.classList.add('show');
-        
-        // Position the dropdown correctly for fixed positioning
         positionDropdown(dropdown);
     }
 }
 
 function positionDropdown(dropdown) {
-    // On mobile the CSS handles centering with !important — only set width.
-    if (window.innerWidth <= 768) {
-        dropdown.style.width = "calc(100vw - 32px)";
-        dropdown.style.maxWidth = "360px";
-        return;
-    }
-    
     // Find the corresponding button for this dropdown
     let btn;
     if (dropdown.id === 'date-range-dropdown') {
@@ -121,26 +126,58 @@ function positionDropdown(dropdown) {
     if (!btn) return;
     
     const btnRect = btn.getBoundingClientRect();
-    const dropdownWidth = 360; // Fixed width for desktop dropdowns
+    const isMobile = window.innerWidth <= 768;
+    const dropdownWidth = isMobile ? Math.min(window.innerWidth - 32, 360) : 360;
     
-    // Calculate position - right-aligned with button
-    let left = btnRect.right - dropdownWidth;
-    if (left < 16) left = 16; // Don't go off-screen left
-    
-    let top = btnRect.bottom + 8;
-    
-    // If dropdown would go off bottom of viewport, show above button
-    const dropdownHeight = dropdown.scrollHeight || 400;
-    if (top + dropdownHeight > window.innerHeight - 20) {
-        top = btnRect.top - dropdownHeight - 8;
-        if (top < 16) top = 16; // Don't go off-screen top
-    }
-    
-    dropdown.style.position = 'fixed';
-    dropdown.style.top = top + 'px';
-    dropdown.style.left = left + 'px';
-    dropdown.style.right = 'auto';
     dropdown.style.width = dropdownWidth + 'px';
+    dropdown.style.maxWidth = dropdownWidth + 'px';
+    
+    if (isMobile) {
+        // Mobile: position as popover anchored below the trigger button
+        const gap = 8;
+        let left = btnRect.left;
+        let top = btnRect.bottom + gap;
+        
+        // Prevent horizontal overflow
+        if (left + dropdownWidth > window.innerWidth - 16) {
+            left = window.innerWidth - dropdownWidth - 16;
+        }
+        if (left < 16) left = 16;
+        
+        // If dropdown would go off bottom of viewport, show above button
+        const dropdownHeight = dropdown.scrollHeight || 400;
+        if (top + dropdownHeight > window.innerHeight - 16) {
+            top = btnRect.top - dropdownHeight - gap;
+        }
+        
+        // Clamp top
+        if (top < 16) top = 16;
+        
+        dropdown.style.position = 'fixed';
+        dropdown.style.top = top + 'px';
+        dropdown.style.left = left + 'px';
+        dropdown.style.right = 'auto';
+        dropdown.style.transform = 'none';
+    } else {
+        // Desktop: right-aligned dropdown below button
+        const dropdownWidth = 360;
+        let left = btnRect.right - dropdownWidth;
+        if (left < 16) left = 16;
+        
+        let top = btnRect.bottom + 8;
+        const dropdownHeight = dropdown.scrollHeight || 400;
+        if (top + dropdownHeight > window.innerHeight - 20) {
+            top = btnRect.top - dropdownHeight - 8;
+            if (top < 16) top = 16;
+        }
+        
+        dropdown.style.position = 'fixed';
+        dropdown.style.top = top + 'px';
+        dropdown.style.left = left + 'px';
+        dropdown.style.right = 'auto';
+        dropdown.style.width = dropdownWidth + 'px';
+        dropdown.style.transform = 'none';
+    }
 }
 
 // ============================
@@ -989,6 +1026,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // Close dropdowns on Escape key
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
+            closeAllDropdowns();
+        }
+    });
+
+    // Close dropdowns when clicking outside (works on both mobile and desktop)
+    document.addEventListener("click", (e) => {
+        const target = e.target;
+        const isInsideDropdown = target.closest('.dropdown-menu');
+        const isTrigger = target.closest('.analytics-control-btn');
+        
+        if (!isInsideDropdown && !isTrigger) {
             closeAllDropdowns();
         }
     });

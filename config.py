@@ -59,8 +59,8 @@ MODEL_PATH = _resolve_path(_raw_model_path)
 CONFIDENCE_THRESHOLD = float(_get_env("CONFIDENCE_THRESHOLD", "0.50"))
 # IoU threshold for Non-Maximum Suppression (lower = more aggressive suppression of duplicates)
 IOU_THRESHOLD = float(_get_env("IOU_THRESHOLD", "0.45"))
-# Inference resolution (YOLO letterbox-resizes to this; 640 is the YOLO standard)
-IMAGE_SIZE = int(_get_env("IMAGE_SIZE", "640"))
+# Inference resolution (YOLO letterbox-resizes to this; smaller = faster on CPU)
+IMAGE_SIZE = int(_get_env("IMAGE_SIZE", "320"))
 # Inference device: "auto" = CUDA if available else CPU, or explicit "cuda"/"cpu"
 DEVICE = _get_env("DEVICE", "auto")
 # Comma-separated list of COCO class IDs to retain for surveillance.
@@ -158,15 +158,16 @@ LOG_DIR = _resolve_path(_get_env("LOG_DIR", "logs"))
 # ==========================================
 # Performance
 # ==========================================
-MAX_QUEUE_SIZE = int(_get_env("MAX_QUEUE_SIZE", "30"))
-FRAME_SKIP = int(_get_env("FRAME_SKIP", "1"))
-INFERENCE_INTERVAL = float(_get_env("INFERENCE_INTERVAL", "0.01"))
+MAX_QUEUE_SIZE = int(_get_env("MAX_QUEUE_SIZE", "10"))
+FRAME_SKIP = int(_get_env("FRAME_SKIP", "2"))
+INFERENCE_INTERVAL = float(_get_env("INFERENCE_INTERVAL", "0.02"))
+VIDEO_FRAME_SKIP = int(_get_env("VIDEO_FRAME_SKIP", "3"))
 
 # ==========================================
 # Dashboard
 # ==========================================
-DASHBOARD_REFRESH_INTERVAL = int(_get_env("DASHBOARD_REFRESH_INTERVAL", "1000"))
-STREAM_QUALITY = int(_get_env("STREAM_QUALITY", "80"))
+DASHBOARD_REFRESH_INTERVAL = int(_get_env("DASHBOARD_REFRESH_INTERVAL", "2000"))
+STREAM_QUALITY = int(_get_env("STREAM_QUALITY", "70"))
 
 # ==========================================
 # Demo Mode

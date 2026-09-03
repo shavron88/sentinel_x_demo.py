@@ -47,7 +47,8 @@ except ModuleNotFoundError:
     socketio = SocketIO()
 
 app = Flask(__name__)
-app.config["TEMPLATES_AUTO_RELOAD"] = True
+app.config["TEMPLATES_AUTO_RELOAD"] = False
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 31536000
 app.secret_key = os.getenv("FLASK_SECRET_KEY", secrets.token_hex(32))
 
 # --- Production Security Headers & Cookies ---
@@ -335,6 +336,17 @@ def cameras():
 @app.route("/camera_view")
 def camera_view():
     camera_name = request.args.get('camera', 'Camera_01')
+    
+    # If the requested camera doesn't have an active pipeline, redirect to the first available camera
+    from camera.camera_manager import camera_manager
+    pipeline = camera_manager.get_pipeline(camera_name)
+    if not pipeline:
+        available = list(camera_manager.pipelines.keys())
+        if available:
+            camera_name = available[0]
+        else:
+            camera_name = 'Camera_01'
+    
     return render_template("camera_view.html", camera_name=camera_name)
 
 @app.route("/incidents")
@@ -817,6 +829,13 @@ def _auto_start_cameras():
         name = cam_config["name"]
         source = cam_config["source"]
         zone = cam_config.get("zone", "General Area")
+        
+        # Skip video file sources - they are handled by the evidence video watcher
+        if not str(source).isdigit() and not str(source).startswith(("rtsp://", "rtsps://", "http://", "https://")):
+            if os.path.isfile(str(source)):
+                print(f"[AutoStart] Skipping video-file camera '{name}' - handled by evidence watcher")
+                continue
+        
         if str(source).isdigit():
             ip_url = int(source)
         else:
@@ -826,14 +845,72 @@ def _auto_start_cameras():
                 name=name,
                 ip_url=ip_url,
                 zone=zone,
-                auto_start=True
+                auto_start=True,
+                skip_worker=True,
             )
             print(f"✔ Auto-started camera: {name} ({zone})")
         except Exception as e:
             print(f"⚠️ Failed to auto-start camera {name}: {e}")
 
+
+def _register_existing_video_evidence():
+    """Register any existing video files in evidence/videos as cameras."""
+    try:
+        watcher = camera_manager._video_watcher
+        if not watcher:
+            return
+        existing = watcher.initial_scan()
+        for filepath in existing:
+            print(f"✔ Registered existing evidence video: {os.path.basename(filepath)}")
+    except Exception as e:
+        print(f"⚠️ Existing video evidence registration notice: {e}")
+
+
+def _start_camera_health_monitor():
+    """Start a background thread that monitors camera health and removes failed cameras."""
+    import threading
+    import time
+    
+    def monitor_loop():
+        while True:
+            try:
+                time.sleep(30)  # Check every 30 seconds
+                if not camera_manager:
+                    continue
+                
+                # Get all pipelines
+                pipelines = dict(camera_manager.pipelines)
+                for name, pipeline in list(pipelines.items()):
+                    # Skip evidence cameras - they loop and are stable
+                    if name.startswith("Evidence_"):
+                        continue
+                    
+                    # Check if camera has been failing for too long
+                    stream = pipeline.stream
+                    if stream and hasattr(stream, 'reconnects') and stream.reconnects > 10:
+                        print(f"[HealthMonitor] Removing failed camera: {name} (reconnects={stream.reconnects})")
+                        camera_manager.remove_camera(name)
+                    elif stream and stream.status in ["OFFLINE", "CRITICAL", "ERROR"]:
+                        # Check if it's been in bad state for a while
+                        if hasattr(stream, '_last_error_time'):
+                            if time.time() - stream._last_error_time > 120:  # 2 minutes
+                                print(f"[HealthMonitor] Removing stale camera: {name} (status={stream.status})")
+                                camera_manager.remove_camera(name)
+                        else:
+                            stream._last_error_time = time.time()
+            except Exception as e:
+                print(f"[HealthMonitor] Error: {e}")
+    
+    thread = threading.Thread(target=monitor_loop, daemon=True)
+    thread.start()
+    print("✔ Camera health monitor started")
+
+
 try:
     _auto_start_cameras()
+    _register_existing_video_evidence()
+    camera_manager.start_video_watcher()
+    _start_camera_health_monitor()
 except Exception as e:
     print(f"⚠️ Camera auto-start notice: {e}")
 

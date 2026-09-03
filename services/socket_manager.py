@@ -66,17 +66,6 @@ def generate_camera_frames():
             if not success:
                 break
 
-            # Overlay Live Status Text on Feed
-            cv2.putText(
-                frame, 
-                "SENTINEL-X LIVE FEED", 
-                (20, 40), 
-                cv2.FONT_HERSHEY_SIMPLEX, 
-                0.7, 
-                (0, 255, 0), 
-                2
-            )
-
             # Encode frame to JPEG
             ret, buffer = cv2.imencode('.jpg', frame)
             if not ret:

@@ -73,21 +73,6 @@ def _update_fps():
 
 
 def _draw_status_overlay(frame, camera_name="Camera", status="ONLINE", fps=0.0, queue_size=0):
-    h, w = frame.shape[:2]
-    overlay = frame.copy()
-    cv2.rectangle(overlay, (0, 0), (w, 90), (0, 0, 0), -1)
-    cv2.addWeighted(overlay, 0.4, frame, 0.6, 0, frame)
-
-    color = STATUS_COLORS.get(status, (255, 255, 255))
-
-    cv2.putText(frame, f"{camera_name}", (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-    cv2.putText(frame, f"Status: {status}", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
-    cv2.putText(frame, f"FPS: {fps:.1f}", (200, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-    cv2.putText(frame, f"Queue: {queue_size}", (300, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-
-    if status in ["OFFLINE", "DISCONNECTED", "CRITICAL"]:
-        cv2.putText(frame, "SIGNAL LOST", (w // 2 - 80, h // 2), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 3)
-
     return frame
 
 
@@ -105,8 +90,6 @@ def _placeholder_frame(camera_name="Camera", status="OFFLINE"):
     cv2.rectangle(frame, (0, 0), (w, h), color, 3)
     cv2.putText(frame, status.upper(), (w // 2 - 110, h // 2 - 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 1.1, color, 3)
-    cv2.putText(frame, camera_name, (w // 2 - 90, h // 2 + 20),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
     cv2.putText(frame, "No video feed available", (w // 2 - 130, h - 30),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, (180, 180, 180), 1)
     return frame
@@ -124,6 +107,7 @@ def generate(camera_name="Camera_01", camera_status="ONLINE", queue_size=0):
     from camera.camera_manager import camera_manager
 
     _last_placeholder = 0.0
+    placeholder_interval = 0.5
 
     while True:
         # Live status from the pipeline (kept current: EOF -> ENDED, drops -> OFFLINE)
@@ -139,19 +123,20 @@ def generate(camera_name="Camera_01", camera_status="ONLINE", queue_size=0):
             frame = get_frame()  # fallback to global
 
         if frame is None:
-            stream = camera_manager.get_camera_stream(camera_name)
-            if stream:
-                frame = stream.get_frame()
+            if pipeline:
+                frame = pipeline.get_frame()
+            if frame is None:
+                stream = camera_manager.get_camera_stream(camera_name)
+                if stream:
+                    frame = stream.get_frame()
             if frame is None:
                 _frame_drops += 1
-                # Yield a placeholder periodically so the MJPEG client does not
-                # stall; real frames take precedence when they become available.
                 now = time.time()
-                if now - _last_placeholder >= 0.5:
+                if now - _last_placeholder >= placeholder_interval:
                     _last_placeholder = now
                     frame = _placeholder_frame(camera_name, camera_status)
                 else:
-                    time.sleep(0.03)
+                    time.sleep(0.01)
                     continue
 
         _update_fps()
@@ -167,7 +152,7 @@ def generate(camera_name="Camera_01", camera_status="ONLINE", queue_size=0):
         ret, buffer = cv2.imencode('.jpg', frame)
         if not ret:
             _frame_drops += 1
-            time.sleep(0.03)
+            time.sleep(0.01)
             continue
 
         yield (b'--frame\r\n'

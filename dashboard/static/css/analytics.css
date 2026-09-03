@@ -1238,44 +1238,29 @@
         pointer-events: auto;
     }
     
-    /* Convert dropdown to compact modal */
+    /* Convert dropdown to popover anchored near trigger button */
     .dropdown-menu {
         position: fixed;
-        top: 50% !important;
-        left: 50% !important;
-        right: auto !important;
-        transform: translate(-50%, -50%) !important;
         width: calc(100vw - 32px);
         max-width: 360px;
         min-width: 0;
-        max-height: 80vh;
+        max-height: 70vh;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
-        border-radius: 16px;
-        padding: 22px 18px;
+        border-radius: 14px;
+        padding: 18px;
         z-index: 10000;
         opacity: 1;
         visibility: visible;
         display: none;
         box-sizing: border-box;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     }
     
     .dropdown-menu.show {
         display: block !important;
         opacity: 1 !important;
         visibility: visible !important;
-        transform: translate(-50%, -50%) !important;
-    }
-    
-    /* Add drag handle indicator */
-    .dropdown-menu::before {
-        content: "";
-        display: block;
-        width: 40px;
-        height: 4px;
-        background: rgba(120, 150, 190, 0.3);
-        border-radius: 2px;
-        margin: 0 auto 16px;
     }
     
     /* Ensure dropdown container doesn't cause overflow */

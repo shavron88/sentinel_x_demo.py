@@ -10,6 +10,44 @@
 
 ---
 
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.11+
+- pip package manager
+- Webcam or IP camera (optional; video files in `evidence/videos/` work out of the box)
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/shavron88/sentinel_x_demo.py.git
+cd sentinel_x_demo.py
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Running the Application
+
+```bash
+# Start the Flask dashboard and AI engine
+python app.py
+```
+
+Then open your browser to: **http://127.0.0.1:5000**
+
+### Default Evidence Cameras
+
+The system automatically loads all video files from `evidence/videos/` as live camera feeds. Place any MP4/AVI/MOV file in that directory and restart the app to add it.
+
+### Model
+
+The project expects a YOLO11 model file at `models/yolo11n.pt`. If missing, download it from [Ultralytics](https://github.com/ultralytics/ultralytics) or place your own `.pt` model there and update `MODEL_PATH` in `config.py`.
+
+---
+
 # 🚀 Overview
 
 SentinelX is an AI-powered Edge Surveillance Platform that transforms ordinary CCTV cameras into intelligent security systems.
