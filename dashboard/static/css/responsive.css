@@ -118,7 +118,7 @@ html {
     .main-content {
         margin-left: var(--ev-sidebar-width);
         width: calc(100% - var(--ev-sidebar-width));
-        padding: 20px 24px 24px;
+        padding: 32px 24px 24px;
     }
 }
 

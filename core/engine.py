@@ -83,6 +83,10 @@ def run_engine():
                 if not pipeline.is_running or pipeline.engine is None:
                     continue
 
+                person_count = 0
+                person_locations = {}
+                events = []
+
                 frame = pipeline.get_frame()
                 if frame is None:
                     frame_drops += 1
@@ -94,48 +98,28 @@ def run_engine():
                 skip = VIDEO_FRAME_SKIP if is_video_evidence else FRAME_SKIP
                 should_infer = (frame_idx % skip == 0)
 
+                h, w = frame.shape[:2]
+                clean_frame = frame.copy()
+
                 if should_infer:
                     preprocessor = getattr(pipeline, 'preprocessor', None)
                     if preprocessor is not None and not is_video_evidence:
                         frame = preprocessor.process(frame)
 
-                    frame = cv2.resize(frame, (320, 320))
-                    result = pipeline.engine.infer_frame(frame) or {}
+                    infer_w, infer_h = 320, 320
+                    resized = cv2.resize(frame, (infer_w, infer_h))
+                    result = pipeline.engine.infer_frame(resized) or {}
                     detections = result.get("detections", [])
-                    annotated_frame = result.get("annotated_frame")
-                    if annotated_frame is None:
-                        annotated_frame = frame.copy()
 
-                    h, w = frame.shape[:2]
-                    clean_frame = annotated_frame
-                else:
-                    h, w = frame.shape[:2]
-                    clean_frame = frame.copy()
+                    scale_x = w / infer_w
+                    scale_y = h / infer_h
 
-                now = time.time()
-                if cam_name not in fps_trackers:
-                    fps_trackers[cam_name] = {"last_time": now, "count": 1}
-                else:
-                    fps_trackers[cam_name]["count"] += 1
-                    elapsed = now - fps_trackers[cam_name]["last_time"]
-                    if elapsed >= 1.0:
-                        fps_trackers[cam_name]["fps"] = int(fps_trackers[cam_name]["count"] / elapsed)
-                        fps_trackers[cam_name]["last_time"] = now
-                        fps_trackers[cam_name]["count"] = 1
-                fps = fps_trackers.get(cam_name, {}).get("fps", 0)
-
-                person_count = 0
-                vehicle_count = 0
-                person_locations = {}
-                events = []
-
-                if should_infer:
                     for det in detections:
                         cls_id = det["class_id"]
                         track_id = det.get("track_id")
                         x1, y1, x2, y2 = det["bbox"]
-                        cx = ((x1 + x2) / 2) / w
-                        cy = ((y1 + y2) / 2) / h
+                        cx = ((x1 + x2) / 2) / infer_h
+                        cy = ((y1 + y2) / 2) / infer_w
 
                         if cls_id == 0:
                             person_count += 1
@@ -155,42 +139,53 @@ def run_engine():
                         elif cls_id in VEHICLE_CLASSES:
                             vehicle_count += 1
 
-                    # Draw minimal bounding boxes and IDs on the frame
                     for det in detections:
                         if det["class_id"] == 0 and det.get("track_id") is not None:
-                            x1, y1, x2, y2 = [int(v) for v in det["bbox"]]
+                            x1, y1, x2, y2 = [int(v * scale_x) if i % 2 == 0 else int(v * scale_y) for i, v in enumerate(det["bbox"])]
                             zone = person_locations.get(det["track_id"], "SAFE")
                             box_color = (0, 0, 255) if zone == "RESTRICTED" else ((0, 255, 255) if zone == "ENTRY" else (0, 255, 0))
                             thickness = 3 if zone == "RESTRICTED" else 2
                             cv2.rectangle(clean_frame, (x1, y1), (x2, y2), box_color, thickness)
-                            cv2.putText(clean_frame, f"ID:{det['track_id']}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                            cv2.putText(clean_frame, f"ID:{det['track_id']}", (x1, max(y1 - 10, 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
                     for det in detections:
                         if det["class_id"] not in VEHICLE_CLASSES:
                             continue
-                        x1, y1, x2, y2 = [int(v) for v in det["bbox"]]
+                        x1, y1, x2, y2 = [int(v * scale_x) if i % 2 == 0 else int(v * scale_y) for i, v in enumerate(det["bbox"])]
                         cv2.rectangle(clean_frame, (x1, y1), (x2, y2), (255, 255, 0), 2)
 
-                if should_infer:
-                    crowd_event = pipeline.crowd_detector.detect(person_count)
-                    if crowd_event:
-                        events.append(crowd_event)
+                    if should_infer:
+                        crowd_event = pipeline.crowd_detector.detect(person_count)
+                        if crowd_event:
+                            events.append(crowd_event)
 
-                    detector_events = pipeline.event_manager.process(detections)
-                    if detector_events:
-                        events.extend(detector_events)
+                        detector_events = pipeline.event_manager.process(detections)
+                        if detector_events:
+                            events.extend(detector_events)
 
-                    abandoned_events = pipeline.abandoned_detector.update(detections)
-                    if abandoned_events:
-                        events.extend(abandoned_events)
+                        abandoned_events = pipeline.abandoned_detector.update(detections)
+                        if abandoned_events:
+                            events.extend(abandoned_events)
 
-                    fall_events = pipeline.fall_detector.detect(detections)
-                    if fall_events:
-                        events.extend(fall_events)
+                        fall_events = pipeline.fall_detector.detect(detections)
+                        if fall_events:
+                            events.extend(fall_events)
 
-                    weapon_events = pipeline.weapon_detector.detect(detections)
-                    if weapon_events:
-                        events.extend(weapon_events)
+                        weapon_events = pipeline.weapon_detector.detect(detections)
+                        if weapon_events:
+                            events.extend(weapon_events)
+
+                now = time.time()
+                if cam_name not in fps_trackers:
+                    fps_trackers[cam_name] = {"last_time": now, "count": 1}
+                else:
+                    fps_trackers[cam_name]["count"] += 1
+                    elapsed = now - fps_trackers[cam_name]["last_time"]
+                    if elapsed >= 1.0:
+                        fps_trackers[cam_name]["fps"] = int(fps_trackers[cam_name]["count"] / elapsed)
+                        fps_trackers[cam_name]["last_time"] = now
+                        fps_trackers[cam_name]["count"] = 1
+                fps = fps_trackers.get(cam_name, {}).get("fps", 0)
 
                 overall_threat = "LOW"
 
@@ -285,59 +280,3 @@ def run_engine():
         if camera:
             camera.release()
         print("========== SENTINELX ENGINE STOPPED SAFELY ==========")
-
-
-def run_multi_camera():
-    print("========== SENTINELX MULTI-CAMERA ENGINE STARTED ==========")
-
-    camera = CameraManager()
-    model_path = MODEL_PATH
-
-    previous_time = time.time()
-
-    try:
-        while True:
-            pipelines = camera.pipelines
-            if not pipelines:
-                time.sleep(0.1)
-                continue
-
-            for name, pipeline in pipelines.items():
-                frame = pipeline.get_frame()
-                if frame is None:
-                    continue
-
-                frame = cv2.resize(frame, (640, 360))
-                result = pipeline.engine.infer_frame(frame) or {}
-                detections = result.get("detections", [])
-                annotated_frame = result.get("annotated_frame")
-                if annotated_frame is None:
-                    annotated_frame = frame.copy()
-
-                h, w = frame.shape[:2]
-                annotated_frame = pipeline.zone_manager.draw(annotated_frame)
-
-                pipeline._on_inference_result(None, detections, annotated_frame)
-
-                # Update stream for this camera
-                from dashboard.stream import set_frame as sf
-                sf(annotated_frame)
-
-                cv2.imshow(f"SentinelX - {name}", annotated_frame)
-
-            current_time = time.time()
-            delta = current_time - previous_time
-            fps = int(1 / delta) if delta > 0 else 0
-            previous_time = current_time
-
-            key = cv2.waitKey(1) & 0xFF
-            if key == ord("q"):
-                print("[INFO] Shutting down SentinelX Multi-Camera Engine...")
-                break
-
-            time.sleep(0.01)
-
-    finally:
-        camera.release()
-        cv2.destroyAllWindows()
-        print("========== SENTINELX MULTI-CAMERA ENGINE STOPPED SAFELY ==========")

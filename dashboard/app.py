@@ -18,7 +18,7 @@ from core.recovery import AutoRecoveryManager
 
 # --- Authentication ---
 from api.auth import (
-    is_authenticated, login, logout, signup,
+    is_authenticated, login, logout, signup, direct_signup,
     get_csrf_token, validate_csrf_token,
     require_auth, require_csrf, rate_limit,
     get_current_user_id,
@@ -210,44 +210,34 @@ def api_login():
 @app.route("/api/auth/signup/request-code", methods=["POST"])
 @rate_limit
 def api_signup_request_code():
-    """Step 1: validate inputs, send a 6-digit verification code to the user's Gmail."""
-    data = request.get_json(silent=True) or {}
-    username = data.get("username", "")
-    password = data.get("password", "")
-    email    = data.get("email", "")
-
-    if not isinstance(username, str) or not isinstance(password, str) or not isinstance(email, str):
-        return jsonify({"status": "error", "message": "Invalid request format"}), 400
-    if len(username) > 100 or len(password) > 100 or len(email) > 200:
-        return jsonify({"status": "error", "message": "Request too large"}), 400
-
-    ok, msg = request_verification_code(username, password, email)
-    if not ok:
-        return jsonify({"status": "error", "message": msg}), 400
-    return jsonify({"status": "success", "message": msg}), 200
+    """Deprecated: direct signup is now used instead."""
+    return jsonify({
+        "status": "error",
+        "message": "Email verification is no longer required. Please use the signup form."
+    }), 400
 
 
 @app.route("/api/auth/signup", methods=["POST"])
 @rate_limit
 def api_signup():
-    """Step 2: verify the code and create the account (email is saved to DB)."""
+    """Create account immediately without email verification and auto-login."""
     data = request.get_json(silent=True) or {}
     username = data.get("username", "")
     password = data.get("password", "")
-    email    = data.get("email", "")
-    code     = data.get("code", "")
+    email = data.get("email", "")
 
-    if not all(isinstance(x, str) for x in (username, password, email, code)):
+    if not all(isinstance(x, str) for x in (username, password, email)):
         return jsonify({"status": "error", "message": "Invalid request format"}), 400
-    if len(username) > 100 or len(password) > 100 or len(email) > 200 or len(code) > 10:
+    if len(username) > 100 or len(password) > 100 or len(email) > 200:
         return jsonify({"status": "error", "message": "Request too large"}), 400
 
-    success, result = verify_and_complete_signup(username, password, email, code)
+    success, result = direct_signup(username, password, email)
     if success:
+        login(username, password)
         return jsonify({
             "status": "success",
-            "message": "Account created successfully. Please log in.",
-            "username": username
+            "message": "Account created successfully. Welcome to Sentinel-X!",
+            "redirect": "/"
         }), 201
     return jsonify({"status": "error", "message": result}), 400
 

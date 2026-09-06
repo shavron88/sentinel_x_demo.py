@@ -682,28 +682,6 @@
                         <i class="ti ti-loader-2"></i>
                     </span>
                 </button>
-
-                <!-- Verification Code (shown after first submit sends the code) -->
-                <div class="field" id="codeField" style="display:none;margin-top:14px;">
-                    <label for="verifyCode">
-                        <i class="ti ti-shield-check"></i>
-                        <span data-i18n="signup.verifyCode">Verification Code</span>
-                    </label>
-                    <div class="pw-wrap">
-                        <div class="input-wrap">
-                            <input type="text" id="verifyCode" name="verifyCode"
-                                   placeholder="6-digit code sent to your Gmail"
-                                   data-i18n="signup.verifyCodePh"
-                                   inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
-                                   autocomplete="one-time-code">
-                        </div>
-                        <button type="button" class="pw-toggle" id="resendCodeBtn"
-                                aria-label="Resend code" title="Resend code" tabindex="0">
-                            <i class="ti ti-refresh"></i>
-                        </button>
-                    </div>
-                    <div class="pw-strength-label" id="codeHint" style="margin-top:6px;"></div>
-                </div>
             </form>
 
             <!-- Divider -->
@@ -787,7 +765,7 @@
             el.addEventListener("selectstart", function(e) { e.preventDefault(); });
         }
         lockPasswordInput(passEl);
-        lockPasswordInput(confirmEl);
+        blockPaste(confirmEl);
 
         /* ==========================================
            PASSWORD STRENGTH INDICATOR
@@ -816,14 +794,17 @@
         });
 
         /* ==========================================
-           FORM SUBMISSION (two-step: send code, then verify)
+           BLOCK PASTE ON CONFIRM PASSWORD FIELD
+           Password field still allows paste for password managers
         ========================================== */
-        var codeField   = document.getElementById("codeField");
-        var codeInput   = document.getElementById("verifyCode");
-        var codeHint    = document.getElementById("codeHint");
-        var resendBtn   = document.getElementById("resendCodeBtn");
-        var pendingCreds = null;
+        function blockPaste(el) {
+            el.addEventListener("paste", function(e) { e.preventDefault(); });
+        }
+        blockPaste(confirmEl);
 
+        /* ==========================================
+           FORM SUBMISSION (single-step direct signup)
+        ========================================== */
         function clientValidate() {
             var username = userEl.value.trim();
             var email    = emailEl.value.trim();
@@ -834,7 +815,7 @@
                 return null;
             }
             if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-                showError("Enter a valid Gmail address");
+                showError("Enter a valid email address");
                 emailEl.focus();
                 return null;
             }
@@ -854,11 +835,15 @@
             return { username: username, email: email, password: password };
         }
 
-        function requestCode(creds, onDone) {
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+            hideMessages();
+
+            var creds = clientValidate();
+            if (!creds) return;
+
             setLoading(true);
-            btn.disabled = true;
-            if (resendBtn) resendBtn.disabled = true;
-            fetch("/api/auth/signup/request-code", {
+            fetch("/api/auth/signup", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(creds)
@@ -866,88 +851,18 @@
             .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
             .then(function(result) {
                 setLoading(false);
-                btn.disabled = false;
-                if (resendBtn) resendBtn.disabled = false;
-                if (result.ok) {
-                    pendingCreds = creds;
-                    codeField.style.display = "";
-                    codeHint.style.color = "var(--success-green)";
-                    codeHint.textContent = result.data.message || "Verification code sent to your Gmail";
-                    codeInput.value = "";
-                    codeInput.focus();
-                } else {
-                    showError(result.data.message || SentinelI18N.t("signup.errorApi"));
-                }
-                if (onDone) onDone(result);
-            })
-            .catch(function() {
-                setLoading(false);
-                btn.disabled = false;
-                if (resendBtn) resendBtn.disabled = false;
-                showError(SentinelI18N.t("signup.errorConn"));
-            });
-        }
-
-        if (resendBtn) {
-            resendBtn.addEventListener("click", function() {
-                if (!pendingCreds) return;
-                hideMessages();
-                requestCode(pendingCreds);
-            });
-        }
-
-        form.addEventListener("submit", function(e) {
-            e.preventDefault();
-            hideMessages();
-
-            if (!pendingCreds) {
-                var creds = clientValidate();
-                if (!creds) return;
-                requestCode(creds);
-                return;
-            }
-
-            var code = codeInput.value.trim();
-            if (!/^\d{6}$/.test(code)) {
-                showError("Enter the 6-digit code that was emailed to you");
-                codeInput.focus();
-                return;
-            }
-
-            setLoading(true);
-            btn.disabled = true;
-            var body = Object.assign({}, pendingCreds, { code: code });
-
-            fetch("/api/auth/signup", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body)
-            })
-            .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
-            .then(function(result) {
                 if (result.ok) {
                     showSuccess(result.data.message || "Account created successfully. Redirecting...");
-                    setLoading(false);
-                    form.reset();
-                    pwBar.style.width = '0';
-                    pwLabel.textContent = '';
-                    pendingCreds = null;
-                    codeField.style.display = "none";
-                    codeHint.textContent = "";
                     setTimeout(function() {
-                        document.getElementById("authMain").classList.add("auth-exit");
-                        setTimeout(function() { window.location.href = "/login"; }, 500);
-                    }, 1500);
+                        window.location.href = result.data.redirect || "/";
+                    }, 1200);
                 } else {
                     showError(result.data.message || "Registration failed. Please try again.");
-                    setLoading(false);
-                    btn.disabled = false;
                 }
             })
             .catch(function() {
                 showError("Connection error. Please check your network and try again.");
                 setLoading(false);
-                btn.disabled = false;
             });
         });
 

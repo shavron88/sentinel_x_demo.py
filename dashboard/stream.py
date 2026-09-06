@@ -3,6 +3,7 @@ import time
 import logging
 import numpy as np
 from datetime import datetime
+import threading
 
 logger = logging.getLogger("SentinelX.Stream")
 
@@ -13,6 +14,7 @@ _frame_drops = 0
 _last_fps_time = time.time()
 _fps_frame_count = 0
 _current_fps = 0.0
+_frame_lock = threading.Lock()
 
 # Backward-compatible aliases
 _latest_frame = None
@@ -34,20 +36,22 @@ STATUS_COLORS = {
 
 def set_frame(frame, camera_name=None):
     global _latest_frames, _frame_timestamps, _latest_frame, _frame_timestamp
-    if camera_name:
-        _latest_frames[camera_name] = frame
-        _frame_timestamps[camera_name] = time.time()
-    else:
-        _latest_frame = frame
-        _frame_timestamp = time.time()
-    _update_fps()
+    with _frame_lock:
+        if camera_name:
+            _latest_frames[camera_name] = frame
+            _frame_timestamps[camera_name] = time.time()
+        else:
+            _latest_frame = frame
+            _frame_timestamp = time.time()
+        _update_fps()
 
 
 def get_frame(camera_name=None):
     global _latest_frames, _latest_frame
-    if camera_name:
-        return _latest_frames.get(camera_name)
-    return _latest_frame
+    with _frame_lock:
+        if camera_name:
+            return _latest_frames.get(camera_name)
+        return _latest_frame
 
 
 def get_frame_age():

@@ -821,6 +821,7 @@ class CameraManager:
 
     def _ensure_default_camera(self):
         if not self._default_camera_created and "Camera_01" not in self.pipelines:
+            shared_engine = self._get_shared_engine()
             pipeline = self.add_camera(
                 name="Camera_01",
 <<<<<<< HEAD
@@ -832,6 +833,8 @@ class CameraManager:
                 auto_start=True,
                 validator=self._validator,
                 preprocessor=self._preprocessor,
+                skip_worker=True,
+                shared_engine=shared_engine,
             )
             self._default_camera_created = True
             return pipeline
@@ -898,6 +901,7 @@ class CameraManager:
         self.stop_all()
         self._current_user_id = user_id
         self._default_camera_created = False
+        shared_engine = self._get_shared_engine()
 
         try:
             from database.db import get_all_cameras
@@ -910,6 +914,8 @@ class CameraManager:
                     auto_start=True,
                     validator=self._validator,
                     preprocessor=self._preprocessor,
+                    skip_worker=True,
+                    shared_engine=shared_engine,
                 )
         except Exception as e:
             print(f"Error loading cameras for user {user_id}: {e}")

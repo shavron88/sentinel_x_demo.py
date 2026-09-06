@@ -113,7 +113,7 @@ textarea::placeholder {
 
 /* Page Content Wrapper */
 .page-content {
-    padding: var(--ev-space-6);
+    padding: 0 var(--ev-space-6) var(--ev-space-6);
     max-width: var(--ev-content-max-width);
     margin: 0 auto;
     animation: fadeInUp 0.35s ease-out;

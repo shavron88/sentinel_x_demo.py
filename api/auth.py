@@ -121,8 +121,8 @@ def init_db():
     conn.close()
 
 
-def initiate_signup(username, password, email):
-    """Step 1: Validate details, generate OTP, store temporarily, and send email."""
+def direct_signup(username, password, email):
+    """Create user immediately without email verification."""
     import re
     if not username or not password or not email:
         return False, "Username, password and email are required"
@@ -143,36 +143,23 @@ def initiate_signup(username, password, email):
         if cursor.fetchone():
             conn.close()
             return False, "Username or email already exists"
+        
+        password_hash = hashlib.sha256(password.encode()).hexdigest()
+        cursor.execute(
+            "INSERT INTO admin_users (username, password_hash, email, is_verified) VALUES (?, ?, ?, 1)",
+            (username, password_hash, email)
+        )
+        conn.commit()
         conn.close()
+        return True, "Account created successfully"
     except Exception as e:
-        return False, "Database error during registration check"
-
-    # Generate 6-digit OTP
-    otp = "".join([str(random.randint(0, 9)) for _ in range(6)])
-    expiry = time.time() + 300  # Valid for 5 minutes
-
-    password_hash = hashlib.sha256(password.encode()).hexdigest()
-
-    # Store in memory temporarily
-    _pending_otp_store[email] = {
-        "otp": otp,
-        "expires": expiry,
-        "username": username,
-        "password_hash": password_hash
-    }
-
-    # Print to console (In production, replace this with an SMTP email sender)
-    print(f"\n========================================")
-    print(f" [SENTINEL-X OTP] Email: {email}")
-    print(f" [SENTINEL-X OTP] Your Verification Code is: {otp}")
-    print(f"========================================\n")
-
-    return True, "OTP sent successfully to your email. Please verify to complete registration."
+        print(f"Direct signup database error: {e}")
+        return False, "Failed to create account. Please try again."
 
 
 def signup(username, password, email):
-    """Alias wrapper to satisfy dashboard/app.py import expectations."""
-    return initiate_signup(username, password, email)
+    """Direct signup wrapper - creates account immediately without verification."""
+    return direct_signup(username, password, email)
 
 
 def verify_otp_and_register(email, otp_code):
