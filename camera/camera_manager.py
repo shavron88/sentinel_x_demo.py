@@ -823,7 +823,11 @@ class CameraManager:
         if not self._default_camera_created and "Camera_01" not in self.pipelines:
             pipeline = self.add_camera(
                 name="Camera_01",
+<<<<<<< HEAD
                 ip_url=0,
+=======
+                ip_url=1,
+>>>>>>> 34226e68242e9f83332a22c7ec0df1a6e36b2c8d
                 zone="Main Entrance",
                 auto_start=True,
                 validator=self._validator,

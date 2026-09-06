@@ -73,6 +73,7 @@ def _update_fps():
 
 
 def _draw_status_overlay(frame, camera_name="Camera", status="ONLINE", fps=0.0, queue_size=0):
+<<<<<<< HEAD
     """Draws status information, timestamp, and checks against registered faces."""
     try:
         from database.db import get_connection
@@ -94,11 +95,21 @@ def _draw_status_overlay(frame, camera_name="Camera", status="ONLINE", fps=0.0, 
     # Standard status header info
     cv2.putText(frame, f"{camera_name} | Status: {status} | FPS: {fps}", (20, 30),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, STATUS_COLORS.get(status, (0, 255, 0)), 2)
+=======
+>>>>>>> 34226e68242e9f83332a22c7ec0df1a6e36b2c8d
     return frame
 
 
 def _placeholder_frame(camera_name="Camera", status="OFFLINE"):
+<<<<<<< HEAD
     """Generate a solid placeholder frame with a status message."""
+=======
+    """Generate a solid placeholder frame with a status message.
+
+    Keeps the MJPEG stream alive (so the browser does not hang / go black) when
+    no real frame is available from the camera or AI pipeline.
+    """
+>>>>>>> 34226e68242e9f83332a22c7ec0df1a6e36b2c8d
     w, h = 640, 360
     frame = np.zeros((h, w, 3), dtype=np.uint8)
     frame[:] = (0, 0, 20)
@@ -113,7 +124,16 @@ def _placeholder_frame(camera_name="Camera", status="OFFLINE"):
 
 
 def generate(camera_name="Camera_01", camera_status="ONLINE", queue_size=0):
+<<<<<<< HEAD
     """Stream generator that includes live face verification overlays."""
+=======
+    """
+    Stream generator that prefers AI-annotated frames (per-camera), falls back to CameraManager.
+    Refreshes live camera status from the pipeline each frame (ONLINE / ENDED / OFFLINE ...).
+    Yields a placeholder frame when no real frame is available so the browser feed
+    never hangs or goes black.
+    """
+>>>>>>> 34226e68242e9f83332a22c7ec0df1a6e36b2c8d
     global _frame_drops
 
     from camera.camera_manager import camera_manager
@@ -122,14 +142,26 @@ def generate(camera_name="Camera_01", camera_status="ONLINE", queue_size=0):
     placeholder_interval = 0.5
 
     while True:
+<<<<<<< HEAD
+=======
+        # Live status from the pipeline (kept current: EOF -> ENDED, drops -> OFFLINE)
+>>>>>>> 34226e68242e9f83332a22c7ec0df1a6e36b2c8d
         pipeline = camera_manager.get_pipeline(camera_name)
         if pipeline:
             camera_status = pipeline.stream.status
             queue_size = pipeline.get_queue_size()
 
+<<<<<<< HEAD
         frame = get_frame(camera_name)
         if frame is None:
             frame = get_frame() 
+=======
+        # Prefer per-camera AI-annotated frame, then global, then raw stream
+        frame = get_frame(camera_name)
+
+        if frame is None:
+            frame = get_frame()  # fallback to global
+>>>>>>> 34226e68242e9f83332a22c7ec0df1a6e36b2c8d
 
         if frame is None:
             if pipeline:
@@ -167,4 +199,8 @@ def generate(camera_name="Camera_01", camera_status="ONLINE", queue_size=0):
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
+<<<<<<< HEAD
         time.sleep(0.001)
+=======
+        time.sleep(0.001)
+>>>>>>> 34226e68242e9f83332a22c7ec0df1a6e36b2c8d
