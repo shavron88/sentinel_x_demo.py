@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-content fade-in">
+
+<div class="command-grid">
+
+    <div class="live-wall card"></div>
+
+    <div class="threat-feed card"></div>
+
+    <div class="analytics card"></div>
+
+    <div class="heatmap card"></div>
+
+    <div class="security-map card"></div>
+
+    <div class="system-health card"></div>
+
+    <div class="copilot card"></div>
+
+    <div class="latest-evidence card"></div>
+
+</div>
+
+<div id="emptyState" style="display:none;"></div>
+
+<script>
+
+(function() {
+
+    showSkeletonCards("command-grid", 4);
+
+    setTimeout(function() {
+
+        // In production, check if panels have data
+
+        // If empty: showEmptyState("emptyState", "No Data Available", "Command center panels are loading.", [{label:"Refresh", onclick:"refreshCommandCenter()", class:"btn-primary"}])
+
+    }, 600);
+
+})();
+
+</script>
+
+</div>
+
+{% endblock %}

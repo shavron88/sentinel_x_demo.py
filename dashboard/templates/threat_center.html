@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-content fade-in">
+
+<div class="threat-layout">
+
+    <div class="threat-left card">
+
+        <h2>🚨 Live Threat Feed</h2>
+
+        <div id="threatFeed">
+
+        </div>
+
+    </div>
+
+    <div class="threat-right">
+
+        <div class="card risk-card">
+
+            <h2>Threat Level</h2>
+
+            <div id="riskGauge">
+
+            LOW
+
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h2>AI Decisions</h2>
+
+            <div id="aiDecisionLog">
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div id="emptyState" style="display:none;"></div>
+
+<script>
+
+(function() {
+
+    showSkeletonRows("threatFeed", 5);
+
+    showSkeletonRows("aiDecisionLog", 3);
+
+    setTimeout(function() {
+
+        // In production, check if threats exist
+
+        // If empty: showEmptyState("emptyState", "No Active Threats", "All systems are secure. No threats detected.", [{label:"Refresh", onclick:"loadThreats()", class:"btn-primary"}])
+
+    }, 600);
+
+})();
+
+</script>
+
+</div>
+
+{% endblock %}

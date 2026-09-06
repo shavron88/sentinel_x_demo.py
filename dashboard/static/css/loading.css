@@ -1,0 +1,615 @@
+/* ==========================================
+   GLOBAL LOADING SYSTEM
+   Skeleton loaders, spinners, fade animations, empty states
+========================================== */
+
+/* ==========================================
+   PAGE LOADING OVERLAY
+========================================== */
+
+.page-loading-overlay {
+
+    position: fixed;
+
+    inset: 0;
+
+    background: #0B1220;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 24px;
+
+    z-index: 999999;
+
+    opacity: 1;
+
+    transition: opacity .5s ease;
+
+}
+
+.page-loading-overlay.hidden {
+
+    opacity: 0;
+
+    pointer-events: none;
+
+}
+
+/* ==========================================
+   SPINNER
+========================================== */
+
+.loading-spinner {
+
+    width: 48px;
+
+    height: 48px;
+
+    border: 3px solid rgba(59,130,246,.2);
+
+    border-top-color: #3b82f6;
+
+    border-radius: 50%;
+
+    animation: spin 1s linear infinite;
+
+    box-shadow: 0 0 20px rgba(59,130,246,.3);
+
+}
+
+@keyframes spin {
+
+    to { transform: rotate(360deg); }
+
+}
+
+.loading-spinner.small {
+
+    width: 24px;
+
+    height: 24px;
+
+    border-width: 2px;
+
+}
+
+.loading-spinner.large {
+
+    width: 64px;
+
+    height: 64px;
+
+    border-width: 4px;
+
+}
+
+/* ==========================================
+   SKELETON BASE
+========================================== */
+
+.skeleton {
+
+    background: linear-gradient(90deg, #1a2332 25%, #243044 50%, #1a2332 75%);
+
+    background-size: 200% 100%;
+
+    animation: shimmer 1.5s infinite;
+
+    border-radius: 6px;
+
+}
+
+@keyframes shimmer {
+
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+
+}
+
+/* Skeleton Card */
+
+.skeleton-card {
+
+    background: linear-gradient(160deg, #151F33, #1a2744);
+
+    border: 1px solid rgba(255,255,255,.06);
+
+    border-radius: 20px;
+
+    overflow: hidden;
+
+    padding: 16px;
+
+}
+
+.skeleton-card .skeleton-image {
+
+    width: 100%;
+
+    height: 180px;
+
+    border-radius: 12px;
+
+    margin-bottom: 12px;
+
+}
+
+.skeleton-card .skeleton-title {
+
+    height: 14px;
+
+    width: 70%;
+
+    margin-bottom: 8px;
+
+}
+
+.skeleton-card .skeleton-text {
+
+    height: 10px;
+
+    width: 100%;
+
+    margin-bottom: 6px;
+
+}
+
+.skeleton-card .skeleton-text.short {
+
+    width: 50%;
+
+}
+
+/* Skeleton Row */
+
+.skeleton-row {
+
+    display: flex;
+
+    gap: 16px;
+
+    align-items: center;
+
+    padding: 12px 0;
+
+}
+
+.skeleton-row .skeleton-avatar {
+
+    width: 40px;
+
+    height: 40px;
+
+    border-radius: 50%;
+
+    flex-shrink: 0;
+
+}
+
+.skeleton-row .skeleton-content {
+
+    flex: 1;
+
+}
+
+.skeleton-row .skeleton-line {
+
+    height: 10px;
+
+    margin-bottom: 6px;
+
+}
+
+.skeleton-row .skeleton-line:last-child {
+
+    margin-bottom: 0;
+
+    width: 60%;
+
+}
+
+/* Skeleton Table */
+
+.skeleton-table {
+
+    width: 100%;
+
+}
+
+.skeleton-table .skeleton-row {
+
+    border-bottom: 1px solid rgba(255,255,255,.04);
+
+}
+
+.skeleton-table .skeleton-cell {
+
+    height: 12px;
+
+}
+
+.skeleton-table .skeleton-cell.w30 { width: 30%; }
+.skeleton-table .skeleton-cell.w20 { width: 20%; }
+.skeleton-table .skeleton-cell.w40 { width: 40%; }
+
+/* ==========================================
+   FADE ANIMATIONS
+========================================== */
+
+.fade-in {
+
+    animation: fadeIn .5s ease forwards;
+
+}
+
+@keyframes fadeIn {
+
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+
+}
+
+.fade-out {
+
+    animation: fadeOut .3s ease forwards;
+
+}
+
+@keyframes fadeOut {
+
+    from { opacity: 1; }
+    to { opacity: 0; }
+
+}
+
+/* Staggered fade for lists */
+
+.stagger-item {
+
+    opacity: 0;
+
+    animation: fadeIn .4s ease forwards;
+
+}
+
+/* ==========================================
+   EMPTY STATE
+========================================== */
+
+.empty-state {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 80px 20px;
+
+    text-align: center;
+
+    position: relative;
+
+}
+
+.empty-state::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background: radial-gradient(circle at 50% 50%, rgba(59,130,246,.03), transparent 70%);
+
+    pointer-events: none;
+
+}
+
+.empty-state-icon {
+
+    width: 80px;
+
+    height: 80px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    margin-bottom: 20px;
+
+    opacity: .4;
+
+    color: var(--ev-text-muted, #64748b);
+
+    animation: float 4s ease-in-out infinite;
+
+}
+
+.empty-state-icon svg {
+
+    width: 100%;
+
+    height: 100%;
+
+}
+
+@keyframes float {
+
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+
+}
+
+.empty-state-title {
+
+    font-size: 20px;
+
+    font-weight: 600;
+
+    color: var(--ev-text, #e2e8f0);
+
+    margin: 0 0 8px 0;
+
+}
+
+.empty-state-description {
+
+    font-size: 14px;
+
+    color: var(--ev-text-muted, #64748b);
+
+    margin: 0 0 24px 0;
+
+    max-width: 400px;
+
+}
+
+.empty-state-actions {
+
+    display: flex;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+
+    justify-content: center;
+
+}
+
+/* ==========================================
+   LOADING STATES FOR SPECIFIC COMPONENTS
+========================================== */
+
+/* Cards loading */
+
+.cards-loading {
+
+    display: grid;
+
+    gap: 16px;
+
+}
+
+.cards-loading .skeleton-card {
+
+    animation: cardEnter .5s ease forwards;
+
+    opacity: 0;
+
+}
+
+@keyframes cardEnter {
+
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+
+}
+
+/* Table loading */
+
+.table-loading {
+
+    width: 100%;
+
+}
+
+.table-loading .skeleton-row {
+
+    display: flex;
+
+    gap: 16px;
+
+    padding: 16px;
+
+    border-bottom: 1px solid rgba(255,255,255,.04);
+
+}
+
+/* Chart loading */
+
+.chart-loading {
+
+    position: relative;
+
+    min-height: 300px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+
+.chart-loading .loading-spinner {
+
+    position: absolute;
+
+    top: 50%;
+
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+}
+
+/* ==========================================
+   PROGRESS BAR
+========================================== */
+
+.progress-bar {
+
+    width: 100%;
+
+    height: 4px;
+
+    background: rgba(255,255,255,.05);
+
+    border-radius: 2px;
+
+    overflow: hidden;
+
+    position: relative;
+
+}
+
+.progress-bar-fill {
+
+    height: 100%;
+
+    background: linear-gradient(90deg, #2563eb, #3b82f6);
+
+    border-radius: 2px;
+
+    transition: width .3s ease;
+
+    position: relative;
+
+}
+
+.progress-bar-fill::after {
+
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+
+    left: 0;
+
+    right: 0;
+
+    bottom: 0;
+
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.3), transparent);
+
+    animation: shimmer 1.5s infinite;
+
+}
+
+/* ==========================================
+   SKELETON TEXT VARIANTS
+========================================== */
+
+.skeleton-text {
+
+    height: 12px;
+
+    background: linear-gradient(90deg, #1a2332 25%, #243044 50%, #1a2332 75%);
+
+    background-size: 200% 100%;
+
+    animation: shimmer 1.5s infinite;
+
+    border-radius: 4px;
+
+}
+
+.skeleton-text.h50 { width: 50%; }
+.skeleton-text.h70 { width: 70%; }
+.skeleton-text.h100 { width: 100%; }
+
+/* ==========================================
+   THEME ADAPTATIONS — LIGHT
+========================================== */
+
+[data-theme="light"] .skeleton,
+[data-theme="light"] .skeleton-text {
+
+    background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+
+    background-size: 200% 100%;
+
+}
+
+[data-theme="light"] .skeleton-card {
+
+    background: #f8fafc;
+
+    border-color: rgba(15, 23, 42, .06);
+
+}
+
+[data-theme="light"] .skeleton-table .skeleton-row,
+[data-theme="light"] .table-loading .skeleton-row {
+
+    border-bottom-color: rgba(15, 23, 42, .05);
+
+}
+
+[data-theme="light"] .page-loading-overlay {
+
+    background: #f1f5f9;
+
+}
+
+[data-theme="light"] .progress-bar {
+
+    background: rgba(15, 23, 42, .08);
+
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media(max-width:768px){
+
+    .cards-loading {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .empty-state {
+
+        padding: 60px 16px;
+
+    }
+
+    .empty-state-icon {
+
+        width: 64px;
+
+        height: 64px;
+
+    }
+
+    .empty-state-title {
+
+        font-size: 18px;
+
+    }
+
+}
