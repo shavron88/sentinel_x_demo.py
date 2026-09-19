@@ -47,8 +47,8 @@ except ModuleNotFoundError:
     socketio = SocketIO()
 
 app = Flask(__name__)
-app.config["TEMPLATES_AUTO_RELOAD"] = False
-app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 31536000
+app.config["TEMPLATES_AUTO_RELOAD"] = True
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
 app.secret_key = os.getenv("FLASK_SECRET_KEY", secrets.token_hex(32))
 
 # --- Production Security Headers & Cookies ---
@@ -82,7 +82,6 @@ except Exception as e:
 
 
 # ==========================================
-<<<<<<< HEAD
 # DATABASE INITIALIZATION FOR FACES
 # ==========================================
 def _init_face_table():
@@ -106,8 +105,6 @@ _init_face_table()
 
 
 # ==========================================
-=======
->>>>>>> 34226e68242e9f83332a22c7ec0df1a6e36b2c8d
 # DYNAMIC BLUEPRINT REGISTRATION
 # ==========================================
 def register_safe_blueprints(flask_app):
@@ -352,11 +349,7 @@ def cameras():
 @app.route("/camera_view")
 def camera_view():
     camera_name = request.args.get('camera', 'Camera_01')
-    
-<<<<<<< HEAD
-=======
-    # If the requested camera doesn't have an active pipeline, redirect to the first available camera
->>>>>>> 34226e68242e9f83332a22c7ec0df1a6e36b2c8d
+
     from camera.camera_manager import camera_manager
     pipeline = camera_manager.get_pipeline(camera_name)
     if not pipeline:
@@ -383,6 +376,10 @@ def analytics():
 @app.route("/reports")
 def reports():
     return render_template("reports.html")
+
+@app.route("/cameras_wall")
+def cameras_wall():
+    return render_template("cameras_wall.html")
 
 @app.route("/live_wall")
 def live_wall():
@@ -412,8 +409,6 @@ def replay():
 def notifications_page():
     return render_template("notifications.html")
 
-<<<<<<< HEAD
-=======
 
 @app.route("/api/copilot", methods=["POST"])
 def api_copilot():
@@ -422,14 +417,13 @@ def api_copilot():
         "status": "pending"
     }), 200
 
->>>>>>> 34226e68242e9f83332a22c7ec0df1a6e36b2c8d
+
 @app.route("/settings")
 def settings():
     return render_template("settings.html")
 
 
 # ==========================
-<<<<<<< HEAD
 # FACE REGISTRATION ROUTE
 # ==========================
 @app.route("/register_face", methods=["GET", "POST"])
@@ -442,7 +436,7 @@ def register_face():
             filepath = os.path.join("dashboard", "static", "faces", filename)
             os.makedirs(os.path.dirname(filepath), exist_ok=True)
             file.save(filepath)
-            
+
             try:
                 with get_connection() as conn:
                     cursor = conn.cursor()
@@ -455,8 +449,6 @@ def register_face():
 
 
 # ==========================
-=======
->>>>>>> 34226e68242e9f83332a22c7ec0df1a6e36b2c8d
 # LIVE STREAM GENERATORS
 # ==========================
 from dashboard.stream import generate as stream_generate
@@ -858,18 +850,12 @@ def api_system_cleanup():
 def evidence_screenshot(filename):
     """Serves stored evidence screenshots securely preventing path traversal."""
     evidence_dir = os.path.abspath(os.path.join(app.root_path, "..", "evidence", "screenshots"))
-    
-<<<<<<< HEAD
-=======
+
     # Sanitize and extract base filename to avoid directory traversal
->>>>>>> 34226e68242e9f83332a22c7ec0df1a6e36b2c8d
     safe_name = secure_filename(os.path.basename(filename))
     if not safe_name:
         return jsonify({"error": "Invalid filename"}), 400
-        
-<<<<<<< HEAD
-    return send_from_directory(evidence_dir, safe_name)
-=======
+
     return send_from_directory(evidence_dir, safe_name)
 
 
@@ -974,4 +960,3 @@ except Exception as e:
 if __name__ == "__main__":
     debug_mode = os.environ.get("FLASK_DEBUG", "0").lower() in ("1", "true", "yes")
     app.run(host="127.0.0.1", port=5000, debug=debug_mode)
->>>>>>> 34226e68242e9f83332a22c7ec0df1a6e36b2c8d

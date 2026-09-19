@@ -405,6 +405,42 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // =========================
+// SIDEBAR EXPANDABLE PARENTS
+// =========================
+
+document.addEventListener("DOMContentLoaded", () => {
+    const parents = document.querySelectorAll(".sidebar-nav-parent");
+    
+    parents.forEach(parent => {
+        parent.addEventListener("click", function(e) {
+            const item = this.parentElement;
+            const wasOpen = item.classList.contains("open");
+            
+            if (!wasOpen) {
+                e.preventDefault();
+                document.querySelectorAll(".sidebar-nav-item.open").forEach(openItem => {
+                    if (openItem !== item) {
+                        openItem.classList.remove("open");
+                    }
+                });
+                item.classList.add("open");
+            }
+        });
+    });
+    
+    // Auto-expand based on current path
+    const path = window.location.pathname;
+    document.querySelectorAll(".sidebar-nav-item").forEach(item => {
+        const parentHref = item.querySelector(".sidebar-nav-parent")?.getAttribute("href");
+        const childHrefs = Array.from(item.querySelectorAll(".sidebar-nav-child")).map(el => el.getAttribute("href"));
+        
+        if (parentHref === path || childHrefs.includes(path)) {
+            item.classList.add("open");
+        }
+    });
+});
+
+// =========================
 // SIDEBAR TOGGLE (MOBILE)
 // =========================
 

@@ -824,11 +824,7 @@ class CameraManager:
             shared_engine = self._get_shared_engine()
             pipeline = self.add_camera(
                 name="Camera_01",
-<<<<<<< HEAD
                 ip_url=0,
-=======
-                ip_url=1,
->>>>>>> 34226e68242e9f83332a22c7ec0df1a6e36b2c8d
                 zone="Main Entrance",
                 auto_start=True,
                 validator=self._validator,

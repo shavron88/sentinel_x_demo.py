@@ -84,6 +84,7 @@ def run_engine():
                     continue
 
                 person_count = 0
+                vehicle_count = 0
                 person_locations = {}
                 events = []
 

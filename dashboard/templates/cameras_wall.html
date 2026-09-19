@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-content fade-in">
+
+<div class="cameras-wall-header">
+    <div class="cameras-wall-title">
+        <h1>Camera Wall</h1>
+        <span class="cameras-wall-subtitle">All camera streams in one view</span>
+    </div>
+    <div class="cameras-wall-controls">
+        <div class="layout-selector">
+            <button class="layout-btn active" data-layout="4" title="2x2 Grid">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                    <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                    <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                    <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                </svg>
+            </button>
+            <button class="layout-btn" data-layout="6" title="3x2 Grid">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="2" width="6" height="6" rx="1"></rect>
+                    <rect x="9" y="2" width="6" height="6" rx="1"></rect>
+                    <rect x="16" y="2" width="6" height="6" rx="1"></rect>
+                    <rect x="2" y="9" width="6" height="6" rx="1"></rect>
+                    <rect x="9" y="9" width="6" height="6" rx="1"></rect>
+                    <rect x="16" y="9" width="6" height="6" rx="1"></rect>
+                </svg>
+            </button>
+            <button class="layout-btn" data-layout="9" title="3x3 Grid">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="1" width="6" height="6" rx="1"></rect>
+                    <rect x="8" y="1" width="6" height="6" rx="1"></rect>
+                    <rect x="15" y="1" width="6" height="6" rx="1"></rect>
+                    <rect x="1" y="8" width="6" height="6" rx="1"></rect>
+                    <rect x="8" y="8" width="6" height="6" rx="1"></rect>
+                    <rect x="15" y="8" width="6" height="6" rx="1"></rect>
+                    <rect x="1" y="15" width="6" height="6" rx="1"></rect>
+                    <rect x="8" y="15" width="6" height="6" rx="1"></rect>
+                    <rect x="15" y="15" width="6" height="6" rx="1"></rect>
+                </svg>
+            </button>
+        </div>
+        <div class="wall-stats">
+            <span class="wall-stat">
+                <span class="wall-stat-dot online" id="wall-online-count">0</span>
+                <span>Online</span>
+            </span>
+            <span class="wall-stat">
+                <span class="wall-stat-dot warning" id="wall-alert-count">0</span>
+                <span>Alerts</span>
+            </span>
+            <span class="wall-stat">
+                <span class="wall-stat-total" id="wall-total-count">0</span>
+                <span>Total</span>
+            </span>
+        </div>
+    </div>
+</div>
+
+<div id="cameraWall" class="camera-wall layout-4">
+
+</div>
+
+<div id="emptyState" style="display:none;"></div>
+
+<div class="cameras-wall-legend">
+    <div class="legend-item">
+        <span class="legend-dot normal"></span>
+        <span>Normal</span>
+    </div>
+    <div class="legend-item">
+        <span class="legend-dot alert"></span>
+        <span>High Alert</span>
+    </div>
+    <div class="legend-item">
+        <span class="legend-dot offline"></span>
+        <span>Offline</span>
+    </div>
+</div>
+
+<script>
+(function() {
+    showSkeletonCards("cameraWall", 4);
+})();
+</script>
+
+{% endblock %}

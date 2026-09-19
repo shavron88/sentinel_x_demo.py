@@ -78,6 +78,64 @@ def handle_status():
     return jsonify(camera_manager.get_all_status()), 200
 
 
+@camera_bp.route('/alerts', methods=['GET'])
+@require_auth
+def handle_camera_alerts():
+    """Returns per-camera high alert status for the camera wall."""
+    cam_name = request.args.get('camera_name')
+    
+    if cam_name:
+        pipeline = camera_manager.get_pipeline(cam_name)
+        if pipeline:
+            return jsonify(_get_camera_alert_status(pipeline)), 200
+        return jsonify({"camera_name": cam_name, "has_alert": False, "alert_count": 0, "latest_alert": None}), 200
+    
+    # Return all cameras' alert status
+    alerts = {}
+    for name, pipeline in camera_manager.pipelines.items():
+        alerts[name] = _get_camera_alert_status(pipeline)
+    return jsonify(alerts), 200
+
+
+def _get_camera_alert_status(pipeline):
+    """Compute alert status for a camera pipeline from recent events."""
+    from database.db import get_connection
+    camera_name = pipeline.name
+    has_alert = False
+    alert_count = 0
+    latest_alert = None
+    
+    try:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT event_type, severity, zone, confidence, timestamp FROM events "
+                "WHERE camera = ? AND severity IN ('HIGH', 'CRITICAL') "
+                "ORDER BY id DESC LIMIT 10",
+                (camera_name,)
+            )
+            rows = cursor.fetchall()
+            alert_count = len(rows)
+            has_alert = alert_count > 0
+            if rows:
+                latest_alert = {
+                    "event_type": rows[0][0],
+                    "severity": rows[0][1],
+                    "zone": rows[0][2],
+                    "confidence": rows[0][3],
+                    "timestamp": rows[0][4]
+                }
+    except Exception:
+        pass
+    
+    return {
+        "camera_name": camera_name,
+        "has_alert": has_alert,
+        "alert_count": alert_count,
+        "latest_alert": latest_alert
+    }
+
+
 @camera_bp.route('/restart', methods=['POST'])
 @require_auth
 @require_csrf

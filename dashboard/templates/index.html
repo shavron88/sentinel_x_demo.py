@@ -96,321 +96,34 @@
 
 <section class="command-center monitoring-layout">
 
-<!-- ================= LIVE CAMERAS (FULL WIDTH BAND) ================= -->
-<div class="live-cameras-band">
-
-<div class="camera-section-head">
-
-    <div class="camera-section-titles">
-
-        <h2>Live Cameras</h2>
-
-        <span class="camera-section-sub">Real-time AI surveillance feeds</span>
-
+<!-- ================= LIVE CAMERAS LINK SECTION ================= -->
+<section class="live-cameras-link-section">
+    <div class="live-cameras-link-card">
+        <div class="live-cameras-link-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+        </div>
+        <div class="live-cameras-link-content">
+            <h2>Live Camera Wall</h2>
+            <p>View all camera streams together in a unified multi-camera grid. Click any camera to open its full view with AI detection, FPS, and controls.</p>
+            <div class="live-cameras-link-meta">
+                <span id="kpi-cameras-link">--</span>
+                <span class="live-cameras-link-total" id="kpi-cameras-total-link">/--</span>
+                <span class="live-cameras-link-status" id="kpi-cameras-status-link">Checking</span>
+            </div>
+        </div>
+        <a href="/cameras_wall" class="live-cameras-link-btn">
+            <span>Open Camera Wall</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 3h6v6"></path>
+                <path d="M10 14 21 3"></path>
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            </svg>
+        </a>
     </div>
-
-    <a href="/cameras" class="view-all-link camera-view-all">
-
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 3h6v6"></path>
-            <path d="M10 14 21 3"></path>
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-        </svg>
-
-        View All Cameras
-
-    </a>
-
-</div>
-
-<div class="dual-camera-grid" id="dualCameraGrid">
-
-<div class="camera-hero" id="camera-card-Camera_01" data-camera-name="Camera_01">
-
-    <div class="camera-hero-header">
-
-        <div class="camera-hero-title">
-
-            <span class="live-badge">● LIVE</span>
-
-            <h2>CAMERA 01</h2>
-
-        </div>
-
-        <div class="camera-hero-status">
-
-            <span class="status-chip small ai-chip">
-
-                <span class="status-dot" id="cam-dot-Camera_01"></span>
-
-                AI
-
-            </span>
-
-            <span class="status-chip small">
-
-                <svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m23 7-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>WEBCAM
-
-            </span>
-
-            <span class="status-chip small" id="cam-zone-Camera_01">
-
-                <svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Main Entrance
-
-            </span>
-
-        </div>
-
-    </div>
-
-    <div class="camera-hero-body">
-
-        <!-- Live MJPEG feed with real YOLO/ByteTrack overlays baked into frames -->
-        <img
-
-        src="{{ url_for('video_feed', camera_name='Camera_01') }}"
-
-        id="live-camera"
-
-        alt="Live Camera"
-
-        style="width: 100%; height: 100%; object-fit: cover;"
-
-        >
-
-    </div>
-
-    <div class="camera-hero-metrics">
-
-        <div class="metric">
-
-            <span>FPS</span>
-
-            <strong id="cam-fps-Camera_01">0</strong>
-
-        </div>
-
-        <div class="metric">
-
-            <span>Resolution</span>
-
-            <strong id="cam-resolution-Camera_01">--</strong>
-
-        </div>
-
-        <div class="metric">
-
-            <span>Latency</span>
-
-            <strong id="cam-latency-Camera_01">--</strong>
-
-        </div>
-
-        <div class="metric">
-
-            <span>Health</span>
-
-            <strong id="cam-health-Camera_01">--</strong>
-
-        </div>
-
-        <div class="metric">
-
-            <span>Persons</span>
-
-            <strong id="cam-persons-Camera_01">0</strong>
-
-        </div>
-
-        <div class="metric">
-
-            <span>Vehicles</span>
-
-            <strong id="cam-vehicles-Camera_01">0</strong>
-
-        </div>
-
-        <div class="metric">
-
-            <span>Detections</span>
-
-            <strong id="cam-detections-Camera_01">0</strong>
-
-        </div>
-
-        <div class="metric">
-
-            <span>Recording</span>
-
-            <strong id="cam-recording-Camera_01">OFF</strong>
-
-        </div>
-
-    </div>
-
-    <div class="camera-hero-controls">
-
-        <button class="cam-btn snapshot" data-camera="Camera_01" data-action="snapshot">Snapshot</button>
-
-        <button class="cam-btn record" data-camera="Camera_01" data-action="record">Record</button>
-
-        <button class="cam-btn replay" data-camera="Camera_01" data-action="replay" style="visibility:hidden;">Replay</button>
-
-    </div>
-
-    <div class="camera-hero-footer">
-
-        <span class="ai-active" id="cam-ai-Camera_01"><span class="ai-dot online"></span> AI ACTIVE</span>
-
-    </div>
-
-</div>
-
-<!-- ================= CAMERA 02: RECORDED CCTV VIDEO FILE ================= -->
-
-<div class="camera-hero" id="camera-card-Recorded_CCTV" data-camera-name="Recorded_CCTV">
-
-    <div class="camera-hero-header">
-
-        <div class="camera-hero-title">
-
-            <span class="live-badge">● LIVE</span>
-
-            <h2>RECORDED_CCTV</h2>
-
-        </div>
-
-        <div class="camera-hero-status">
-
-            <span class="status-chip small ai-chip">
-
-                <span class="status-dot" id="cam-dot-Recorded_CCTV"></span>
-
-                AI
-
-            </span>
-
-            <span class="status-chip small">
-
-                <svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 7h5M17 17h5"/></svg>VIDEO FILE
-
-            </span>
-
-            <span class="status-chip small" id="cam-zone-Recorded_CCTV">
-
-                <svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Demo Zone
-
-            </span>
-
-        </div>
-
-    </div>
-
-    <div class="camera-hero-body">
-
-        <img
-
-        src="{{ url_for('video_feed', camera_name='Recorded_CCTV') }}"
-
-        id="recorded-camera"
-
-        alt="Recorded CCTV"
-
-        style="width: 100%; height: 100%; object-fit: cover;"
-
-        >
-
-    </div>
-
-    <div class="camera-hero-metrics">
-
-        <div class="metric">
-
-            <span>FPS</span>
-
-            <strong id="cam-fps-Recorded_CCTV">0</strong>
-
-        </div>
-
-        <div class="metric">
-
-            <span>Resolution</span>
-
-            <strong id="cam-resolution-Recorded_CCTV">--</strong>
-
-        </div>
-
-        <div class="metric">
-
-            <span>Latency</span>
-
-            <strong id="cam-latency-Recorded_CCTV">--</strong>
-
-        </div>
-
-        <div class="metric">
-
-            <span>Health</span>
-
-            <strong id="cam-health-Recorded_CCTV">--</strong>
-
-        </div>
-
-        <div class="metric">
-
-            <span>Persons</span>
-
-            <strong id="cam-persons-Recorded_CCTV">0</strong>
-
-        </div>
-
-        <div class="metric">
-
-            <span>Vehicles</span>
-
-            <strong id="cam-vehicles-Recorded_CCTV">0</strong>
-
-        </div>
-
-        <div class="metric">
-
-            <span>Detections</span>
-
-            <strong id="cam-detections-Recorded_CCTV">0</strong>
-
-        </div>
-
-        <div class="metric">
-
-            <span>Recording</span>
-
-            <strong id="cam-recording-Recorded_CCTV">OFF</strong>
-
-        </div>
-
-    </div>
-
-    <div class="camera-hero-controls">
-
-        <button class="cam-btn snapshot" data-camera="Recorded_CCTV" data-action="snapshot">Snapshot</button>
-
-        <button class="cam-btn record" data-camera="Recorded_CCTV" data-action="record">Record</button>
-
-        <button class="cam-btn replay" data-camera="Recorded_CCTV" data-action="replay">Replay</button>
-
-    </div>
-
-    <div class="camera-hero-footer">
-
-        <span class="ai-active" id="cam-ai-Recorded_CCTV"><span class="ai-dot online"></span> AI ACTIVE</span>
-
-    </div>
-
-</div>
-
-</div>
-
-</div>
+</section>
 
 <!-- ================= MONITORING TWO-COLUMN ================= -->
 <div class="monitoring-grid">

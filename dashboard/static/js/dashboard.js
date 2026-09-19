@@ -412,6 +412,27 @@ async function updateKPIBar(stats){
         }
     }
 
+    // Update camera wall link elements
+    const camerasLinkEl = document.getElementById("kpi-cameras-link");
+    const camerasLinkTotalEl = document.getElementById("kpi-cameras-total-link");
+    const camerasLinkStatusEl = document.getElementById("kpi-cameras-status-link");
+    if(camerasLinkEl){
+        try {
+            const res = await fetch("/api/health");
+            const data = await res.json();
+            const camData = data.services?.cameras || {};
+            const online = camData.online || 0;
+            const total = camData.total || 0;
+            camerasLinkEl.innerText = online;
+            if(camerasLinkTotalEl) camerasLinkTotalEl.innerText = '/' + total;
+            if(camerasLinkStatusEl) camerasLinkStatusEl.innerText = online === total && total > 0 ? 'All Online' : online > 0 ? 'Partial' : 'Offline';
+        } catch(e) {
+            camerasLinkEl.innerText = "--";
+            if(camerasLinkTotalEl) camerasLinkTotalEl.innerText = '/--';
+            if(camerasLinkStatusEl) camerasLinkStatusEl.innerText = 'Unknown';
+        }
+    }
+
     // Accuracy - from AI summary
     if(accuracyEl){
         try {
