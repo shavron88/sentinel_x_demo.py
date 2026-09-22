@@ -71,6 +71,10 @@ models/*.pt
 *.swp
 *.swo
 *.patch
+debug_output.txt
+responsive_prompt.txt
+temp_*.py
+verify_changes.py
 
 ##############################
 # Environment Variables

@@ -1587,13 +1587,28 @@ svg, svg * {
     color: #475569 !important;
 }
 
-/* Fix final CTA */
-[data-theme="light"] .final-cta h2 {
-    color: #0f172a !important;
+/* Fix hero CTA */
+[data-theme="light"] .hero-cta {
+    background: linear-gradient(180deg, #dce4f0 0%, #f3f6fb 100%) !important;
+    border-top-color: rgba(63, 111, 224, 0.32) !important;
+    border-bottom-color: rgba(63, 111, 224, 0.18) !important;
 }
 
-[data-theme="light"] .final-cta p {
-    color: #475569 !important;
+[data-theme="light"] .hero-cta h2 {
+    color: #16213a !important;
+}
+
+[data-theme="light"] .hero-cta .hl-line.accent {
+    color: #2f5bd4 !important;
+}
+
+[data-theme="light"] .hero-cta .hero-subtext {
+    color: #43526b !important;
+}
+
+[data-theme="light"] .hero-cta .hero-btn-secondary {
+    color: #16213a !important;
+    border-color: rgba(63, 111, 224, 0.32) !important;
 }
 
 /* Fix footer */
