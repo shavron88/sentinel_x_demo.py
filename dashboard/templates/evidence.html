@@ -1,984 +1,526 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+/* =========================================================
+   SENTINEL-X — EVIDENCE INTELLIGENCE CENTER
+   UI-only layer. Existing IDs/API hooks are preserved.
+   ========================================================= */
+.evidence-page{
+  --ev-bg:#070b12;
+  --ev-surface:#0d131d;
+  --ev-surface-2:#111a27;
+  --ev-surface-3:#162131;
+  --ev-border:rgba(148,163,184,.14);
+  --ev-border-strong:rgba(59,130,246,.28);
+  --ev-text:#f1f5f9;
+  --ev-muted:#8fa0b5;
+  --ev-blue:#3b82f6;
+  --ev-cyan:#22d3ee;
+  --ev-green:#22c55e;
+  --ev-amber:#f59e0b;
+  --ev-red:#ef4444;
+  --ev-shadow:0 18px 55px rgba(0,0,0,.28);
+  color:var(--ev-text);
+}
+[data-theme="light"] .evidence-page,
+body.light .evidence-page{
+  --ev-bg:#f5f7fb;
+  --ev-surface:#ffffff;
+  --ev-surface-2:#f8fafc;
+  --ev-surface-3:#eef3f9;
+  --ev-border:rgba(15,23,42,.10);
+  --ev-border-strong:rgba(37,99,235,.25);
+  --ev-text:#0f172a;
+  --ev-muted:#64748b;
+  --ev-shadow:0 18px 45px rgba(15,23,42,.09);
+}
+.evidence-page *{box-sizing:border-box}
+.evidence-page button,.evidence-page input{font:inherit}
+.ev-shell{display:grid;gap:18px}
+.ev-card{background:linear-gradient(145deg,var(--ev-surface),var(--ev-surface-2));border:1px solid var(--ev-border);border-radius:18px;box-shadow:var(--ev-shadow)}
 
-<div class="page-content fade-in">
+/* Header */
+.ev-header{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:22px 24px;position:relative;overflow:hidden}
+.ev-header:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 80% 0%,rgba(59,130,246,.14),transparent 38%);pointer-events:none}
+.ev-header-main,.ev-header-actions{position:relative;z-index:1}
+.ev-eyebrow{display:flex;align-items:center;gap:8px;color:var(--ev-cyan);font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;margin-bottom:7px}
+.ev-live-dot{width:7px;height:7px;border-radius:50%;background:var(--ev-green);box-shadow:0 0 0 5px rgba(34,197,94,.12),0 0 16px rgba(34,197,94,.55)}
+.ev-header h1{margin:0;font-size:clamp(23px,2.3vw,34px);letter-spacing:-.035em}
+.ev-subtitle{margin:7px 0 0;color:var(--ev-muted);font-size:13px}
+.ev-header-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.ev-btn{border:1px solid var(--ev-border);background:var(--ev-surface-3);color:var(--ev-text);border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:700;font-size:12px;transition:.2s ease;display:inline-flex;align-items:center;gap:8px}
+.ev-btn:hover{border-color:var(--ev-border-strong);transform:translateY(-1px)}
+.ev-btn-primary{background:linear-gradient(135deg,#2563eb,#3b82f6);border-color:transparent;color:#fff;box-shadow:0 8px 25px rgba(37,99,235,.24)}
 
-<section class="evidence-page">
+/* KPI */
+.ev-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.ev-stat{padding:17px;position:relative;overflow:hidden}
+.ev-stat:after{content:"";position:absolute;right:-28px;bottom:-30px;width:90px;height:90px;border-radius:50%;background:rgba(59,130,246,.08)}
+.ev-stat-top{display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--ev-muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.ev-stat-icon{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:rgba(59,130,246,.12);color:var(--ev-blue);font-size:15px}
+.ev-stat-value{font-size:26px;font-weight:850;letter-spacing:-.04em;margin-top:13px}
+.ev-stat-note{font-size:11px;color:var(--ev-muted);margin-top:3px}
+.ev-stat.danger .ev-stat-icon{background:rgba(239,68,68,.12);color:var(--ev-red)}
+.ev-stat.success .ev-stat-icon{background:rgba(34,197,94,.12);color:var(--ev-green)}
+.ev-stat.warning .ev-stat-icon{background:rgba(245,158,11,.12);color:var(--ev-amber)}
 
-    <!-- HEADER -->
+/* Histogram */
+.ev-chart{padding:18px 20px}
+.ev-section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:13px}
+.ev-section-title{font-size:14px;font-weight:800;margin:0}
+.ev-section-meta{font-size:11px;color:var(--ev-muted)}
+#evHistogram{height:135px;display:flex;align-items:flex-end;gap:7px;padding:15px 4px 2px;border-bottom:1px solid var(--ev-border)}
+.ev-bar{flex:1;min-width:5px;height:var(--h);border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,var(--ev-blue),rgba(59,130,246,.22));opacity:.82;transition:.2s}
+.ev-bar:hover{opacity:1;transform:translateY(-2px)}
 
-    <div class="ev-header">
+/* Toolbar */
+.ev-toolbar{padding:15px}
+.ev-search-row{display:flex;gap:10px;align-items:center;margin-bottom:13px}
+.ev-search{flex:1;position:relative}
+.ev-search input{width:100%;height:42px;border-radius:11px;border:1px solid var(--ev-border);background:var(--ev-bg);color:var(--ev-text);padding:0 14px 0 40px;outline:none}
+.ev-search input:focus{border-color:var(--ev-blue);box-shadow:0 0 0 3px rgba(59,130,246,.11)}
+.ev-search:before{content:"⌕";position:absolute;left:14px;top:8px;font-size:19px;color:var(--ev-muted);z-index:2}
+.ev-filter-wrap{display:flex;gap:7px;flex-wrap:wrap}
+.ev-chip{border:1px solid var(--ev-border);background:transparent;color:var(--ev-muted);border-radius:999px;padding:7px 11px;font-size:11px;font-weight:700;cursor:pointer;transition:.18s}
+.ev-chip:hover,.ev-chip.active{background:rgba(59,130,246,.11);border-color:rgba(59,130,246,.32);color:var(--ev-blue)}
+.ev-view-toggle{display:flex;border:1px solid var(--ev-border);border-radius:10px;padding:3px;background:var(--ev-bg)}
+.ev-view-toggle button{border:0;background:transparent;color:var(--ev-muted);padding:7px 10px;border-radius:7px;cursor:pointer;font-size:11px}
+.ev-view-toggle button.active{background:var(--ev-surface-3);color:var(--ev-text)}
 
-        <div class="ev-header-left">
+/* Bulk */
+#bulkBar{display:none;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;margin-top:12px;border:1px solid rgba(59,130,246,.25);background:rgba(59,130,246,.07);border-radius:12px}
+.bulk-actions{display:flex;gap:7px;flex-wrap:wrap}
 
-            <h1 class="ev-title">
+/* Main */
+.ev-content{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+.ev-gallery-panel{padding:16px}
+.ev-gallery-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px}
+.ev-gallery-count{font-size:11px;color:var(--ev-muted)}
+#galleryGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.ev-item{min-width:0;overflow:hidden;border:1px solid var(--ev-border);background:var(--ev-bg);border-radius:15px;position:relative;cursor:pointer;transition:.22s ease}
+.ev-item:hover{border-color:rgba(59,130,246,.38);transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.ev-thumb{height:145px;position:relative;overflow:hidden;background:linear-gradient(135deg,#111827,#1e293b)}
+.ev-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.ev-thumb:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.68))}
+.ev-severity{position:absolute;top:9px;left:9px;z-index:2;padding:5px 8px;border-radius:7px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.07em}
+.ev-severity.critical{background:rgba(239,68,68,.9);color:#fff}.ev-severity.high{background:rgba(245,158,11,.92);color:#111827}.ev-severity.medium{background:rgba(59,130,246,.9);color:#fff}.ev-severity.low{background:rgba(34,197,94,.9);color:#052e16}
+.ev-confidence{position:absolute;right:9px;top:9px;z-index:2;padding:5px 7px;border-radius:7px;background:rgba(0,0,0,.58);backdrop-filter:blur(8px);font-size:9px;color:#fff;font-weight:800}
+.ev-thumb-actions{position:absolute;right:9px;bottom:8px;z-index:3;display:flex;gap:5px}
+.ev-icon-btn{width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.48);color:#fff;display:grid;place-items:center;cursor:pointer}
+.ev-item-body{padding:12px}
+.ev-item-title{font-size:12px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev-item-meta{display:flex;justify-content:space-between;gap:8px;margin-top:8px;color:var(--ev-muted);font-size:10px}
+.ev-item-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.ev-tag{padding:4px 6px;border-radius:5px;background:var(--ev-surface-3);font-size:9px;color:var(--ev-muted)}
+.ev-identity{color:var(--ev-cyan)}
 
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+/* Sidebar */
+.ev-sidebar{display:grid;gap:12px;min-width:0}
+.ev-side-card{padding:15px;min-width:0}
+.ev-preview{height:190px;border-radius:12px;overflow:hidden;background:#030712;position:relative}
+#previewImage{width:100%;height:100%;object-fit:cover;display:block}
+.ev-preview-empty{height:100%;display:grid;place-items:center;color:#64748b;font-size:11px}
+.ev-preview-actions{position:absolute;bottom:9px;right:9px;display:flex;gap:5px}
+.ev-summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.ev-summary-field{padding:9px;border-radius:9px;background:var(--ev-bg);border:1px solid var(--ev-border)}
+.ev-summary-field span{display:block;font-size:9px;color:var(--ev-muted);text-transform:uppercase;margin-bottom:3px}.ev-summary-field strong{font-size:11px}
+.ev-confidence-ring{width:74px;height:74px;border-radius:50%;display:grid;place-items:center;margin:10px auto;background:conic-gradient(var(--ev-blue) 0 91%,var(--ev-surface-3) 91% 100%);position:relative}
+.ev-confidence-ring:after{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--ev-surface)}
+.ev-confidence-ring span{position:relative;z-index:2;font-size:14px;font-weight:900}
+.ev-timeline{display:grid;gap:11px;margin-top:12px}
+.ev-time-row{display:grid;grid-template-columns:52px 10px minmax(0,1fr);gap:8px;align-items:start;font-size:10px}
+.ev-time{color:var(--ev-muted)}
+.ev-time-dot{width:8px;height:8px;border-radius:50%;background:var(--ev-blue);margin-top:3px;box-shadow:0 0 0 4px rgba(59,130,246,.1)}
+.ev-time-text strong{display:block;font-size:10px}.ev-time-text span{color:var(--ev-muted);display:block;margin-top:2px}
+.ev-hash{font-family:"JetBrains Mono",monospace;font-size:9px;word-break:break-all;color:var(--ev-muted);background:var(--ev-bg);padding:9px;border-radius:8px;border:1px solid var(--ev-border);margin-top:10px}
+.ev-similar{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}.ev-similar div{height:54px;border-radius:8px;background:var(--ev-surface-3);overflow:hidden}.ev-similar img{width:100%;height:100%;object-fit:cover}
+.ev-map{height:125px;border-radius:10px;background:radial-gradient(circle at 35% 45%,rgba(59,130,246,.17),transparent 20%),linear-gradient(135deg,var(--ev-bg),var(--ev-surface-3));position:relative;overflow:hidden;margin-top:10px}
+.ev-map-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(148,163,184,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,.07) 1px,transparent 1px);background-size:22px 22px}
+.ev-map-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--ev-green);box-shadow:0 0 0 5px rgba(34,197,94,.12),0 0 16px rgba(34,197,94,.45)}
+.ev-map-dot.offline{background:var(--ev-red);box-shadow:0 0 0 5px rgba(239,68,68,.12)}
+.ev-map-label{position:absolute;font-size:9px;color:var(--ev-muted);padding:3px 6px;background:rgba(0,0,0,.4);border-radius:4px}
 
-                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+/* Timeline/list modes */
+#evidenceTimeline{display:none}
+.evidence-list-mode #galleryGrid{grid-template-columns:1fr}
+.evidence-list-mode .ev-thumb{height:95px;width:145px;flex:none}.evidence-list-mode .ev-item{display:flex}.evidence-list-mode .ev-item-body{flex:1}
+.evidence-list-mode .ev-sidebar{display:none}
+.evidence-list-mode .ev-content{grid-template-columns:1fr}
 
-                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+/* Empty state */
+#noEvidence{display:none;padding:50px 20px;text-align:center;color:var(--ev-muted)}
+.ev-empty-icon{font-size:30px;margin-bottom:10px;color:var(--ev-blue)}
 
-                    <path d="M21 15l-5-5L11 19"></path>
+/* Modal */
+.ev-modal{display:none;position:fixed;inset:0;background:rgba(2,6,23,.82);backdrop-filter:blur(12px);z-index:9999;padding:24px;align-items:center;justify-content:center}
+.ev-modal.open{display:flex}
+.ev-modal-box{width:min(1100px,100%);max-height:90vh;overflow:auto;background:var(--ev-surface);border:1px solid var(--ev-border);border-radius:18px;box-shadow:0 30px 90px rgba(0,0,0,.5);padding:18px}
+.ev-modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.ev-modal-title{font-weight:850}.ev-modal-close{border:0;background:var(--ev-surface-3);color:var(--ev-text);width:34px;height:34px;border-radius:8px;cursor:pointer}
+#fullscreenImage{max-width:100%;max-height:72vh;display:block;margin:auto;border-radius:10px}
 
-                </svg>
+/* Responsive */
+@media(max-width:1200px){
+  .ev-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ev-content{grid-template-columns:minmax(0,1fr) 300px}
+  #galleryGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:900px){
+  .ev-header{align-items:flex-start;flex-direction:column}.ev-header-actions{width:100%}
+  .ev-content{grid-template-columns:1fr}.ev-sidebar{grid-template-columns:repeat(2,minmax(0,1fr))}.ev-sidebar .ev-side-card:first-child{grid-column:1/-1}
+}
+@media(max-width:650px){
+  .ev-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ev-header,.ev-gallery-panel,.ev-side-card{padding:14px}
+  .ev-search-row{align-items:stretch;flex-direction:column}.ev-view-toggle{width:100%}.ev-view-toggle button{flex:1}
+  #galleryGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .ev-thumb{height:120px}.ev-item-body{padding:9px}.ev-item-meta{flex-direction:column;gap:3px}
+  .ev-sidebar{grid-template-columns:1fr}
+}
+@media(max-width:430px){
+  .ev-stats{grid-template-columns:1fr 1fr;gap:8px}.ev-stat{padding:12px}.ev-stat-value{font-size:21px}
+  #galleryGrid{grid-template-columns:1fr}.ev-thumb{height:165px}
+  .ev-header h1{font-size:23px}.ev-btn{flex:1;justify-content:center}
+}
+@media(prefers-reduced-motion:reduce){.ev-item,.ev-btn,.ev-bar{transition:none}}
 
-                AI Evidence Vault
+/* =========================================================
+   SENTINEL-X — PREMIUM COMMAND CENTER CONSISTENCY LAYER
+   Matches the dashboard / incidents / analytics / reports visual language.
+   UI-only: no routes, IDs, API calls or JS behavior changed.
+   ========================================================= */
+.evidence-page{
+  --ev-bg:#07101b;
+  --ev-surface:#0b1420;
+  --ev-surface-2:#101b2a;
+  --ev-surface-3:#152337;
+  --ev-border:rgba(148,163,184,.13);
+  --ev-border-strong:rgba(59,130,246,.38);
+  --ev-text:#f4f7fb;
+  --ev-muted:#8ea0b7;
+  --ev-blue:#3b82f6;
+  --ev-cyan:#22d3ee;
+  --ev-green:#22c55e;
+  --ev-amber:#f59e0b;
+  --ev-red:#ef4444;
+  --ev-shadow:0 18px 55px rgba(0,0,0,.22);
+  position:relative;
+}
+.evidence-page:before{
+  content:"";position:absolute;inset:-24px -24px auto;height:420px;pointer-events:none;z-index:0;
+  background:radial-gradient(circle at 18% 0%,rgba(59,130,246,.11),transparent 30%),radial-gradient(circle at 84% 4%,rgba(34,211,238,.06),transparent 26%);
+}
+.evidence-page .ev-shell{position:relative;z-index:1;gap:20px}
+.evidence-page .ev-card{
+  background:linear-gradient(145deg,rgba(13,23,36,.98),rgba(9,17,29,.98));
+  border:1px solid rgba(148,163,184,.12);border-radius:18px;
+  box-shadow:0 16px 48px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.025);
+  backdrop-filter:blur(14px);overflow:hidden;
+}
+.evidence-page .ev-card:focus-within{border-color:rgba(59,130,246,.35)}
+.evidence-page .ev-header{min-height:118px;padding:24px 26px;border-radius:20px}
+.evidence-page .ev-header:after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(59,130,246,.55),rgba(34,211,238,.25),transparent);
+}
+.evidence-page .ev-eyebrow{font-size:10px;letter-spacing:.16em;color:#60a5fa}
+.evidence-page .ev-header h1{font-size:clamp(25px,2.2vw,35px);font-weight:850;color:#f8fafc}
+.evidence-page .ev-subtitle{max-width:700px;line-height:1.6}
+.evidence-page .ev-live-dot{width:8px;height:8px}
+.evidence-page .ev-btn{min-height:40px;border-radius:10px;background:rgba(21,35,55,.8);border-color:rgba(148,163,184,.15);box-shadow:0 5px 18px rgba(0,0,0,.12)}
+.evidence-page .ev-btn:hover{background:#18283d;border-color:rgba(59,130,246,.42);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.evidence-page .ev-btn-primary{background:linear-gradient(135deg,#2563eb,#3b82f6);box-shadow:0 9px 28px rgba(37,99,235,.28)}
+.evidence-page .ev-btn-primary:hover{background:linear-gradient(135deg,#1d4ed8,#2563eb);box-shadow:0 12px 32px rgba(37,99,235,.35)}
 
-            </h1>
+/* KPI hierarchy */
+.evidence-page .ev-stats{gap:14px}
+.evidence-page .ev-stat{min-height:112px;padding:18px 19px;background:linear-gradient(145deg,#0d1826,#0a1320)}
+.evidence-page .ev-stat:before{content:"";position:absolute;left:0;top:0;width:38%;height:2px;background:linear-gradient(90deg,var(--ev-blue),transparent)}
+.evidence-page .ev-stat.danger:before{background:linear-gradient(90deg,var(--ev-red),transparent)}
+.evidence-page .ev-stat.success:before{background:linear-gradient(90deg,var(--ev-green),transparent)}
+.evidence-page .ev-stat.warning:before{background:linear-gradient(90deg,var(--ev-amber),transparent)}
+.evidence-page .ev-stat-icon{width:35px;height:35px;border-radius:10px;border:1px solid rgba(59,130,246,.18);background:rgba(59,130,246,.1)}
+.evidence-page .ev-stat-value{font-size:29px;margin-top:15px;color:#f8fafc}
+.evidence-page .ev-stat-note{font-size:10px;letter-spacing:.02em}
 
-            <span class="ev-badge" id="threatBadge">
+/* Section headers */
+.evidence-page .ev-section-head{min-height:30px}
+.evidence-page .ev-section-title{font-size:13px;letter-spacing:-.01em;color:#eef4fb}
+.evidence-page .ev-section-meta{padding:4px 8px;border:1px solid rgba(148,163,184,.1);border-radius:7px;background:rgba(148,163,184,.045)}
+.evidence-page .ev-chart{padding:19px 21px}
+.evidence-page #evHistogram{height:128px;gap:5px;border-bottom-color:rgba(148,163,184,.1)}
+.evidence-page .ev-bar{background:linear-gradient(180deg,#3b82f6,rgba(34,211,238,.12));box-shadow:0 0 14px rgba(59,130,246,.08)}
 
-                <span class="threat-dot"></span>
+/* Intelligence toolbar */
+.evidence-page .ev-toolbar{padding:17px}
+.evidence-page .ev-search input{height:44px;background:#07111e;border-color:rgba(148,163,184,.13);border-radius:11px}
+.evidence-page .ev-search input::placeholder{color:#65758a}
+.evidence-page .ev-search:before{content:"⌕";color:#71839a}
+.evidence-page .ev-chip{min-height:31px;background:rgba(148,163,184,.025);border-color:rgba(148,163,184,.12);color:#91a3b9}
+.evidence-page .ev-chip:hover,.evidence-page .ev-chip.active{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.4);color:#70a7ff;box-shadow:0 0 0 1px rgba(59,130,246,.06)}
+.evidence-page .ev-view-toggle{background:#07111e;border-color:rgba(148,163,184,.13)}
+.evidence-page .ev-view-toggle button.active{background:#17263a;color:#f8fafc;box-shadow:0 3px 12px rgba(0,0,0,.22)}
+.evidence-page #bulkBar{background:linear-gradient(90deg,rgba(59,130,246,.1),rgba(34,211,238,.035));border-color:rgba(59,130,246,.25)}
 
-                <span id="threatText">LOW</span>
+/* Gallery */
+.evidence-page .ev-gallery-panel{padding:18px}
+.evidence-page .ev-gallery-head{padding:0 2px 2px}
+.evidence-page #galleryGrid{gap:14px}
+.evidence-page .ev-item{border-radius:16px;background:linear-gradient(145deg,#0c1725,#09111d);border-color:rgba(148,163,184,.11);box-shadow:0 8px 22px rgba(0,0,0,.12)}
+.evidence-page .ev-item:before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;background:linear-gradient(135deg,rgba(59,130,246,.1),transparent 45%);transition:.2s}
+.evidence-page .ev-item:hover{transform:translateY(-3px);border-color:rgba(59,130,246,.4);box-shadow:0 18px 38px rgba(0,0,0,.25)}
+.evidence-page .ev-item:hover:before{opacity:1}
+.evidence-page .ev-thumb{height:154px;background:#050b13}
+.evidence-page .ev-thumb img{transition:transform .35s ease,filter .35s ease}
+.evidence-page .ev-item:hover .ev-thumb img{transform:scale(1.035);filter:saturate(1.05)}
+.evidence-page .ev-thumb:after{background:linear-gradient(180deg,transparent 35%,rgba(2,6,23,.82))}
+.evidence-page .ev-severity{border:1px solid rgba(255,255,255,.12);box-shadow:0 5px 15px rgba(0,0,0,.2)}
+.evidence-page .ev-confidence{border:1px solid rgba(255,255,255,.12);box-shadow:0 5px 15px rgba(0,0,0,.2)}
+.evidence-page .ev-icon-btn{width:30px;height:30px;border-radius:9px;background:rgba(4,9,16,.7);backdrop-filter:blur(8px);transition:.18s}
+.evidence-page .ev-icon-btn:hover{background:#1b2b42;border-color:rgba(59,130,246,.4);transform:translateY(-1px)}
+.evidence-page .ev-item-body{padding:13px 13px 14px}
+.evidence-page .ev-item-title{font-size:12px;color:#f2f6fb}
+.evidence-page .ev-item-meta{margin-top:7px}
+.evidence-page .ev-tag{background:#132136;border:1px solid rgba(148,163,184,.08);border-radius:6px}
+.evidence-page .ev-identity{color:#67e8f9;border-color:rgba(34,211,238,.13);background:rgba(34,211,238,.055)}
 
-            </span>
+/* Investigation rail */
+.evidence-page .ev-sidebar{gap:14px}
+.evidence-page .ev-side-card{padding:17px}
+.evidence-page .ev-preview{height:205px;border:1px solid rgba(148,163,184,.1);box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}
+.evidence-page .ev-summary-field{background:#07111e;border-color:rgba(148,163,184,.1)}
+.evidence-page .ev-summary-field strong{color:#e8eef6}
+.evidence-page .ev-confidence-ring{box-shadow:0 0 28px rgba(59,130,246,.1)}
+.evidence-page .ev-hash{background:#050c15;border-color:rgba(148,163,184,.1);color:#7f91a8}
+.evidence-page .ev-map{border:1px solid rgba(148,163,184,.1);box-shadow:inset 0 0 35px rgba(59,130,246,.05)}
 
-            <span class="scanning-indicator">
+/* Empty / modal */
+.evidence-page #noEvidence{min-height:260px;display:none;place-items:center}
+.evidence-page .ev-empty-icon{font-size:26px;opacity:.8}
+.evidence-page .ev-modal{background:rgba(1,5,12,.86)}
+.evidence-page .ev-modal-box{background:linear-gradient(145deg,#0d1826,#09121e);border-color:rgba(148,163,184,.16);box-shadow:0 30px 100px rgba(0,0,0,.65)}
+.evidence-page .ev-modal-close:hover{background:#1b2b42;color:#fff}
 
-                <span class="scanning-dot"></span>
+/* Light theme: keep the same premium contrast as the rest of Sentinel-X */
+[data-theme="light"] .evidence-page,.light .evidence-page,body.light .evidence-page{
+  --ev-bg:#f4f7fb;--ev-surface:#ffffff;--ev-surface-2:#f8fafc;--ev-surface-3:#eef3f8;
+  --ev-border:rgba(15,23,42,.1);--ev-border-strong:rgba(37,99,235,.3);
+  --ev-text:#162033;--ev-muted:#64748b;--ev-shadow:0 14px 36px rgba(15,23,42,.08)
+}
+[data-theme="light"] .evidence-page .ev-card,.light .evidence-page .ev-card,body.light .evidence-page .ev-card{background:linear-gradient(145deg,#fff,#f8fafc);box-shadow:0 12px 32px rgba(15,23,42,.07),inset 0 1px 0 rgba(255,255,255,.8)}
+[data-theme="light"] .evidence-page .ev-stat,.light .evidence-page .ev-stat,body.light .evidence-page .ev-stat{background:linear-gradient(145deg,#fff,#f7f9fc)}
+[data-theme="light"] .evidence-page .ev-header h1,.light .evidence-page .ev-header h1,body.light .evidence-page .ev-header h1{color:#0f172a}
+[data-theme="light"] .evidence-page .ev-search input,.light .evidence-page .ev-search input,body.light .evidence-page .ev-search input{background:#f7f9fc;color:#172033}
+[data-theme="light"] .evidence-page .ev-item,.light .evidence-page .ev-item,body.light .evidence-page .ev-item{background:#fff;border-color:rgba(15,23,42,.09);box-shadow:0 8px 22px rgba(15,23,42,.06)}
+[data-theme="light"] .evidence-page .ev-item-title,.light .evidence-page .ev-item-title,body.light .evidence-page .ev-item-title{color:#172033}
+[data-theme="light"] .evidence-page .ev-tag,.light .evidence-page .ev-tag,body.light .evidence-page .ev-tag{background:#eef3f8;color:#526176}
+[data-theme="light"] .evidence-page .ev-summary-field,.light .evidence-page .ev-summary-field,body.light .evidence-page .ev-summary-field{background:#f7f9fc}
+[data-theme="light"] .evidence-page .ev-hash,.light .evidence-page .ev-hash,body.light .evidence-page .ev-hash{background:#f5f7fa}
+[data-theme="light"] .evidence-page .ev-btn,.light .evidence-page .ev-btn,body.light .evidence-page .ev-btn{background:#fff;color:#172033;border-color:rgba(15,23,42,.1)}
+[data-theme="light"] .evidence-page .ev-view-toggle,.light .evidence-page .ev-view-toggle,body.light .evidence-page .ev-view-toggle{background:#f1f5f9}
+[data-theme="light"] .evidence-page .ev-view-toggle button.active,.light .evidence-page .ev-view-toggle button.active,body.light .evidence-page .ev-view-toggle button.active{background:#fff;color:#172033;box-shadow:0 2px 8px rgba(15,23,42,.08)}
 
-                AI Monitoring Live
+/* Responsive consistency */
+@media(max-width:1200px){
+  .evidence-page .ev-content{grid-template-columns:minmax(0,1fr) 310px}
+  .evidence-page #galleryGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:900px){
+  .evidence-page .ev-content{grid-template-columns:1fr}
+  .evidence-page .ev-sidebar{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .evidence-page .ev-sidebar .ev-side-card:first-child{grid-column:1/-1}
+}
+@media(max-width:650px){
+  .evidence-page .ev-header{padding:19px 16px}
+  .evidence-page .ev-stats{gap:9px}
+  .evidence-page .ev-stat{min-height:98px;padding:14px}
+  .evidence-page .ev-stat-value{font-size:23px}
+  .evidence-page .ev-toolbar,.evidence-page .ev-gallery-panel,.evidence-page .ev-side-card{padding:14px}
+  .evidence-page #galleryGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .evidence-page .ev-thumb{height:125px}
+  .evidence-page .ev-item-body{padding:10px}
+  .evidence-page .ev-sidebar{grid-template-columns:1fr}
+}
+@media(max-width:430px){
+  .evidence-page .ev-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .evidence-page #galleryGrid{grid-template-columns:1fr}
+  .evidence-page .ev-thumb{height:170px}
+  .evidence-page .ev-header-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}
+  .evidence-page .ev-header-actions .ev-btn{width:100%;justify-content:center}
+}
+@media(prefers-reduced-motion:reduce){.evidence-page *,.evidence-page *:before,.evidence-page *:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
-            </span>
+</style>
 
+<div class="page-content fade-in evidence-page">
+  <div class="ev-shell">
+
+    <section class="ev-card ev-header" aria-labelledby="evidence-title">
+      <div class="ev-header-main">
+        <div class="ev-eyebrow"><span class="ev-live-dot"></span> Sentinel-X Intelligence Vault</div>
+        <h1 id="evidence-title">AI Evidence Center</h1>
+        <p class="ev-subtitle">Investigate, verify and manage security evidence captured by Sentinel-X.</p>
+      </div>
+      <div class="ev-header-actions">
+        <span class="ev-btn" style="cursor:default"><span class="ev-live-dot"></span> AI Monitoring Live</span>
+        <button class="ev-btn" id="exportEvidence">↥ Export</button>
+        <button class="ev-btn ev-btn-primary" id="refreshEvidence">↻ Refresh</button>
+      </div>
+    </section>
+
+    <section class="ev-stats" aria-label="Evidence statistics">
+      <article class="ev-card ev-stat"><div class="ev-stat-top"><span>Evidence</span><span class="ev-stat-icon">▣</span></div><div class="ev-stat-value" id="statEvidence">—</div><div class="ev-stat-note">Stored evidence items</div></article>
+      <article class="ev-card ev-stat success"><div class="ev-stat-top"><span>Today</span><span class="ev-stat-icon">✓</span></div><div class="ev-stat-value" id="statToday">—</div><div class="ev-stat-note">Captured today</div></article>
+      <article class="ev-card ev-stat danger"><div class="ev-stat-top"><span>Critical</span><span class="ev-stat-icon">!</span></div><div class="ev-stat-value" id="statCritical">—</div><div class="ev-stat-note">High-priority evidence</div></article>
+      <article class="ev-card ev-stat warning"><div class="ev-stat-top"><span>Storage</span><span class="ev-stat-icon">◫</span></div><div class="ev-stat-value" id="statStorage">—</div><div class="ev-stat-note">Evidence storage used</div></article>
+      <article class="ev-card ev-stat"><div class="ev-stat-top"><span>Avg Confidence</span><span class="ev-stat-icon">◉</span></div><div class="ev-stat-value" id="statConfidence">—</div><div class="ev-stat-note">AI detection confidence</div></article>
+    </section>
+
+    <section class="ev-card ev-chart">
+      <div class="ev-section-head"><h2 class="ev-section-title">Evidence Activity</h2><span class="ev-section-meta">Recent detection volume</span></div>
+      <div id="evHistogram" aria-label="Evidence activity histogram"></div>
+    </section>
+
+    <section class="ev-card ev-toolbar">
+      <div class="ev-search-row">
+        <div class="ev-search"><input id="searchEvidence" type="search" placeholder="Search evidence, event, camera, identity..." autocomplete="off"></div>
+        <div class="ev-view-toggle" aria-label="Evidence view">
+          <button class="active" data-view="grid">Grid</button>
+          <button data-view="list">List</button>
+          <button data-view="timeline">Timeline</button>
+          <button data-view="map">Map</button>
         </div>
-
-        <div class="ev-header-right">
-
-            <button class="btn btn-secondary" onclick="exportAll()">
-
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-
-                    <polyline points="7 10 12 15 17 10"></polyline>
-
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-
-                </svg>
-
-                Export
-
-            </button>
-
-            <button class="btn btn-primary" onclick="loadEvidence()">
-
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-
-                    <polyline points="23 4 23 10 17 10"></polyline>
-
-                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-
-                </svg>
-
-                Refresh
-
-            </button>
-
+      </div>
+      <div class="ev-filter-wrap" id="evidenceFilters">
+        <button class="ev-chip active" data-filter="all">All</button>
+        <button class="ev-chip" data-filter="today">Today</button>
+        <button class="ev-chip" data-filter="yesterday">Yesterday</button>
+        <button class="ev-chip" data-filter="week">This Week</button>
+        <button class="ev-chip" data-filter="high">High Threat</button>
+        <button class="ev-chip" data-filter="critical">Critical</button>
+        <button class="ev-chip" data-filter="person">Person</button>
+        <button class="ev-chip" data-filter="vehicle">Vehicle</button>
+        <button class="ev-chip" data-filter="weapon">Weapon</button>
+        <button class="ev-chip" data-filter="crowd">Crowd</button>
+        <button class="ev-chip" data-filter="running">Running</button>
+        <button class="ev-chip" data-filter="loitering">Loitering</button>
+        <button class="ev-chip" data-filter="fall">Fall</button>
+      </div>
+      <div id="bulkBar">
+        <span><strong id="selectedCount">0</strong> evidence selected</span>
+        <div class="bulk-actions">
+          <button class="ev-btn" id="selectAll">Select all</button><button class="ev-btn" id="bulkExport">Export</button><button class="ev-btn" id="bulkDownload">Download</button><button class="ev-btn" id="bulkFavorite">Favorite</button><button class="ev-btn" id="bulkDelete">Delete</button>
         </div>
-
-    </div>
-
-    <!-- STATS -->
-
-    <div class="ev-stats">
-
-        <div class="ev-stat-card">
-
-            <div class="ev-stat-icon">
-
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-
-                    <polyline points="14 2 14 8 20 8"></polyline>
-
-                </svg>
-
-            </div>
-
-            <div class="ev-stat-content">
-
-                <span class="ev-stat-value" id="statTotal">0</span>
-
-                <span class="ev-stat-label">Evidence</span>
-
-            </div>
-
-        </div>
-
-        <div class="ev-stat-card">
-
-            <div class="ev-stat-icon">
-
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-                    <circle cx="12" cy="12" r="10"></circle>
-
-                    <polyline points="12 6 12 12 16 14"></polyline>
-
-                </svg>
-
-            </div>
-
-            <div class="ev-stat-content">
-
-                <span class="ev-stat-value" id="statToday">0</span>
-
-                <span class="ev-stat-label">Today</span>
-
-            </div>
-
-        </div>
-
-        <div class="ev-stat-card ev-stat-critical">
-
-            <div class="ev-stat-icon">
-
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-
-                    <line x1="12" y1="9" x2="12" y2="13"></line>
-
-                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
-
-                </svg>
-
-            </div>
-
-            <div class="ev-stat-content">
-
-                <span class="ev-stat-value" id="statCritical">0</span>
-
-                <span class="ev-stat-label">Critical</span>
-
-            </div>
-
-        </div>
-
-        <div class="ev-stat-card">
-
-            <div class="ev-stat-icon">
-
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-
-                </svg>
-
-            </div>
-
-            <div class="ev-stat-content">
-
-                <span class="ev-stat-value" id="statStorage">0 GB</span>
-
-                <span class="ev-stat-label">Storage</span>
-
-            </div>
-
-        </div>
-
-        <div class="ev-stat-card">
-
-            <div class="ev-stat-icon">
-
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
-
-                </svg>
-
-            </div>
-
-            <div class="ev-stat-content">
-
-                <span class="ev-stat-value" id="statConfidence">0%</span>
-
-                <span class="ev-stat-label">Avg Confidence</span>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- HISTOGRAM -->
-
-    <div class="ev-histogram" id="evHistogram">
-
-        <!-- Bars injected by JS -->
-
-    </div>
-
-    <!-- TOOLBAR -->
-
-    <div class="ev-toolbar">
-
-        <div class="ev-toolbar-left">
-
-            <div class="ev-search">
-
-                <svg class="ev-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-
-                    <circle cx="11" cy="11" r="8"></circle>
-
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-
-                </svg>
-
-                <input
-
-                    type="text"
-
-                    id="searchEvidence"
-
-                    placeholder="Search by Person ID, Tracking ID, Camera, Zone..."
-
-                    class="ev-search-input"
-
-                >
-
-            </div>
-
-            <div class="ev-filter-chips" id="filterChips">
-
-                <button class="chip active" data-filter="all">All</button>
-
-                <button class="chip chip-today" data-filter="today">Today</button>
-
-                <button class="chip chip-yesterday" data-filter="yesterday">Yesterday</button>
-
-                <button class="chip chip-week" data-filter="week">This Week</button>
-
-                <button class="chip chip-high" data-filter="high">High Threat</button>
-
-                <button class="chip chip-critical" data-filter="critical">Critical</button>
-
-                <button class="chip chip-person" data-filter="person">Person</button>
-
-                <button class="chip chip-vehicle" data-filter="vehicle">Vehicle</button>
-
-                <button class="chip chip-weapon" data-filter="weapon">Weapon</button>
-
-                <button class="chip chip-crowd" data-filter="crowd">Crowd</button>
-
-                <button class="chip chip-running" data-filter="running">Running</button>
-
-                <button class="chip chip-loitering" data-filter="loitering">Loitering</button>
-
-                <button class="chip chip-fall" data-filter="fall">Fall</button>
-
-            </div>
-
-        </div>
-
-        <div class="ev-toolbar-right">
-
-            <div class="ev-view-toggle">
-
-                <button class="view-btn active" data-view="grid" title="Grid View">
-
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-                        <rect x="3" y="3" width="7" height="7" rx="1"></rect>
-
-                        <rect x="14" y="3" width="7" height="7" rx="1"></rect>
-
-                        <rect x="3" y="14" width="7" height="7" rx="1"></rect>
-
-                        <rect x="14" y="14" width="7" height="7" rx="1"></rect>
-
-                    </svg>
-
-                </button>
-
-                <button class="view-btn" data-view="list" title="List View">
-
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-                        <line x1="8" y1="6" x2="21" y2="6"></line>
-
-                        <line x1="8" y1="12" x2="21" y2="12"></line>
-
-                        <line x1="8" y1="18" x2="21" y2="18"></line>
-
-                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
-
-                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
-
-                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
-
-                    </svg>
-
-                </button>
-
-                <button class="view-btn" data-view="timeline" title="Timeline">
-
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-                        <line x1="12" y1="20" x2="12" y2="10"></line>
-
-                        <line x1="18" y1="20" x2="18" y2="4"></line>
-
-                        <line x1="6" y1="20" x2="6" y2="16"></line>
-
-                    </svg>
-
-                </button>
-
-                <button class="view-btn" data-view="map" title="Map">
-
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-                        <polygon points="1 6 1 22 7 18 7 6 1 6"></polygon>
-
-                        <polygon points="13 6 13 22 19 18 19 6 13 6"></polygon>
-
-                    </svg>
-
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- BULK ACTIONS -->
-
-    <div class="ev-bulk-bar" id="bulkBar" style="display:none;">
-
-        <div class="ev-bulk-left">
-
-            <label class="ev-checkbox">
-
-                <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
-
-                <span class="checkmark"></span>
-
-            </label>
-
-            <span class="ev-bulk-count">
-
-                <span id="selectedCount">0</span> selected
-
-            </span>
-
-        </div>
-
-        <div class="ev-bulk-actions">
-
-            <button class="bulk-btn" onclick="bulkAction('export')">
-
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-
-                    <polyline points="7 10 12 15 17 10"></polyline>
-
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-
-                </svg>
-
-                Export
-
-            </button>
-
-            <button class="bulk-btn" onclick="bulkAction('download')">
-
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-
-                    <polyline points="7 10 12 15 17 10"></polyline>
-
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-
-                </svg>
-
-                Download
-
-            </button>
-
-            <button class="bulk-btn" onclick="bulkAction('favorite')">
-
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-
-                </svg>
-
-                Favorite
-
-            </button>
-
-            <button class="bulk-btn bulk-btn-danger" onclick="bulkAction('delete')">
-
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-
-                    <polyline points="3 6 5 6 21 6"></polyline>
-
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-
-                </svg>
-
-                Delete
-
-            </button>
-
-        </div>
-
-    </div>
-
-    <!-- MAIN CONTENT -->
-
-    <div class="ev-content">
-
-        <!-- GALLERY -->
-
-        <div class="ev-gallery">
-
-            <div id="galleryGrid" class="ev-grid">
-
-                <!-- Cards injected by JS -->
-
-            </div>
-
-            <div id="noEvidence" class="ev-empty" style="display:none;">
-
-                <div class="ev-empty-icon">
-
-                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-
-                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-
-                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-
-                        <path d="M21 15l-5-5L11 19"></path>
-
-                    </svg>
-
-                </div>
-
-                <h3>No Evidence Found</h3>
-
-                <p>AI has not recorded any evidence matching your criteria.</p>
-
-                <div class="ev-empty-actions">
-
-                    <button class="btn btn-primary" onclick="loadEvidence()">
-
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-
-                            <polyline points="23 4 23 10 17 10"></polyline>
-
-                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-
-                        </svg>
-
-                        Refresh
-
-                    </button>
-
-                    <button class="btn btn-secondary" onclick="window.location.href='/cameras'">
-
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-
-                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-
-                            <circle cx="12" cy="13" r="4"></circle>
-
-                        </svg>
-
-                        Open Cameras
-
-                    </button>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- SIDEBAR -->
-
-        <div class="ev-sidebar">
-
-            <!-- PREVIEW -->
-
-            <div class="ev-preview-card">
-
-                <div class="ev-preview-header">
-
-                    <h3>Evidence Preview</h3>
-
-                    <span class="badge badge-preview">HD</span>
-
-                </div>
-
-                <div class="ev-preview-body">
-
-                    <img id="previewImage" class="ev-preview-img" src="" alt="Evidence preview">
-
-                    <div class="ev-preview-overlay">
-
-                        <button class="ev-icon-btn" onclick="openFullscreen()" title="Fullscreen">
-
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-                                <polyline points="15 3 21 3 21 9"></polyline>
-
-                                <polyline points="9 21 3 21 3 15"></polyline>
-
-                                <line x1="21" y1="3" x2="14" y2="10"></line>
-
-                                <line x1="3" y1="21" x2="10" y2="14"></line>
-
-                            </svg>
-
-                        </button>
-
-                        <button class="ev-icon-btn" id="sidebarFavorite" title="Favorite">
-
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-
-                            </svg>
-
-                        </button>
-
-                        <button class="ev-icon-btn" id="sidebarDownload" title="Download">
-
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-
-                                <polyline points="7 10 12 15 17 10"></polyline>
-
-                                <line x1="12" y1="15" x2="12" y2="3"></line>
-
-                            </svg>
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <!-- AI SUMMARY -->
-
-            <div class="ev-summary-card">
-
-                <div class="ev-summary-header">
-
-                    <h3>AI Summary</h3>
-
-                    <span class="badge badge-ai" id="aiBadge">ANALYZED</span>
-
-                </div>
-
-                <div class="ev-summary-body">
-
-                    <div class="ev-summary-title" id="summaryEvent">-</div>
-
-                    <!-- Confidence Ring -->
-
-                    <div class="confidence-ring-wrapper">
-
-                        <div class="confidence-ring" id="confidenceRing">
-
-                            <span id="confidenceValue">0%</span>
-
-                        </div>
-
-                    </div>
-
-                    <div class="ev-summary-grid">
-
-                        <div class="ev-summary-item">
-
-                            <span class="ev-summary-label">Confidence</span>
-
-                            <span class="ev-summary-value" id="summaryConfidence">-</span>
-
-                        </div>
-
-                        <div class="ev-summary-item">
-
-                            <span class="ev-summary-label">Camera</span>
-
-                            <span class="ev-summary-value" id="summaryCamera">-</span>
-
-                        </div>
-
-                        <div class="ev-summary-item">
-
-                            <span class="ev-summary-label">Tracking ID</span>
-
-                            <span class="ev-summary-value" id="summaryTracking">-</span>
-
-                        </div>
-
-                        <div class="ev-summary-item">
-
-                            <span class="ev-summary-label">Threat</span>
-
-                            <span class="ev-summary-value" id="summaryThreat">-</span>
-
-                        </div>
-
-                        <div class="ev-summary-item">
-
-                            <span class="ev-summary-label">Zone</span>
-
-                            <span class="ev-summary-value" id="summaryZone">-</span>
-
-                        </div>
-
-                        <div class="ev-summary-item">
-
-                            <span class="ev-summary-label">Timestamp</span>
-
-                            <span class="ev-summary-value" id="summaryTime">-</span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="ev-summary-description" id="summaryDescription">
-                    <span class="ev-summary-desc-label">AI Description</span>
-                    <p id="aiDescriptionText">Select an evidence item for AI analysis.</p>
-                </div>
-
-            </div>
-
-            <!-- TIMELINE -->
-
-            <div class="ev-timeline-card">
-
-                <div class="ev-timeline-header">
-
-                    <h3>Evidence Timeline</h3>
-
-                </div>
-
-                <div class="ev-timeline" id="evidenceTimeline">
-
-                    <!-- Populated by JS -->
-
-                </div>
-
-            </div>
-
-            <!-- METADATA & OCR -->
-
-            <div class="ev-meta-card">
-
-                <div class="ev-meta-header">
-
-                    <h3>Metadata & OCR</h3>
-
-                </div>
-
-                <div class="ev-meta-content">
-
-                    <div class="ev-ocr-section">
-
-                        <div class="ev-ocr-label">OCR Text</div>
-
-                        <div class="ev-ocr-text" id="ocrText">
-                            No OCR data available.
-                        </div>
-
-                    </div>
-
-                    <div class="ev-tags-section">
-
-                        <div class="ev-tags-label">Evidence Tags</div>
-
-                        <div class="ev-tags-list" id="evidenceTags">
-                            <span class="ev-tag">No tags</span>
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <!-- SIMILAR EVIDENCE -->
-
-            <div class="ev-similar-card">
-
-                <div class="ev-similar-header">
-
-                    <h3>Similar Evidence</h3>
-
-                    <span class="badge badge-ai" id="similarCount">0</span>
-
-                </div>
-
-                <div class="ev-similar-list" id="similarEvidenceList">
-
-                    <div class="ev-similar-empty">No similar evidence found.</div>
-
-                </div>
-
-            </div>
-
-            <!-- MINI CAMERA MAP -->
-
-            <div class="ev-camera-map">
-
-                <div class="ev-camera-map-title">
-
-                    📹 Camera Map
-
-                </div>
-
-                <div class="ev-camera-list">
-
-                    <div class="ev-camera-item">
-
-                        <span class="ev-camera-dot"></span>
-
-                        <div class="ev-camera-info">
-
-                            <div class="ev-camera-name">Camera 01</div>
-
-                            <div class="ev-camera-location">Main Entrance</div>
-
-                        </div>
-
-                        <span class="ev-camera-status">ONLINE</span>
-
-                    </div>
-
-                    <div class="ev-camera-item">
-
-                        <span class="ev-camera-dot"></span>
-
-                        <div class="ev-camera-info">
-
-                            <div class="ev-camera-name">Camera 02</div>
-
-                            <div class="ev-camera-location">Parking A</div>
-
-                        </div>
-
-                        <span class="ev-camera-status">ONLINE</span>
-
-                    </div>
-
-                    <div class="ev-camera-item">
-
-                        <span class="ev-camera-dot" style="background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,.5);"></span>
-
-                        <div class="ev-camera-info">
-
-                            <div class="ev-camera-name">Camera 03</div>
-
-                            <div class="ev-camera-location">Warehouse</div>
-
-                        </div>
-
-                        <span class="ev-camera-status" style="color:#f59e0b;">OFFLINE</span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-<!-- FULLSCREEN MODAL -->
-
-<div id="fullscreenModal" class="ev-modal" onclick="closeFullscreen()">
-
-    <div class="ev-modal-dialog" onclick="event.stopPropagation()">
-
-        <button class="ev-modal-close" onclick="closeFullscreen()">
-
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-
-            </svg>
-
-        </button>
-
-        <img id="fullscreenImage" class="ev-modal-img" src="">
-
-        <div class="ev-modal-footer">
-
-            <div class="ev-modal-meta">
-
-                <span id="modalEvent">-</span>
-
-                <span id="modalCamera">-</span>
-
-                <span id="modalTime">-</span>
-
-            </div>
-
-            <div class="ev-modal-actions">
-
-                <button class="btn btn-secondary" onclick="downloadCurrent()">
-
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-
-                        <polyline points="7 10 12 15 17 10"></polyline>
-
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-
-                    </svg>
-
-                    Download
-
-                </button>
-
-                <button class="btn btn-secondary" onclick="openCompareMode()" title="Compare with another">
-
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-
-                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-
-                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-
-                        <path d="M21 15l-5-5L11 19"></path>
-
-                    </svg>
-
-                    Compare
-
-                </button>
-
-                <button class="btn btn-primary" onclick="favoriteCurrent()">
-
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-
-                    </svg>
-
-                    Favorite
-
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
+      </div>
+    </section>
+
+    <section class="ev-content">
+      <div class="ev-card ev-gallery-panel">
+        <div class="ev-gallery-head"><div><h2 class="ev-section-title">Evidence Gallery</h2><span class="ev-gallery-count" id="galleryCount">Loading evidence...</span></div><label style="display:flex;align-items:center;gap:7px;font-size:10px;color:var(--ev-muted)"><input id="selectAllGallery" type="checkbox"> Select</label></div>
+        <div id="galleryGrid"></div>
+        <div id="noEvidence"><div class="ev-empty-icon">◌</div><strong>No evidence found</strong><div style="margin-top:5px">Try changing the search or filter.</div></div>
+        <div id="evidenceTimeline" class="ev-timeline"></div>
+      </div>
+
+      <aside class="ev-sidebar">
+        <section class="ev-card ev-side-card">
+          <div class="ev-section-head"><h2 class="ev-section-title">Selected Evidence</h2><span class="ev-section-meta" id="previewEvidenceId">—</span></div>
+          <div class="ev-preview"><img id="previewImage" alt="Selected evidence preview"><div class="ev-preview-empty" id="previewEmpty">Select evidence to investigate</div><div class="ev-preview-actions"><button class="ev-icon-btn" id="fullscreenPreview">⛶</button><button class="ev-icon-btn" id="favoritePreview">☆</button><button class="ev-icon-btn" id="downloadPreview">↓</button></div></div>
+          <div class="ev-summary-grid">
+            <div class="ev-summary-field"><span>Event</span><strong id="previewEvent">—</strong></div>
+            <div class="ev-summary-field"><span>Threat</span><strong id="previewThreat">—</strong></div>
+            <div class="ev-summary-field"><span>Camera</span><strong id="previewCamera">—</strong></div>
+            <div class="ev-summary-field"><span>Identity</span><strong class="ev-identity" id="previewIdentity">—</strong></div>
+          </div>
+        </section>
+
+        <section class="ev-card ev-side-card">
+          <div class="ev-section-head"><h2 class="ev-section-title">AI Evidence Summary</h2></div>
+          <div class="ev-confidence-ring"><span id="confidenceValue">—</span></div>
+          <div id="aiSummary" style="font-size:11px;line-height:1.55;color:var(--ev-muted)">Select evidence to view the AI-generated incident summary.</div>
+          <div class="ev-summary-grid" style="margin-top:12px"><div class="ev-summary-field"><span>Detected</span><strong id="detectedObjects">—</strong></div><div class="ev-summary-field"><span>Zone</span><strong id="detectedZone">—</strong></div></div>
+        </section>
+
+        <section class="ev-card ev-side-card">
+          <div class="ev-section-head"><h2 class="ev-section-title">Investigation Timeline</h2></div>
+          <div class="ev-timeline" id="previewTimeline"><div class="ev-time-row"><span class="ev-time">—</span><i class="ev-time-dot"></i><div class="ev-time-text"><strong>Awaiting selection</strong><span>Select evidence from the gallery.</span></div></div></div>
+        </section>
+
+        <section class="ev-card ev-side-card">
+          <div class="ev-section-head"><h2 class="ev-section-title">Integrity Verification</h2><span class="ev-section-meta">SHA-256</span></div>
+          <div class="ev-hash" id="evidenceHash">No evidence selected.</div>
+        </section>
+
+        <section class="ev-card ev-side-card">
+          <div class="ev-section-head"><h2 class="ev-section-title">Similar Evidence</h2></div>
+          <div class="ev-similar"><div></div><div></div><div></div></div>
+        </section>
+
+        <section class="ev-card ev-side-card">
+          <div class="ev-section-head"><h2 class="ev-section-title">Camera Context</h2><span class="ev-section-meta">3 cameras</span></div>
+          <div class="ev-map"><div class="ev-map-grid"></div><span class="ev-map-dot" style="left:31%;top:38%"></span><span class="ev-map-label" style="left:35%;top:33%">Camera 01</span><span class="ev-map-dot" style="left:68%;top:62%"></span><span class="ev-map-label" style="left:72%;top:57%">Camera 02</span><span class="ev-map-dot offline" style="left:55%;top:23%"></span><span class="ev-map-label" style="left:59%;top:18%">Camera 03</span></div>
+        </section>
+      </aside>
+    </section>
+  </div>
 </div>
 
-<!-- COMPARE MODAL -->
+<div class="ev-modal" id="fullscreenModal" aria-hidden="true">
+  <div class="ev-modal-box"><div class="ev-modal-head"><span class="ev-modal-title">Evidence Preview</span><button class="ev-modal-close" data-close-modal="fullscreenModal">×</button></div><img id="fullscreenImage" alt="Full evidence preview"></div>
+</div>
 
-<div id="compareModal" class="ev-modal" onclick="closeCompare()">
-
-    <div class="ev-compare-dialog" onclick="event.stopPropagation()">
-
-        <button class="ev-modal-close" onclick="closeCompare()">
-
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-
-            </svg>
-
-        </button>
-
-        <div class="ev-compare-content">
-
-            <div class="ev-compare-panel" id="comparePanelA">
-
-                <img id="compareImageA" class="ev-compare-img" src="" alt="Evidence A">
-
-                <div class="ev-compare-meta">
-
-                    <span class="ev-compare-title" id="compareTitleA">Evidence A</span>
-
-                    <span class="ev-compare-label" id="compareLabelA"></span>
-
-                </div>
-
-            </div>
-
-            <div class="ev-compare-divider">
-
-                <div class="ev-compare-vs">VS</div>
-
-            </div>
-
-            <div class="ev-compare-panel" id="comparePanelB">
-
-                <img id="compareImageB" class="ev-compare-img" src="" alt="Evidence B">
-
-                <div class="ev-compare-meta">
-
-                    <span class="ev-compare-title" id="compareTitleB">Select Evidence B</span>
-
-                    <span class="ev-compare-label" id="compareLabelB"></span>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="ev-compare-actions">
-
-            <button class="btn btn-primary" onclick="confirmCompare()">
-
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-
-                    <polyline points="20 6 9 17 4 12"></polyline>
-
-                </svg>
-
-                Confirm Comparison
-
-            </button>
-
-        </div>
-
-    </div>
-
+<div class="ev-modal" id="compareModal" aria-hidden="true">
+  <div class="ev-modal-box"><div class="ev-modal-head"><span class="ev-modal-title">Evidence Comparison</span><button class="ev-modal-close" data-close-modal="compareModal">×</button></div><div id="compareContent"></div></div>
 </div>
 
 <script>
+(function(){
+  const page=document.querySelector('.evidence-page'); if(!page) return;
+  const gallery=document.getElementById('galleryGrid');
+  const empty=document.getElementById('noEvidence');
+  const count=document.getElementById('galleryCount');
+  const search=document.getElementById('searchEvidence');
+  let evidence=[]; let currentFilter='all'; let currentView='grid'; let selected=null;
 
-(function() {
+  const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const val=(o,...keys)=>{for(const k of keys){if(o&&o[k]!==undefined&&o[k]!==null&&o[k]!=='')return o[k]}return '—'};
+  const normalize=e=>({
+    id:val(e,'id','evidence_id','evidenceId'), event:val(e,'event_type','event','type','incident_type'), severity:String(val(e,'severity','threat_level','threat')).toLowerCase(), camera:val(e,'camera','camera_name','camera_id'), zone:val(e,'zone','location'), time:val(e,'timestamp','time','created_at'), confidence:val(e,'confidence','score'), image:val(e,'image','image_url','snapshot','snapshot_url','thumbnail'), identity:val(e,'identity','person_name','persistent_id'), objects:val(e,'objects','detections','detected_objects'), hash:val(e,'hash','sha256','sha_256'), summary:val(e,'summary','description','ai_summary')
+  });
 
-    showSkeletonCards("galleryGrid", 6);
+  function seedFallback(){
+    return [];
+  }
+  function updateStats(){
+    document.getElementById('statEvidence').textContent=evidence.length||'0';
+    document.getElementById('statToday').textContent=evidence.filter(x=>String(x.time).toLowerCase().includes('today')).length||'0';
+    document.getElementById('statCritical').textContent=evidence.filter(x=>['critical','high'].includes(x.severity)).length||'0';
+    document.getElementById('statStorage').textContent='—';
+    const nums=evidence.map(x=>parseFloat(x.confidence)).filter(Number.isFinite); document.getElementById('statConfidence').textContent=nums.length?Math.round(nums.reduce((a,b)=>a+b,0)/nums.length)+'%':'—';
+  }
+  function histogram(){const h=document.getElementById('evHistogram');h.innerHTML='';for(let i=0;i<28;i++){const n=evidence.length?Math.max(8,Math.round(Math.random()*85)):Math.round(12+Math.sin(i/2)*8);const b=document.createElement('span');b.className='ev-bar';b.style.setProperty('--h',n+'%');h.appendChild(b)}}
+  function matches(x){const q=search.value.trim().toLowerCase();const hay=[x.id,x.event,x.severity,x.camera,x.zone,x.identity,x.objects].join(' ').toLowerCase();if(q&&!hay.includes(q))return false;if(currentFilter==='all')return true;if(currentFilter==='high')return ['high','critical'].includes(x.severity);if(currentFilter==='critical')return x.severity==='critical';return hay.includes(currentFilter)}
+  function render(){const rows=evidence.filter(matches);count.textContent=rows.length+' evidence item'+(rows.length===1?'':'s');empty.style.display=rows.length?'none':'block';gallery.style.display=currentView==='timeline'||currentView==='map'?'none':'grid';document.getElementById('evidenceTimeline').style.display=currentView==='timeline'?'grid':'none';
+    if(currentView==='map'){gallery.style.display='none';empty.style.display='block';empty.innerHTML='<div class="ev-empty-icon">⌖</div><strong>Evidence Map</strong><div style="margin-top:5px">Use the camera context panel to investigate location-linked evidence.</div>';return}
+    gallery.innerHTML=rows.map((x,i)=>`<article class="ev-item" data-id="${esc(x.id)}" tabindex="0"><div class="ev-thumb">${x.image&&x.image!=='—'?`<img src="${esc(x.image)}" alt="${esc(x.event)} evidence" loading="lazy">`:''}<span class="ev-severity ${esc(x.severity)}">${esc(x.severity||'unknown')}</span><span class="ev-confidence">${esc(x.confidence)}${String(x.confidence).includes('%')?'':'%'}</span><div class="ev-thumb-actions"><button class="ev-icon-btn" data-action="favorite" title="Favorite">☆</button><button class="ev-icon-btn" data-action="download" title="Download">↓</button></div></div><div class="ev-item-body"><div class="ev-item-title">${esc(x.event)}</div><div class="ev-item-meta"><span>${esc(x.camera)}</span><span>${esc(x.time)}</span></div><div class="ev-item-tags"><span class="ev-tag">${esc(x.zone)}</span>${x.identity!=='—'?`<span class="ev-tag ev-identity">${esc(x.identity)}</span>`:''}</div></div></article>`).join('');
+    if(currentView==='list')page.classList.add('evidence-list-mode');else page.classList.remove('evidence-list-mode');
+  }
+  function select(x){selected=x;document.getElementById('previewEvidenceId').textContent=x.id;document.getElementById('previewEvent').textContent=x.event;document.getElementById('previewThreat').textContent=x.severity;document.getElementById('previewCamera').textContent=x.camera;document.getElementById('previewIdentity').textContent=x.identity;document.getElementById('detectedObjects').textContent=x.objects;document.getElementById('detectedZone').textContent=x.zone;document.getElementById('aiSummary').textContent=x.summary;document.getElementById('evidenceHash').textContent=x.hash;document.getElementById('confidenceValue').textContent=String(x.confidence).includes('%')?x.confidence:(x.confidence+'%');const img=document.getElementById('previewImage'),emp=document.getElementById('previewEmpty');if(x.image&&x.image!=='—'){img.src=x.image;img.style.display='block';emp.style.display='none'}else{img.removeAttribute('src');img.style.display='none';emp.style.display='grid'}document.getElementById('previewTimeline').innerHTML=`<div class="ev-time-row"><span class="ev-time">${esc(x.time)}</span><i class="ev-time-dot"></i><div class="ev-time-text"><strong>${esc(x.event)}</strong><span>${esc(x.camera)} · ${esc(x.zone)}</span></div></div><div class="ev-time-row"><span class="ev-time">AI</span><i class="ev-time-dot"></i><div class="ev-time-text"><strong>Evidence verified</strong><span>Confidence ${esc(x.confidence)}</span></div></div>`}
 
-    showSkeletonRows("evidenceTimeline", 4);
-
+  gallery.addEventListener('click',e=>{const item=e.target.closest('.ev-item');if(!item)return;if(e.target.closest('[data-action]'))return;const x=evidence.find(v=>String(v.id)===item.dataset.id);if(x)select(x)});
+  search.addEventListener('input',render);
+  document.getElementById('evidenceFilters').addEventListener('click',e=>{const b=e.target.closest('.ev-chip');if(!b)return;document.querySelectorAll('.ev-chip').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentFilter=b.dataset.filter;render()});
+  document.querySelector('.ev-view-toggle').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;document.querySelectorAll('.ev-view-toggle button').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentView=b.dataset.view;render()});
+  document.getElementById('refreshEvidence').onclick=load;
+  document.querySelectorAll('[data-close-modal]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.closeModal).classList.remove('open'));
+  document.getElementById('fullscreenPreview').onclick=()=>{if(!selected?.image)return;document.getElementById('fullscreenImage').src=selected.image;document.getElementById('fullscreenModal').classList.add('open')};
+  document.getElementById('selectAllGallery').onchange=e=>{document.getElementById('bulkBar').style.display=e.target.checked?'flex':'none'};
+  async function load(){
+    try{const r=await fetch('/events',{headers:{'Accept':'application/json'}});if(!r.ok)throw new Error('events request failed');const data=await r.json();const arr=Array.isArray(data)?data:(data.events||data.evidence||data.items||[]);evidence=arr.map(normalize);}
+    catch(err){evidence=seedFallback();console.warn('Evidence data unavailable:',err)}
+    updateStats();histogram();render();
+  }
+  load();
 })();
-
 </script>
-
-</div>
-
 {% endblock %}

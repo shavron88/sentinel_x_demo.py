@@ -2,45 +2,90 @@
 
 {% block content %}
 
-<div class="page-content fade-in">
+<div class="page-content fade-in incidents-page">
 
-<section class="panel">
-
-    <div class="toolbar">
-
-        <input
-            type="text"
-            id="incident-search"
-            placeholder="Search incidents...">
-
-        <div class="filter-buttons">
-
-            <button class="filter-btn active" data-filter="ALL">All</button>
-
-            <button class="filter-btn" data-filter="HIGH">High</button>
-
-            <button class="filter-btn" data-filter="MEDIUM">Medium</button>
-
-            <button class="filter-btn" data-filter="LOW">Low</button>
-
+    <section class="incidents-hero">
+        <div class="incidents-hero-copy">
+            <div class="eyebrow"><span class="eyebrow-dot"></span> Security Operations</div>
+            <h1>Incident Center</h1>
+            <p>Monitor, filter, and review security events detected across your Sentinel-X environment.</p>
         </div>
+        <div class="incident-live-status">
+            <span class="live-pulse"></span>
+            <span>Live monitoring</span>
+            <span class="status-divider"></span>
+            <span>Auto-refresh 10s</span>
+        </div>
+    </section>
 
-    </div>
+    <section class="panel incident-control-panel">
+        <div class="toolbar">
+            <div class="search-wrap">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="7"></circle>
+                    <path d="m20 20-4-4"></path>
+                </svg>
+                <input type="text" id="incident-search" placeholder="Search incidents, cameras, or zones..." autocomplete="off">
+                <kbd>/</kbd>
+            </div>
 
-</section>
+            <div class="filter-area">
+                <span class="filter-label">Severity</span>
+                <div class="filter-buttons" role="group" aria-label="Filter incidents by severity">
+                    <button class="filter-btn active" data-filter="ALL" type="button">All</button>
+                    <button class="filter-btn" data-filter="HIGH" type="button"><span class="filter-dot high"></span>High</button>
+                    <button class="filter-btn" data-filter="MEDIUM" type="button"><span class="filter-dot medium"></span>Medium</button>
+                    <button class="filter-btn" data-filter="LOW" type="button"><span class="filter-dot low"></span>Low</button>
+                </div>
+            </div>
+        </div>
+    </section>
 
-<section
-    id="incident-list"
-    class="incident-list">
+    <section class="incident-summary-strip" aria-label="Incident overview">
+        <div class="summary-item">
+            <span class="summary-icon total">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 3v18M3 12h18"></path>
+                </svg>
+            </span>
+            <span><strong id="incident-count">0</strong><small>Total incidents</small></span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-icon critical">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 3 2.8 19h18.4L12 3Z"></path>
+                    <path d="M12 9v4M12 16h.01"></path>
+                </svg>
+            </span>
+            <span><strong id="critical-count">0</strong><small>High priority</small></span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-icon medium">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <path d="M12 8v4M12 16h.01"></path>
+                </svg>
+            </span>
+            <span><strong id="medium-count">0</strong><small>Medium priority</small></span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-icon low">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <path d="M8 12.5 10.5 15 16 9"></path>
+                </svg>
+            </span>
+            <span><strong id="low-count">0</strong><small>Low priority</small></span>
+        </div>
+    </section>
 
-</section>
+    <section id="incident-list" class="incident-list"></section>
+    <div id="emptyState" style="display:none;"></div>
 
-<div id="emptyState" style="display:none;"></div>
+</div>
 
 <script>
-
 (function() {
-
     var activeFilter = "ALL";
     var allEvents = [];
     var searchInput = document.getElementById("incident-search");
@@ -52,252 +97,920 @@
         return div.innerHTML;
     }
 
+    function updateSummary(events) {
+        var total = events.length;
+        var high = events.filter(function(e) {
+            return (e.severity || "LOW") === "HIGH" || (e.severity || "") === "CRITICAL";
+        }).length;
+        var medium = events.filter(function(e) { return (e.severity || "LOW") === "MEDIUM"; }).length;
+        var low = events.filter(function(e) { return (e.severity || "LOW") === "LOW"; }).length;
+
+        var totalEl = document.getElementById("incident-count");
+        var highEl = document.getElementById("critical-count");
+        var mediumEl = document.getElementById("medium-count");
+        var lowEl = document.getElementById("low-count");
+
+        if (totalEl) totalEl.textContent = total;
+        if (highEl) highEl.textContent = high;
+        if (mediumEl) mediumEl.textContent = medium;
+        if (lowEl) lowEl.textContent = low;
+    }
+
     function loadIncidents() {
         showSkeletonRows("incident-list", 5);
+
         fetch("/events")
-            .then(function(res) { return res.json(); })
+            .then(function(res) {
+                if (!res.ok) throw new Error("Events request failed");
+                return res.json();
+            })
             .then(function(data) {
                 hideSkeletons();
                 allEvents = Array.isArray(data) ? data : [];
+                updateSummary(allEvents);
                 renderEvents();
             })
             .catch(function(err) {
                 hideSkeletons();
-                showEmptyState("emptyState", "Unable to Load Incidents", "The event service could not be reached.", [{label:"Retry", onclick:"location.reload()", class:"btn-primary"}]);
+                showEmptyState(
+                    "emptyState",
+                    "Unable to Load Incidents",
+                    "The event service could not be reached.",
+                    [{label:"Retry", onclick:"location.reload()", class:"btn-primary"}]
+                );
             });
     }
 
     function renderEvents() {
         var container = document.getElementById("incident-list");
         var emptyEl = document.getElementById("emptyState");
-        if (!container) return;
+        if (!container || !emptyEl) return;
+
         container.innerHTML = "";
         emptyEl.style.display = "none";
 
         var searchTerm = (searchInput ? searchInput.value : "").toLowerCase();
+
         var filtered = allEvents.filter(function(e) {
             if (activeFilter !== "ALL" && (e.severity || "LOW") !== activeFilter) return false;
+
             if (searchTerm) {
                 var haystack = ((e.event_type || "") + " " + (e.zone || "") + " " + (e.camera || "")).toLowerCase();
                 if (haystack.indexOf(searchTerm) === -1) return false;
             }
+
             return true;
         });
 
         if (filtered.length === 0) {
             emptyEl.style.display = "block";
-            emptyEl.innerHTML = '<div style="text-align:center;padding:60px 20px;">' +
-                '<div style="font-size:48px;margin-bottom:16px;opacity:0.6;">&#9888;</div>' +
-                '<h3 style="color:var(--ev-text,#e2e8f0);margin:0 0 8px 0;">No Incidents Found</h3>' +
-                '<p style="color:var(--ev-text-muted,#94a3b8);margin:0 0 20px 0;">There are no incidents matching your criteria.</p>' +
-                '<button class="btn btn-primary" onclick="document.getElementById(\'incident-search\').value=\'\';document.querySelectorAll(\'.filter-btn\').forEach(function(b){b.classList.remove(\'active\')});document.querySelector(\'.filter-btn[data-filter=ALL]\').classList.add(\'active\');">Clear Filters</button>' +
+            emptyEl.innerHTML =
+                '<div class="incident-empty">' +
+                    '<div class="empty-icon">' +
+                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">' +
+                            '<path d="M12 3 2.8 19h18.4L12 3Z"></path>' +
+                            '<path d="M12 9v4M12 16h.01"></path>' +
+                        '</svg>' +
+                    '</div>' +
+                    '<h3>No incidents found</h3>' +
+                    '<p>There are no incidents matching your current search or severity filter.</p>' +
+                    '<button class="clear-filters-btn" type="button" onclick="document.getElementById(\'incident-search\').value=\'\';document.querySelectorAll(\'.filter-btn\').forEach(function(b){b.classList.remove(\'active\')});document.querySelector(\'.filter-btn[data-filter=ALL]\').classList.add(\'active\');">Clear filters</button>' +
                 '</div>';
             return;
         }
 
         filtered.forEach(function(event, idx) {
             var severity = event.severity || "LOW";
-            var sevClass = severity.toLowerCase();
-            var sevColor = {"CRITICAL":"#dc2626","HIGH":"#ef4444","MEDIUM":"#f59e0b","LOW":"#22c55e"}[severity] || "#22c55e";
+            var sevColor = {
+                "CRITICAL":"#ef4444",
+                "HIGH":"#f04444",
+                "MEDIUM":"#f59e0b",
+                "LOW":"#22c55e"
+            }[severity] || "#22c55e";
+
             var ts = event.timestamp || event.time || "";
-            var timeStr = ts ? new Date(ts).toLocaleString("en-US", {month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false}) : "--";
-            var card = document.createElement("div");
+            var dateObj = ts ? new Date(ts) : null;
+            var validDate = dateObj && !isNaN(dateObj.getTime());
+            var timeStr = validDate
+                ? dateObj.toLocaleString("en-US", {
+                    month:"short",
+                    day:"numeric",
+                    hour:"2-digit",
+                    minute:"2-digit",
+                    hour12:false
+                })
+                : "--";
+
+            var typeLabel = event.event_type || "Unknown Event";
+            var severityLabel = severity === "CRITICAL" ? "Critical" : severity.charAt(0) + severity.slice(1).toLowerCase();
+
+            var card = document.createElement("article");
             card.className = "incident-card";
-            card.style.animationDelay = Math.min(idx * 0.03, 0.3) + "s";
-            card.innerHTML = '<div class="incident-card-severity" style="background:' + sevColor + ';"></div>' +
+            card.style.setProperty("--incident-color", sevColor);
+            card.style.animationDelay = Math.min(idx * 0.035, 0.3) + "s";
+
+            card.innerHTML =
+                '<div class="incident-card-severity"></div>' +
                 '<div class="incident-card-body">' +
                     '<div class="incident-card-header">' +
                         '<div class="incident-card-info">' +
-                            '<span class="incident-type">' + escapeHtml(event.event_type || "Unknown Event") + '</span>' +
-                            '<span class="incident-severity-badge" style="background:' + sevColor + '20;color:' + sevColor + ';border:1px solid ' + sevColor + '40;">' + severity + '</span>' +
+                            '<span class="incident-type">' + escapeHtml(typeLabel) + '</span>' +
+                            '<span class="incident-severity-badge">' +
+                                '<span class="badge-dot"></span>' + escapeHtml(severityLabel) +
+                            '</span>' +
                         '</div>' +
-                        '<span class="incident-time">' + timeStr + '</span>' +
+                        '<time class="incident-time">' +
+                            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>' +
+                            escapeHtml(timeStr) +
+                        '</time>' +
                     '</div>' +
                     '<div class="incident-card-meta">' +
                         '<span class="meta-item">' +
-                            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>' +
-                            escapeHtml(event.camera || "Unknown") +
+                            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"></path><circle cx="12" cy="13" r="4"></circle></svg>' +
+                            '<span>' + escapeHtml(event.camera || "Unknown camera") + '</span>' +
                         '</span>' +
                         '<span class="meta-item">' +
-                            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>' +
-                            escapeHtml(event.zone || "Unknown Zone") +
+                            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>' +
+                            '<span>' + escapeHtml(event.zone || "Unknown zone") + '</span>' +
                         '</span>' +
                     '</div>' +
+                '</div>' +
+                '<div class="incident-card-chevron" aria-hidden="true">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"></path></svg>' +
                 '</div>';
+
             container.appendChild(card);
         });
     }
 
-    // Filter buttons
     document.querySelectorAll(".filter-btn").forEach(function(btn) {
         btn.addEventListener("click", function() {
-            document.querySelectorAll(".filter-btn").forEach(function(b) { b.classList.remove("active"); });
+            document.querySelectorAll(".filter-btn").forEach(function(b) {
+                b.classList.remove("active");
+            });
             btn.classList.add("active");
             activeFilter = btn.getAttribute("data-filter");
             renderEvents();
         });
     });
 
-    // Search
     if (searchInput) {
         var searchTimer;
         searchInput.addEventListener("input", function() {
             clearTimeout(searchTimer);
-            searchTimer = setTimeout(renderEvents, 250);
+            searchTimer = setTimeout(renderEvents, 180);
+        });
+
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "/" && document.activeElement !== searchInput) {
+                e.preventDefault();
+                searchInput.focus();
+            }
         });
     }
 
-    // Load on init
     loadIncidents();
-
-    // Refresh every 10 seconds
     setInterval(loadIncidents, 10000);
-
 })();
-
 </script>
 
 <style>
-.incident-card {
+/* =========================================================
+   SENTINEL-X INCIDENT CENTER — PREMIUM UI
+   UI layer only. Existing API/filter/refresh behavior retained.
+   ========================================================= */
+
+.incidents-page {
+    --inc-bg: var(--ev-bg, #070b12);
+    --inc-surface: var(--ev-surface, #0e1624);
+    --inc-surface-2: var(--ev-surface-2, #111c2c);
+    --inc-border: var(--ev-border, rgba(148,163,184,.13));
+    --inc-border-strong: var(--ev-border-strong, rgba(148,163,184,.22));
+    --inc-text: var(--ev-text, #e7edf7);
+    --inc-muted: var(--ev-text-muted, #8fa1b8);
+    --inc-primary: var(--ev-primary, #3b82f6);
+    max-width: 100%;
+    padding: 0 28px 34px;
+}
+
+.incidents-page,
+.incidents-page * {
+    box-sizing: border-box;
+}
+
+.incidents-hero {
     display: flex;
-    gap: 0;
-    background: var(--ev-surface, #111827);
-    border: 1px solid var(--ev-border, rgba(255,255,255,.08));
-    border-radius: 14px;
-    overflow: hidden;
-    margin-bottom: 12px;
-    transition: all 0.25s ease;
-    animation: incidentFadeIn 0.35s ease;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 28px;
+    padding: 10px 2px 26px;
 }
-.incident-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--ev-shadow-md, 0 4px 20px rgba(0,0,0,.2));
-    border-color: var(--ev-border-strong, rgba(255,255,255,.12));
-}
-@keyframes incidentFadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.incident-card-severity {
-    width: 4px;
-    flex-shrink: 0;
-}
-.incident-card-body {
-    flex: 1;
-    padding: 16px 20px;
+
+.incidents-hero-copy {
     min-width: 0;
 }
-.incident-card-header {
-    display: flex;
-    justify-content: space-between;
+
+.eyebrow {
+    display: inline-flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 10px;
+    gap: 8px;
+    color: var(--inc-primary);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    margin-bottom: 9px;
 }
-.incident-card-info {
+
+.eyebrow-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59,130,246,.12), 0 0 16px rgba(59,130,246,.4);
+}
+
+.incidents-hero h1 {
+    margin: 0;
+    color: var(--inc-text);
+    font-size: clamp(28px, 3vw, 40px);
+    line-height: 1.06;
+    letter-spacing: -.035em;
+    font-weight: 800;
+}
+
+.incidents-hero p {
+    max-width: 690px;
+    margin: 10px 0 0;
+    color: var(--inc-muted);
+    font-size: 14px;
+    line-height: 1.65;
+}
+
+.incident-live-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    flex-shrink: 0;
+    padding: 9px 13px;
+    border: 1px solid var(--inc-border);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--inc-surface) 88%, transparent);
+    color: var(--inc-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    box-shadow: 0 10px 30px rgba(0,0,0,.12);
+}
+
+.live-pulse {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 0 4px rgba(34,197,94,.11), 0 0 12px rgba(34,197,94,.35);
+    animation: incidentPulse 1.8s ease-in-out infinite;
+}
+
+.status-divider {
+    width: 1px;
+    height: 14px;
+    background: var(--inc-border-strong);
+}
+
+@keyframes incidentPulse {
+    50% { opacity: .45; transform: scale(.82); }
+}
+
+.incident-control-panel {
+    position: relative;
+    overflow: visible;
+    margin: 0 0 14px;
+    padding: 14px;
+    border: 1px solid var(--inc-border);
+    border-radius: 18px;
+    background:
+        linear-gradient(135deg, rgba(59,130,246,.045), transparent 38%),
+        var(--inc-surface);
+    box-shadow: 0 14px 38px rgba(0,0,0,.13);
+}
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0;
+}
+
+.search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1 1 420px;
+    min-width: 220px;
+}
+
+.search-wrap .search-icon {
+    position: absolute;
+    left: 14px;
+    width: 17px;
+    height: 17px;
+    color: var(--inc-muted);
+    pointer-events: none;
+}
+
+.search-wrap input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 42px 0 42px;
+    border: 1px solid var(--inc-border);
+    border-radius: 12px;
+    background: rgba(2,6,23,.24);
+    color: var(--inc-text);
+    font: inherit;
+    font-size: 13px;
+    outline: none;
+    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+.search-wrap input::placeholder {
+    color: color-mix(in srgb, var(--inc-muted) 78%, transparent);
+}
+
+.search-wrap input:focus {
+    border-color: rgba(59,130,246,.7);
+    background: rgba(59,130,246,.035);
+    box-shadow: 0 0 0 3px rgba(59,130,246,.11);
+}
+
+.search-wrap kbd {
+    position: absolute;
+    right: 12px;
+    min-width: 22px;
+    padding: 2px 6px;
+    border: 1px solid var(--inc-border);
+    border-radius: 6px;
+    background: rgba(148,163,184,.06);
+    color: var(--inc-muted);
+    font: 10px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+    text-align: center;
+}
+
+.filter-area {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-shrink: 0;
+}
+
+.filter-label {
+    color: var(--inc-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.filter-buttons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px;
+    border: 1px solid var(--inc-border);
+    border-radius: 11px;
+    background: rgba(148,163,184,.035);
+}
+
+.filter-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 0 12px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--inc-muted);
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+.filter-btn:hover {
+    color: var(--inc-text);
+    background: rgba(148,163,184,.07);
+}
+
+.filter-btn.active {
+    color: #fff;
+    background: var(--inc-primary);
+    border-color: rgba(255,255,255,.08);
+    box-shadow: 0 5px 14px rgba(59,130,246,.2);
+}
+
+.filter-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.filter-dot.high { background: #f04444; }
+.filter-dot.medium { background: #f59e0b; }
+.filter-dot.low { background: #22c55e; }
+
+.incident-summary-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.summary-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+    padding: 13px 15px;
+    border: 1px solid var(--inc-border);
+    border-radius: 14px;
+    background: var(--inc-surface);
+}
+
+.summary-item > span:last-child {
+    display: flex;
+    flex-direction: column;
     min-width: 0;
 }
-.incident-type {
-    font-size: 15px;
+
+.summary-item strong {
+    color: var(--inc-text);
+    font-size: 19px;
+    line-height: 1.1;
+    font-weight: 800;
+}
+
+.summary-item small {
+    margin-top: 3px;
+    color: var(--inc-muted);
+    font-size: 10px;
     font-weight: 700;
-    color: var(--ev-text, #e2e8f0);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    letter-spacing: .02em;
 }
-.incident-severity-badge {
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-    flex-shrink: 0;
+
+.summary-icon {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    border-radius: 10px;
 }
-.incident-time {
-    font-size: 13px;
-    color: var(--ev-text-muted, #94a3b8);
-    white-space: nowrap;
-    flex-shrink: 0;
+
+.summary-icon svg {
+    width: 17px;
+    height: 17px;
 }
-.incident-card-meta {
+
+.summary-icon.total {
+    color: #60a5fa;
+    background: rgba(59,130,246,.1);
+}
+.summary-icon.critical {
+    color: #f87171;
+    background: rgba(239,68,68,.1);
+}
+.summary-icon.medium {
+    color: #fbbf24;
+    background: rgba(245,158,11,.1);
+}
+.summary-icon.low {
+    color: #4ade80;
+    background: rgba(34,197,94,.1);
+}
+
+.incident-list {
     display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 9px;
 }
-.meta-item {
+
+.incident-card {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--inc-border);
+    border-radius: 15px;
+    background:
+        linear-gradient(115deg, color-mix(in srgb, var(--incident-color) 4%, transparent), transparent 42%),
+        var(--inc-surface);
+    box-shadow: 0 9px 28px rgba(0,0,0,.08);
+    transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease, background .22s ease;
+    animation: incidentFadeIn .36s ease both;
+}
+
+.incident-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--incident-color) 42%, var(--inc-border));
+    box-shadow: 0 16px 36px rgba(0,0,0,.15);
+}
+
+.incident-card-severity {
+    width: 3px;
+    flex: 0 0 3px;
+    background: var(--incident-color);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--incident-color) 32%, transparent);
+}
+
+.incident-card-body {
+    flex: 1;
+    min-width: 0;
+    padding: 15px 18px;
+}
+
+.incident-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-width: 0;
+}
+
+.incident-card-info {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+}
+
+.incident-type {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--inc-text);
+    font-size: 14px;
+    line-height: 1.35;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.incident-severity-badge {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 13px;
-    color: var(--ev-text-muted, #94a3b8);
-}
-.meta-item svg {
     flex-shrink: 0;
-    opacity: 0.6;
+    padding: 4px 9px;
+    border: 1px solid color-mix(in srgb, var(--incident-color) 28%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--incident-color) 10%, transparent);
+    color: var(--incident-color);
+    font-size: 9px;
+    line-height: 1;
+    font-weight: 900;
+    letter-spacing: .09em;
+    text-transform: uppercase;
 }
-.page-content.fade-in {
-    padding: 0 24px 24px;
+
+.badge-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 7px currentColor;
 }
-.toolbar {
-    display: flex;
-    gap: 16px;
+
+.incident-time {
+    display: inline-flex;
     align-items: center;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-}
-.toolbar input {
-    flex: 1;
-    min-width: 200px;
-    padding: 10px 16px;
-    border-radius: 12px;
-    border: 1px solid var(--ev-border, rgba(255,255,255,.08));
-    background: var(--ev-surface, #111827);
-    color: var(--ev-text, #e2e8f0);
-    font-size: 14px;
-    transition: all 0.2s;
-}
-.toolbar input:focus {
-    outline: none;
-    border-color: var(--ev-primary, #3b82f6);
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
-}
-.filter-buttons {
-    display: flex;
-    gap: 8px;
-}
-.filter-btn {
-    padding: 8px 16px;
-    border-radius: 10px;
-    border: 1px solid var(--ev-border, rgba(255,255,255,.08));
-    background: transparent;
-    color: var(--ev-text-muted, #94a3b8);
-    font-size: 13px;
+    gap: 6px;
+    flex-shrink: 0;
+    color: var(--inc-muted);
+    font-size: 11px;
     font-weight: 600;
+    white-space: nowrap;
+}
+
+.incident-time svg {
+    width: 14px;
+    height: 14px;
+}
+
+.incident-card-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-top: 9px;
+}
+
+.meta-item {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    gap: 7px;
+    color: var(--inc-muted);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.meta-item svg {
+    width: 14px;
+    height: 14px;
+    flex: 0 0 14px;
+    opacity: .7;
+}
+
+.meta-item span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.incident-card-chevron {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    flex: 0 0 42px;
+    color: var(--inc-muted);
+    opacity: .42;
+    border-left: 1px solid var(--inc-border);
+}
+
+.incident-card-chevron svg {
+    width: 16px;
+    height: 16px;
+}
+
+.incident-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    padding: 50px 20px;
+    border: 1px dashed var(--inc-border-strong);
+    border-radius: 16px;
+    background: var(--inc-surface);
+    text-align: center;
+}
+
+.empty-icon {
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    margin-bottom: 14px;
+    border: 1px solid rgba(245,158,11,.18);
+    border-radius: 16px;
+    background: rgba(245,158,11,.07);
+    color: #fbbf24;
+}
+
+.empty-icon svg {
+    width: 27px;
+    height: 27px;
+}
+
+.incident-empty h3 {
+    margin: 0 0 6px;
+    color: var(--inc-text);
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.incident-empty p {
+    max-width: 420px;
+    margin: 0 0 18px;
+    color: var(--inc-muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.clear-filters-btn {
+    min-height: 38px;
+    padding: 0 15px;
+    border: 1px solid var(--inc-border-strong);
+    border-radius: 10px;
+    background: rgba(59,130,246,.09);
+    color: #60a5fa;
+    font-size: 11px;
+    font-weight: 800;
     cursor: pointer;
-    transition: all 0.2s;
 }
-.filter-btn:hover {
-    background: var(--ev-primary-soft, rgba(59,130,246,.12));
-    color: var(--ev-text, #e2e8f0);
-    border-color: var(--ev-primary, #3b82f6);
+
+.clear-filters-btn:hover {
+    background: rgba(59,130,246,.15);
+    border-color: rgba(59,130,246,.38);
 }
-.filter-btn.active {
-    background: var(--ev-primary, #3b82f6);
-    color: white;
-    border-color: var(--ev-primary, #3b82f6);
+
+/* Light theme: deliberate contrast, not washed-out white */
+[data-theme="light"] .incidents-page {
+    --inc-surface: #ffffff;
+    --inc-surface-2: #f8fafc;
+    --inc-border: rgba(15,23,42,.10);
+    --inc-border-strong: rgba(15,23,42,.18);
+    --inc-text: #0f172a;
+    --inc-muted: #526176;
 }
-@media (max-width: 768px) {
-    .incident-card-header { flex-direction: column; align-items: flex-start; }
-    .toolbar { flex-direction: column; }
-    .toolbar input { min-width: 100%; }
+
+[data-theme="light"] .incident-control-panel,
+[data-theme="light"] .summary-item,
+[data-theme="light"] .incident-card,
+[data-theme="light"] .incident-empty {
+    box-shadow: 0 8px 26px rgba(15,23,42,.06);
+}
+
+[data-theme="light"] .search-wrap input {
+    background: #f8fafc;
+}
+
+[data-theme="light"] .filter-buttons {
+    background: #f1f5f9;
+}
+
+[data-theme="light"] .filter-btn.active {
+    color: #fff;
+}
+
+[data-theme="light"] .incident-card {
+    background: linear-gradient(115deg, color-mix(in srgb, var(--incident-color) 3%, white), white 42%);
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+    .incidents-page {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .toolbar {
+        flex-wrap: wrap;
+    }
+
+    .search-wrap {
+        flex-basis: 100%;
+    }
+
+    .filter-area {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 700px) {
+    .incidents-page {
+        padding: 0 14px 24px;
+    }
+
+    .incidents-hero {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 14px;
+        padding-bottom: 18px;
+    }
+
+    .incidents-hero h1 {
+        font-size: 30px;
+    }
+
+    .incident-live-status {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .incident-control-panel {
+        padding: 10px;
+        border-radius: 14px;
+    }
+
+    .filter-area {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .filter-buttons {
+        width: 100%;
+    }
+
+    .filter-btn {
+        flex: 1;
+        min-height: 38px;
+        padding: 0 7px;
+    }
+
+    .incident-summary-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .summary-item {
+        padding: 11px 12px;
+    }
+
+    .incident-card-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 9px;
+    }
+
+    .incident-card-info {
+        width: 100%;
+    }
+
+    .incident-time {
+        align-self: flex-start;
+    }
+
+    .incident-card-meta {
+        gap: 9px 16px;
+    }
+
+    .incident-card-chevron {
+        width: 32px;
+        flex-basis: 32px;
+    }
+}
+
+@media (max-width: 430px) {
+    .incidents-page {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .incidents-hero h1 {
+        font-size: 27px;
+    }
+
+    .incidents-hero p {
+        font-size: 12px;
+    }
+
+    .search-wrap input {
+        font-size: 12px;
+    }
+
+    .search-wrap kbd {
+        display: none;
+    }
+
+    .incident-summary-strip {
+        gap: 7px;
+    }
+
+    .summary-item {
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .summary-icon {
+        width: 30px;
+        height: 30px;
+        flex-basis: 30px;
+    }
+
+    .summary-icon svg {
+        width: 15px;
+        height: 15px;
+    }
+
+    .summary-item strong {
+        font-size: 17px;
+    }
+
+    .summary-item small {
+        font-size: 9px;
+    }
+
+    .incident-card-body {
+        padding: 13px 12px;
+    }
+
+    .incident-type {
+        font-size: 13px;
+    }
+
+    .incident-severity-badge {
+        padding: 4px 7px;
+    }
+
+    .meta-item {
+        font-size: 10px;
+    }
+
+    .incident-card-chevron {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .incident-card,
+    .live-pulse {
+        animation: none !important;
+        transition: none !important;
+    }
 }
 </style>
-
-</div>
 
 {% endblock %}

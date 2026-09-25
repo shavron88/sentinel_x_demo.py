@@ -4,240 +4,286 @@
 
 <div class="page-content fade-in reports-page">
 
+<style>
+/* =========================================================
+   SENTINEL-X REPORTS — PREMIUM UI LAYER
+   UI ONLY: existing IDs, Flask/Jinja structure and actions kept.
+   ========================================================= */
+.reports-page{
+  --r-bg: var(--bg, #07101d);
+  --r-surface: var(--surface, #0d1828);
+  --r-surface-2: var(--surface-2, #111f32);
+  --r-border: var(--border, rgba(148,163,184,.16));
+  --r-text: var(--text, #e8f0fa);
+  --r-muted: var(--text-muted, #8fa3bb);
+  --r-blue:#3b82f6;
+  --r-cyan:#22d3ee;
+  --r-green:#22c55e;
+  --r-amber:#f59e0b;
+  --r-red:#ef4444;
+  --r-purple:#8b5cf6;
+  --r-radius:18px;
+  --r-shadow:0 18px 50px rgba(0,0,0,.22);
+  color:var(--r-text);
+}
+
+.reports-page *{box-sizing:border-box}
+.reports-page .panel,
+.reports-page .stat-card{
+  border:1px solid var(--r-border);
+  background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.018)),var(--r-surface);
+  box-shadow:var(--r-shadow);
+  border-radius:var(--r-radius);
+}
+.reports-page .panel{
+  position:relative;
+  overflow:hidden;
+  padding:24px;
+  margin-bottom:20px;
+}
+.reports-page .panel::before{
+  content:"";
+  position:absolute;inset:0 0 auto 0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--r-blue),var(--r-cyan),transparent);
+  opacity:.7;
+}
+.reports-page .panel h2{
+  margin:0 0 18px;
+  font-size:18px;
+  font-weight:750;
+  letter-spacing:-.02em;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.reports-page .panel h2::before{
+  content:"";
+  width:7px;height:20px;border-radius:99px;
+  background:linear-gradient(180deg,var(--r-cyan),var(--r-blue));
+  box-shadow:0 0 18px rgba(34,211,238,.3);
+}
+
+/* Toolbar */
+.reports-page .report-toolbar{
+  display:flex;align-items:end;gap:14px;flex-wrap:wrap;
+}
+.reports-page .report-toolbar label{
+  display:block;font-size:12px;font-weight:700;color:var(--r-muted);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;
+}
+.reports-page .report-toolbar label{width:100%;margin-bottom:-4px}
+.reports-page .report-toolbar select{
+  min-width:220px;height:46px;padding:0 42px 0 14px;
+  color:var(--r-text);background:var(--r-surface-2);
+  border:1px solid var(--r-border);border-radius:12px;outline:none;
+}
+.reports-page .report-toolbar select:focus{border-color:var(--r-blue);box-shadow:0 0 0 3px rgba(59,130,246,.14)}
+.reports-page .report-toolbar button,
+.reports-page .export-buttons button{
+  border:1px solid rgba(59,130,246,.4);
+  color:#fff;background:linear-gradient(135deg,#2563eb,#0891b2);
+  min-height:46px;padding:0 18px;border-radius:12px;font-weight:750;cursor:pointer;
+  box-shadow:0 10px 25px rgba(37,99,235,.18);
+  transition:transform .2s ease,box-shadow .2s ease,filter .2s ease;
+}
+.reports-page .report-toolbar button:hover,
+.reports-page .export-buttons button:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(37,99,235,.25);filter:brightness(1.06)}
+
+/* KPI cards */
+.reports-page .stats-grid{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:20px;
+}
+.reports-page .stat-card{
+  min-height:148px;padding:20px;position:relative;overflow:hidden;
+  transition:transform .2s ease,border-color .2s ease;
+}
+.reports-page .stat-card:hover{transform:translateY(-3px);border-color:rgba(59,130,246,.38)}
+.reports-page .stat-card::after{
+  content:"";position:absolute;width:130px;height:130px;right:-45px;bottom:-55px;border-radius:50%;
+  background:radial-gradient(circle,rgba(34,211,238,.16),transparent 68%);
+}
+.reports-page .stat-card h3{
+  margin:0;color:var(--r-muted);font-size:12px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;
+}
+.reports-page .stat-card h3::first-letter{color:var(--r-cyan)}
+.reports-page .stat-card h1{
+  margin:20px 0 0;font-size:34px;line-height:1;font-weight:800;letter-spacing:-.04em;
+}
+#report-threat{color:var(--r-green);font-size:28px;letter-spacing:.02em}
+
+/* Tables */
+.reports-page .table-responsive{width:100%;overflow:auto;border:1px solid var(--r-border);border-radius:14px;background:rgba(0,0,0,.08)}
+.reports-page .report-table{width:100%;border-collapse:collapse;min-width:560px}
+.reports-page .report-table th{
+  text-align:left;padding:13px 15px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--r-muted);
+  background:rgba(59,130,246,.055);border-bottom:1px solid var(--r-border)
+}
+.reports-page .report-table td{
+  padding:15px;color:var(--r-text);border-bottom:1px solid rgba(148,163,184,.09);font-size:14px
+}
+.reports-page .report-table tbody tr:last-child td{border-bottom:0}
+.reports-page .report-table tbody tr:hover{background:rgba(59,130,246,.045)}
+
+/* High priority incident area */
+#incident-report-list{display:grid;gap:11px}
+#incident-report-list:empty::before{
+  content:"High-priority incidents will appear here";
+  display:block;padding:28px;border:1px dashed var(--r-border);border-radius:14px;color:var(--r-muted);text-align:center;
+}
+
+/* Export */
+.reports-page .export-buttons{display:flex;gap:10px;flex-wrap:wrap}
+.reports-page .export-buttons button:nth-child(2){background:linear-gradient(135deg,#0f766e,#059669);border-color:rgba(16,185,129,.35)}
+.reports-page .export-buttons button:nth-child(3){background:var(--r-surface-2);border-color:var(--r-border);color:var(--r-text);box-shadow:none}
+
+/* Loading-friendly polish */
+.reports-page .skeleton,.reports-page [class*="skeleton"]{border-radius:10px}
+
+/* Light theme */
+[data-theme="light"] .reports-page,
+body.light .reports-page{
+  --r-bg:#f4f7fb;--r-surface:#fff;--r-surface-2:#f8fafc;
+  --r-border:rgba(15,23,42,.10);--r-text:#172033;--r-muted:#64748b;
+  --r-shadow:0 12px 34px rgba(15,23,42,.08);
+}
+[data-theme="light"] .reports-page .panel,
+body.light .reports-page .panel,
+[data-theme="light"] .reports-page .stat-card,
+body.light .reports-page .stat-card{background:linear-gradient(145deg,#fff,#f8fbff)}
+[data-theme="light"] .reports-page .report-table th,
+body.light .reports-page .report-table th{background:#f1f6fc}
+[data-theme="light"] .reports-page .report-table td,
+body.light .reports-page .report-table td{color:#263449}
+
+/* Responsive */
+@media (max-width:1100px){
+  .reports-page .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:700px){
+  .reports-page .panel{padding:18px;margin-bottom:15px;border-radius:15px}
+  .reports-page .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+  .reports-page .stat-card{min-height:124px;padding:16px}
+  .reports-page .stat-card h1{font-size:28px;margin-top:16px}
+  .reports-page .report-toolbar{align-items:stretch}
+  .reports-page .report-toolbar select,.reports-page .report-toolbar button{width:100%;min-width:0}
+  .reports-page .export-buttons{display:grid;grid-template-columns:1fr;gap:9px}
+  .reports-page .export-buttons button{width:100%}
+}
+@media (max-width:430px){
+  .reports-page .stats-grid{grid-template-columns:1fr 1fr;gap:9px}
+  .reports-page .stat-card{min-height:112px;padding:13px}
+  .reports-page .stat-card h3{font-size:10px;line-height:1.35}
+  .reports-page .stat-card h1{font-size:24px}
+  #report-threat{font-size:21px}
+  .reports-page .panel h2{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){
+  .reports-page *{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
+</style>
+
 <!-- ================= REPORT FILTER ================= -->
-
 <section class="panel">
-
     <div class="report-toolbar">
-
-        <label>Report Period</label>
-
+        <label for="report-period">Report Period</label>
         <select id="report-period">
-
             <option>Today</option>
-
             <option>Yesterday</option>
-
             <option>Last 7 Days</option>
-
             <option>Last 30 Days</option>
-
         </select>
-
-        <button onclick="loadReport()">
-
-            Generate Report
-
-        </button>
-
+        <button onclick="loadReport()">Generate Report</button>
     </div>
-
 </section>
 
 <!-- ================= SYSTEM SUMMARY ================= -->
-
 <section class="stats-grid">
-
     <div class="stat-card">
-
-        <h3>📹 Cameras Online</h3>
-
+        <h3>◉ Cameras Online</h3>
         <h1 id="camera-online">0</h1>
-
     </div>
-
     <div class="stat-card">
-
-        <h3>🚨 Total Events</h3>
-
+        <h3>⚠ Total Events</h3>
         <h1 id="total-events">0</h1>
-
     </div>
-
     <div class="stat-card">
-
-        <h3>📸 Evidence</h3>
-
+        <h3>▣ Evidence</h3>
         <h1 id="total-evidence">0</h1>
-
     </div>
-
     <div class="stat-card">
-
-        <h3>⚠ Threat Level</h3>
-
-        <h1 id="report-threat">
-
-            LOW
-
-        </h1>
-
+        <h3>◆ Threat Level</h3>
+        <h1 id="report-threat">LOW</h1>
     </div>
-
 </section>
 
 <!-- ================= EVENT SUMMARY ================= -->
-
 <section class="panel">
-
-<h2>🚨 Event Summary</h2>
-
-<div class="table-responsive"><table class="report-table">
-
-<thead>
-
-<tr>
-
-<th>Event</th>
-
-<th>Total</th>
-
-</tr>
-
-</thead>
-
-<tbody id="event-summary">
-
-    </tbody>
-
-    </table></div>
-
+    <h2>Event Summary</h2>
+    <div class="table-responsive">
+        <table class="report-table">
+            <thead>
+                <tr><th>Event</th><th>Total</th></tr>
+            </thead>
+            <tbody id="event-summary"></tbody>
+        </table>
+    </div>
 </section>
 
 <!-- ================= CAMERA SUMMARY ================= -->
-
 <section class="panel">
-
-<h2>📹 Camera Activity</h2>
-
-<div class="table-responsive"><table class="report-table">
-
-<thead>
-
-<tr>
-
-<th>Camera</th>
-
-<th>Status</th>
-
-<th>Events</th>
-
-</tr>
-
-</thead>
-
-<tbody id="camera-summary">
-
-</tbody>
-
-</table></div>
-
+    <h2>Camera Activity</h2>
+    <div class="table-responsive">
+        <table class="report-table">
+            <thead>
+                <tr><th>Camera</th><th>Status</th><th>Events</th></tr>
+            </thead>
+            <tbody id="camera-summary"></tbody>
+        </table>
+    </div>
 </section>
 
 <!-- ================= EVIDENCE ================= -->
-
 <section class="panel">
-
-<h2>📸 Evidence Summary</h2>
-
-<div class="table-responsive"><table class="report-table">
-
-<tbody>
-
-<tr>
-
-<td data-label="Item">Total Images</td>
-
-<td data-label="Value" id="images-total">0</td>
-
-</tr>
-
-<tr>
-
-<td data-label="Item">Today's Images</td>
-
-<td data-label="Value" id="images-today">0</td>
-
-</tr>
-
-<tr>
-
-<td data-label="Item">Storage Used</td>
-
-<td data-label="Value" id="storage-used">0 MB</td>
-
-</tr>
-
-</tbody>
-
-</table></div>
-
+    <h2>Evidence Summary</h2>
+    <div class="table-responsive">
+        <table class="report-table">
+            <tbody>
+                <tr><td data-label="Item">Total Images</td><td data-label="Value" id="images-total">0</td></tr>
+                <tr><td data-label="Item">Today's Images</td><td data-label="Value" id="images-today">0</td></tr>
+                <tr><td data-label="Item">Storage Used</td><td data-label="Value" id="storage-used">0 MB</td></tr>
+            </tbody>
+        </table>
+    </div>
 </section>
 
 <!-- ================= RECENT INCIDENTS ================= -->
-
 <section class="panel">
-
-<h2>🔥 High Priority Incidents</h2>
-
-<div id="incident-report-list">
-
-</div>
-
+    <h2>High Priority Incidents</h2>
+    <div id="incident-report-list"></div>
 </section>
 
 <!-- ================= EXPORT ================= -->
-
 <section class="panel">
-
-<div class="export-buttons">
-
-<button onclick="downloadPDF()">
-
-📄 Export PDF
-
-</button>
-
-<button onclick="downloadCSV()">
-
-📊 Export CSV
-
-</button>
-
-<button onclick="printReport()">
-
-🖨 Print
-
-</button>
-
-</div>
-
+    <div class="export-buttons">
+        <button onclick="downloadPDF()">Export PDF</button>
+        <button onclick="downloadCSV()">Export CSV</button>
+        <button onclick="printReport()">Print</button>
+    </div>
 </section>
 
 <div id="reportsEmpty" style="display:none;"></div>
 
 <script>
-
 (function() {
-
     showSkeletonCards("stats-grid", 4);
-
     showSkeletonTable("event-summary", 4);
-
     showSkeletonTable("camera-summary", 3);
-
     showSkeletonRows("incident-report-list", 3);
-
     setTimeout(function() {
-
-        // In production, populate report data
-
+        // In production, populate report data.
     }, 700);
-
 })();
-
 </script>
 
 </div>
-
 {% endblock %}

@@ -87,4 +87,422 @@
 })();
 </script>
 
+
+<style>
+/* =========================================================
+   SENTINEL-X — PREMIUM CAMERA WALL UI
+   UI-only layer: preserves existing IDs, layout controls,
+   camera rendering and JavaScript behavior.
+   ========================================================= */
+
+.page-content:has(.camera-wall) {
+    --cw-bg: #070b12;
+    --cw-surface: rgba(15, 23, 35, .86);
+    --cw-surface-2: rgba(20, 30, 45, .72);
+    --cw-border: rgba(148, 163, 184, .14);
+    --cw-border-strong: rgba(96, 165, 250, .28);
+    --cw-text: #f5f7fb;
+    --cw-muted: #8d9aab;
+    --cw-blue: #3b82f6;
+    --cw-cyan: #22d3ee;
+    --cw-green: #22c55e;
+    --cw-amber: #f59e0b;
+    --cw-red: #ef4444;
+    --cw-radius: 18px;
+}
+
+.page-content:has(.camera-wall) {
+    position: relative;
+    isolation: isolate;
+}
+
+.page-content:has(.camera-wall)::before {
+    content: "";
+    position: absolute;
+    inset: -24px;
+    z-index: -2;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 8% 4%, rgba(59,130,246,.12), transparent 28%),
+        radial-gradient(circle at 92% 12%, rgba(34,211,238,.07), transparent 24%),
+        linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+    background-size: auto, auto, 44px 44px, 44px 44px;
+    mask-image: linear-gradient(to bottom, black, transparent 90%);
+}
+
+.cameras-wall-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 20px;
+    padding: 20px 22px;
+    border: 1px solid var(--cw-border);
+    border-radius: var(--cw-radius);
+    background:
+        linear-gradient(135deg, rgba(255,255,255,.045), rgba(255,255,255,.012)),
+        var(--cw-surface);
+    box-shadow: 0 18px 50px rgba(0,0,0,.22);
+    backdrop-filter: blur(18px);
+}
+
+.cameras-wall-title h1 {
+    margin: 0;
+    color: var(--cw-text);
+    font-size: clamp(24px, 2.1vw, 32px);
+    line-height: 1.1;
+    font-weight: 750;
+    letter-spacing: -.035em;
+}
+
+.cameras-wall-subtitle {
+    display: block;
+    margin-top: 7px;
+    color: var(--cw-muted);
+    font-size: 13px;
+    letter-spacing: .01em;
+}
+
+.cameras-wall-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.layout-selector,
+.wall-stats {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px;
+    border: 1px solid var(--cw-border);
+    border-radius: 13px;
+    background: rgba(3,7,13,.48);
+}
+
+.layout-btn {
+    width: 40px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    background: transparent;
+    color: #78869a;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.layout-btn:hover {
+    color: #dbeafe;
+    background: rgba(59,130,246,.10);
+    border-color: rgba(59,130,246,.16);
+}
+
+.layout-btn.active {
+    color: #fff;
+    background: linear-gradient(135deg, rgba(59,130,246,.28), rgba(34,211,238,.13));
+    border-color: rgba(96,165,250,.34);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.035), 0 5px 18px rgba(37,99,235,.14);
+}
+
+.layout-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.wall-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 10px;
+    color: var(--cw-muted);
+    font-size: 11px;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.wall-stat-dot,
+.wall-stat-total {
+    display: grid;
+    place-items: center;
+    min-width: 23px;
+    height: 23px;
+    padding: 0 6px;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.wall-stat-dot.online {
+    color: #86efac;
+    background: rgba(34,197,94,.12);
+    box-shadow: 0 0 16px rgba(34,197,94,.10);
+}
+
+.wall-stat-dot.warning {
+    color: #fcd34d;
+    background: rgba(245,158,11,.13);
+}
+
+.wall-stat-total {
+    color: #bfdbfe;
+    background: rgba(59,130,246,.12);
+}
+
+.camera-wall {
+    display: grid;
+    gap: 14px;
+    width: 100%;
+    min-width: 0;
+    align-items: stretch;
+}
+
+.camera-wall.layout-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.camera-wall.layout-6,
+.camera-wall.layout-9 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Style dynamically-rendered camera cards without touching their JS. */
+.camera-wall > * {
+    min-width: 0;
+}
+
+.camera-wall .camera-card,
+.camera-wall .camera-tile,
+.camera-wall .camera-item {
+    position: relative;
+    overflow: hidden;
+    min-width: 0;
+    border: 1px solid var(--cw-border);
+    border-radius: 16px;
+    background: #0a1019;
+    box-shadow: 0 14px 38px rgba(0,0,0,.22);
+    transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+}
+
+.camera-wall .camera-card:hover,
+.camera-wall .camera-tile:hover,
+.camera-wall .camera-item:hover {
+    transform: translateY(-2px);
+    border-color: var(--cw-border-strong);
+    box-shadow: 0 20px 48px rgba(0,0,0,.30), 0 0 0 1px rgba(59,130,246,.05);
+}
+
+.camera-wall img,
+.camera-wall video,
+.camera-wall canvas {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Common loading skeleton polish */
+.camera-wall .skeleton,
+.camera-wall .skeleton-card,
+.camera-wall .skeleton-placeholder {
+    min-height: 230px;
+    border-radius: 14px;
+    border: 1px solid var(--cw-border);
+    background:
+        linear-gradient(110deg, rgba(255,255,255,.035) 8%, rgba(255,255,255,.075) 18%, rgba(255,255,255,.035) 33%),
+        #0c131e;
+    background-size: 200% 100%;
+    animation: cwSkeleton 1.45s linear infinite;
+}
+
+@keyframes cwSkeleton {
+    to { background-position-x: -200%; }
+}
+
+.cameras-wall-legend {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-top: 16px;
+    padding: 12px 15px;
+    border: 1px solid var(--cw-border);
+    border-radius: 13px;
+    background: rgba(15,23,35,.66);
+    color: var(--cw-muted);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px currentColor;
+}
+
+.legend-dot.normal {
+    color: var(--cw-green);
+    background: var(--cw-green);
+}
+
+.legend-dot.alert {
+    color: var(--cw-red);
+    background: var(--cw-red);
+}
+
+.legend-dot.offline {
+    color: #64748b;
+    background: #64748b;
+    box-shadow: none;
+}
+
+#emptyState {
+    padding: 55px 20px;
+    margin-top: 14px;
+    border: 1px dashed var(--cw-border-strong);
+    border-radius: var(--cw-radius);
+    background: rgba(15,23,35,.55);
+    color: var(--cw-muted);
+    text-align: center;
+}
+
+/* Light theme — intentionally softer while preserving contrast */
+[data-theme="light"] .page-content:has(.camera-wall),
+.light .page-content:has(.camera-wall) {
+    --cw-surface: rgba(255,255,255,.94);
+    --cw-surface-2: rgba(248,250,252,.96);
+    --cw-border: rgba(15,23,42,.10);
+    --cw-border-strong: rgba(37,99,235,.24);
+    --cw-text: #0f172a;
+    --cw-muted: #5b6878;
+    --cw-bg: #f4f7fb;
+}
+
+[data-theme="light"] .page-content:has(.camera-wall)::before,
+.light .page-content:has(.camera-wall)::before {
+    background:
+        radial-gradient(circle at 8% 4%, rgba(59,130,246,.09), transparent 28%),
+        radial-gradient(circle at 92% 12%, rgba(6,182,212,.06), transparent 24%);
+}
+
+[data-theme="light"] .layout-selector,
+[data-theme="light"] .wall-stats,
+.light .layout-selector,
+.light .wall-stats {
+    background: #f5f7fa;
+}
+
+[data-theme="light"] .camera-wall .camera-card,
+[data-theme="light"] .camera-wall .camera-tile,
+[data-theme="light"] .camera-wall .camera-item,
+.light .camera-wall .camera-card,
+.light .camera-wall .camera-tile,
+.light .camera-wall .camera-item {
+    background: #e8edf3;
+    border-color: rgba(15,23,42,.11);
+    box-shadow: 0 12px 28px rgba(15,23,42,.10);
+}
+
+[data-theme="light"] .cameras-wall-legend,
+.light .cameras-wall-legend {
+    background: rgba(255,255,255,.92);
+}
+
+@media (max-width: 1100px) {
+    .cameras-wall-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .cameras-wall-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 760px) {
+    .camera-wall.layout-4,
+    .camera-wall.layout-6,
+    .camera-wall.layout-9 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cameras-wall-header {
+        padding: 17px;
+        margin-bottom: 14px;
+    }
+
+    .cameras-wall-controls {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .layout-selector,
+    .wall-stats {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .wall-stat {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .cameras-wall-legend {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 500px) {
+    .camera-wall.layout-4,
+    .camera-wall.layout-6,
+    .camera-wall.layout-9 {
+        grid-template-columns: 1fr;
+    }
+
+    .cameras-wall-title h1 {
+        font-size: 25px;
+    }
+
+    .cameras-wall-subtitle {
+        font-size: 12px;
+    }
+
+    .layout-btn {
+        flex: 1;
+    }
+
+    .wall-stat {
+        padding-inline: 5px;
+        font-size: 10px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .camera-wall .camera-card,
+    .camera-wall .camera-tile,
+    .camera-wall .camera-item,
+    .layout-btn {
+        transition: none;
+    }
+
+    .camera-wall .skeleton,
+    .camera-wall .skeleton-card,
+    .camera-wall .skeleton-placeholder {
+        animation: none;
+    }
+}
+</style>
+
 {% endblock %}
