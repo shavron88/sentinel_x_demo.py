@@ -2,176 +2,1217 @@
 
 {% block content %}
 
+<style>
+/* =========================================================
+   SENTINEL-X LIVE CAMERA — UI ONLY
+   Existing IDs, routes and JavaScript functionality preserved.
+   ========================================================= */
+
+.live-camera-page {
+    --lc-bg: #020617;
+    --lc-surface: #0f172a;
+    --lc-surface-2: #111c31;
+    --lc-border: rgba(148, 163, 184, 0.16);
+    --lc-border-hover: rgba(59, 130, 246, 0.38);
+    --lc-text: #f8fafc;
+    --lc-muted: #94a3b8;
+    --lc-dim: #64748b;
+    --lc-blue: #3b82f6;
+    --lc-blue-dark: #2563eb;
+    --lc-green: #22c55e;
+    --lc-red: #ef4444;
+    --lc-amber: #f59e0b;
+
+    width: 100%;
+    min-width: 0;
+    color: var(--lc-text);
+}
+
+.live-camera-page *,
+.live-camera-page *::before,
+.live-camera-page *::after {
+    box-sizing: border-box;
+}
+
+.live-camera-page button,
+.live-camera-page input,
+.live-camera-page select {
+    font: inherit;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.live-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 18px;
+}
+
+.live-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 34px;
+    padding: 0 11px;
+    flex: 0 0 auto;
+
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    border-radius: 8px;
+
+    background: rgba(34, 197, 94, 0.08);
+    color: #86efac;
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+}
+
+.live-dot,
+.live-rec-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    border-radius: 50%;
+    background: var(--lc-green);
+    box-shadow:
+        0 0 0 4px rgba(34, 197, 94, 0.10),
+        0 0 12px rgba(34, 197, 94, 0.50);
+
+    animation: sentinelLivePulse 1.8s ease-in-out infinite;
+}
+
+.live-title {
+    min-width: 0;
+}
+
+.live-title h2 {
+    margin: 0;
+    color: var(--lc-text);
+    font-size: 23px;
+    line-height: 1.2;
+    font-weight: 750;
+    letter-spacing: -0.025em;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.live-subtitle {
+    display: block;
+    margin-top: 5px;
+    color: var(--lc-muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.live-header-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* =========================================================
+   HEADER BUTTONS
+   ========================================================= */
+
+.live-icon-btn {
+    min-height: 38px;
+    padding: 0 13px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    border: 1px solid var(--lc-border);
+    border-radius: 8px;
+
+    background: rgba(15, 23, 42, 0.72);
+    color: #cbd5e1;
+
+    font-size: 12px;
+    font-weight: 650;
+
+    cursor: pointer;
+
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease,
+        transform 0.18s ease;
+}
+
+.live-icon-btn svg {
+    flex: 0 0 auto;
+}
+
+.live-icon-btn:hover {
+    background: rgba(59, 130, 246, 0.10);
+    border-color: var(--lc-border-hover);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.live-icon-btn:focus-visible {
+    outline: 2px solid rgba(59, 130, 246, 0.75);
+    outline-offset: 2px;
+}
+
+.live-icon-btn--primary {
+    background: var(--lc-blue);
+    border-color: var(--lc-blue);
+    color: #ffffff;
+    box-shadow: 0 5px 18px rgba(59, 130, 246, 0.18);
+}
+
+.live-icon-btn--primary:hover {
+    background: var(--lc-blue-dark);
+    border-color: var(--lc-blue-dark);
+}
+
+.live-icon-btn--ok {
+    background: rgba(34, 197, 94, 0.12) !important;
+    border-color: rgba(34, 197, 94, 0.45) !important;
+    color: #86efac !important;
+}
+
+/* =========================================================
+   MAIN LIVE AREA
+   ========================================================= */
+
+.live-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 270px;
+    gap: 14px;
+    align-items: stretch;
+}
+
+.live-viewport {
+    position: relative;
+
+    width: 100%;
+    min-width: 0;
+    min-height: clamp(390px, 58vh, 680px);
+
+    overflow: hidden;
+
+    border: 1px solid var(--lc-border);
+    border-radius: 13px;
+
+    background: var(--lc-bg);
+
+    box-shadow:
+        0 12px 35px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.025);
+
+    isolation: isolate;
+}
+
+.live-viewport::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    pointer-events: none;
+    z-index: 2;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(2, 6, 23, 0.48) 0%,
+            transparent 20%,
+            transparent 72%,
+            rgba(2, 6, 23, 0.62) 100%
+        );
+}
+
+.live-stream {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+    min-height: inherit;
+
+    object-fit: cover;
+
+    background: #020617;
+}
+
+/* =========================================================
+   VIDEO OVERLAYS
+   ========================================================= */
+
+.live-viewport-overlay-top,
+.live-viewport-overlay-bottom {
+    position: absolute;
+    z-index: 4;
+
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    color: #e2e8f0;
+
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+
+    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.85);
+
+    pointer-events: none;
+}
+
+.live-viewport-overlay-top {
+    top: 14px;
+    left: 15px;
+}
+
+.live-viewport-overlay-bottom {
+    right: 15px;
+    bottom: 13px;
+
+    letter-spacing: 0.025em;
+    font-variant-numeric: tabular-nums;
+}
+
+.live-rec-dot {
+    width: 6px;
+    height: 6px;
+    flex-basis: 6px;
+}
+
+.live-viewport-sep {
+    opacity: 0.45;
+}
+
+/* =========================================================
+   STREAM LOADER
+   ========================================================= */
+
+.live-viewport-loader {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    color: #94a3b8;
+    font-size: 12px;
+
+    background: rgba(2, 6, 23, 0.55);
+    backdrop-filter: blur(3px);
+}
+
+.loading-spinner.small {
+    width: 24px;
+    height: 24px;
+}
+
+/* =========================================================
+   SIDE INFORMATION
+   ========================================================= */
+
+.live-side {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+
+    min-width: 0;
+}
+
+.live-panel {
+    min-width: 0;
+
+    border: 1px solid var(--lc-border);
+    border-radius: 11px;
+
+    background: rgba(15, 23, 42, 0.72);
+
+    box-shadow:
+        0 7px 24px rgba(0, 0, 0, 0.09),
+        inset 0 1px 0 rgba(255, 255, 255, 0.018);
+}
+
+.live-side .live-panel {
+    min-height: 102px;
+    padding: 14px;
+}
+
+.live-panel-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 9px;
+
+    color: var(--lc-muted);
+
+    font-size: 10px;
+    font-weight: 650;
+    letter-spacing: 0.02em;
+}
+
+.live-panel-dot {
+    width: 7px;
+    height: 7px;
+
+    margin-right: auto;
+
+    border-radius: 50%;
+}
+
+.live-panel-dot--ok {
+    background: var(--lc-green);
+    box-shadow: 0 0 9px rgba(34, 197, 94, 0.55);
+}
+
+.live-panel-value {
+    margin-top: 11px;
+
+    color: #f8fafc;
+
+    font-size: 19px;
+    line-height: 1.1;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+}
+
+.live-panel-value--ok {
+    color: #4ade80;
+}
+
+.live-panel--wide {
+    grid-column: 1 / -1;
+}
+
+/* =========================================================
+   CAMERA META
+   ========================================================= */
+
+.live-panel-meta {
+    display: grid;
+    gap: 8px;
+
+    margin-top: 11px;
+}
+
+.live-panel-meta > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    padding-top: 8px;
+
+    border-top: 1px solid rgba(148, 163, 184, 0.09);
+}
+
+.live-panel-meta span {
+    color: #64748b;
+    font-size: 10px;
+}
+
+.live-panel-meta strong {
+    max-width: 65%;
+
+    color: #cbd5e1;
+
+    font-size: 11px;
+    font-weight: 650;
+
+    text-align: right;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* =========================================================
+   RECENT EVENTS
+   ========================================================= */
+
+.live-panel--events {
+    margin-top: 14px;
+    overflow: hidden;
+}
+
+.live-panel--events > .live-panel-title {
+    min-height: 52px;
+    padding: 0 16px;
+
+    border-bottom: 1px solid var(--lc-border);
+}
+
+.live-panel--events > .live-panel-title > span:first-child {
+    color: #f8fafc;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.live-panel-hint {
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 500;
+}
+
+.live-timeline {
+    min-height: 96px;
+    padding: 7px 10px 10px;
+}
+
+.live-timeline > * {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.live-timeline > *:last-child {
+    border-bottom: 0;
+}
+
+.live-timeline-empty {
+    padding: 28px 12px;
+
+    color: #64748b;
+
+    font-size: 12px;
+    text-align: center;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+    .live-layout {
+        grid-template-columns: minmax(0, 1fr) 235px;
+    }
+
+    .live-side {
+        grid-template-columns: 1fr;
+    }
+
+    .live-panel--wide {
+        grid-column: auto;
+    }
+
+}
+
+@media (max-width: 800px) {
+
+    .live-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .live-header-right {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .live-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .live-side {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .live-side .live-panel {
+        min-height: 92px;
+    }
+
+    .live-panel--wide {
+        grid-column: 1 / -1;
+    }
+
+    .live-viewport {
+        min-height: 56vw;
+        max-height: 68vh;
+    }
+
+}
+
+@media (max-width: 560px) {
+
+    .live-header {
+        gap: 13px;
+        margin-bottom: 14px;
+    }
+
+    .live-header-left {
+        width: 100%;
+    }
+
+    .live-title h2 {
+        font-size: 19px;
+    }
+
+    .live-subtitle {
+        font-size: 11px;
+    }
+
+    .live-header-right {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+
+        width: 100%;
+        gap: 7px;
+    }
+
+    .live-icon-btn {
+        width: 100%;
+        min-height: 40px;
+
+        padding: 0 8px;
+
+        font-size: 11px;
+    }
+
+    .live-icon-btn--primary {
+        grid-column: 1 / -1;
+    }
+
+    .live-layout {
+        gap: 10px;
+    }
+
+    .live-viewport {
+        min-height: 240px;
+        border-radius: 10px;
+    }
+
+    .live-viewport-overlay-top {
+        top: 10px;
+        left: 11px;
+
+        font-size: 9px;
+    }
+
+    .live-viewport-overlay-bottom {
+        right: 11px;
+        bottom: 10px;
+
+        font-size: 9px;
+    }
+
+    .live-side {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .live-side .live-panel {
+        min-height: 88px;
+        padding: 12px;
+    }
+
+    .live-panel-value {
+        margin-top: 9px;
+        font-size: 17px;
+    }
+
+    .live-panel--wide {
+        grid-column: 1 / -1;
+    }
+
+    .live-panel--events {
+        margin-top: 10px;
+    }
+
+    .live-panel--events > .live-panel-title {
+        padding: 0 13px;
+    }
+
+    .live-panel-hint {
+        display: none;
+    }
+
+}
+
+@media (max-width: 380px) {
+
+    .live-badge {
+        height: 31px;
+        padding: 0 9px;
+    }
+
+    .live-title h2 {
+        font-size: 17px;
+    }
+
+    .live-icon-btn span {
+        font-size: 10px;
+    }
+
+    .live-viewport {
+        min-height: 220px;
+    }
+
+    .live-side .live-panel {
+        padding: 10px;
+    }
+
+    .live-panel-title {
+        font-size: 9px;
+    }
+
+    .live-panel-value {
+        font-size: 15px;
+    }
+
+}
+
+/* =========================================================
+   LIGHT THEME
+   ========================================================= */
+
+[data-theme="light"] .live-camera-page,
+.light-theme .live-camera-page {
+
+    --lc-panel: #ffffff;
+    --lc-panel-soft: #ffffff;
+    --lc-text: #0f172a;
+    --lc-muted: #64748b;
+    --lc-dim: #94a3b8;
+    --lc-border: rgba(15, 23, 42, 0.10);
+    --lc-border-strong: rgba(15, 23, 42, 0.14);
+}
+
+[data-theme="light"] .live-icon-btn,
+.light-theme .live-icon-btn {
+    background: #ffffff;
+    color: #334155;
+}
+
+[data-theme="light"] .live-panel,
+.light-theme .live-panel {
+    background: #ffffff;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.055);
+}
+
+[data-theme="light"] .live-title h2,
+.light-theme .live-title h2,
+[data-theme="light"] .live-panel--events > .live-panel-title > span:first-child,
+.light-theme .live-panel--events > .live-panel-title > span:first-child {
+    color: #0f172a;
+}
+
+[data-theme="light"] .live-panel-value,
+.light-theme .live-panel-value {
+    color: #0f172a;
+}
+
+[data-theme="light"] .live-panel-meta strong,
+.light-theme .live-panel-meta strong {
+    color: #334155;
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .live-dot,
+    .live-rec-dot {
+        animation: none;
+    }
+
+    .live-icon-btn {
+        transition: none;
+    }
+
+}
+
+@keyframes sentinelLivePulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.55;
+        transform: scale(0.82);
+    }
+
+}
+</style>
+
 <div class="page-content fade-in live-camera-page">
 
     <div class="live-header">
+
         <div class="live-header-left">
+
             <div class="live-badge">
                 <span class="live-dot"></span>
                 <span>LIVE</span>
             </div>
+
             <div class="live-title">
                 <h2 id="liveCameraName">{{ camera_name }}</h2>
                 <span class="live-subtitle">Real-time AI surveillance stream</span>
             </div>
+
         </div>
+
         <div class="live-header-right">
-            <button class="live-icon-btn" id="liveSnapshotBtn" type="button" title="Capture Snapshot" aria-label="Snapshot">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+
+            <button
+                class="live-icon-btn"
+                id="liveSnapshotBtn"
+                type="button"
+                title="Capture Snapshot"
+                aria-label="Snapshot">
+
+                <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+
+                </svg>
+
                 <span>Snapshot</span>
+
             </button>
-            <button class="live-icon-btn" id="liveReplayBtn" type="button" title="Open Replay" aria-label="Replay" onclick="window.location.href='/replay'">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 19 5 3"/></svg>
+
+            <button
+                class="live-icon-btn"
+                id="liveReplayBtn"
+                type="button"
+                title="Open Replay"
+                aria-label="Replay"
+                onclick="window.location.href='/replay'">
+
+                <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+
+                    <polygon points="5 3 19 12 5 19 5 3"/>
+
+                </svg>
+
                 <span>Replay</span>
+
             </button>
-            <button class="live-icon-btn live-icon-btn--primary" id="liveFullscreenBtn" type="button" title="Fullscreen" aria-label="Fullscreen">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+
+            <button
+                class="live-icon-btn live-icon-btn--primary"
+                id="liveFullscreenBtn"
+                type="button"
+                title="Fullscreen"
+                aria-label="Fullscreen">
+
+                <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
+                    <path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
+                    <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
+                    <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+
+                </svg>
+
                 <span>Fullscreen</span>
+
             </button>
+
         </div>
+
     </div>
+
 
     <div class="live-layout">
 
         <div class="live-viewport" id="liveViewport">
+
             <div class="live-viewport-overlay-top">
+
                 <span class="live-rec-dot"></span>
                 <span>REC</span>
+
                 <span class="live-viewport-sep">·</span>
+
                 <span id="liveCameraLabel2">{{ camera_name }}</span>
+
             </div>
-            <div class="live-viewport-overlay-bottom" id="liveStreamTime">Connecting...</div>
-            <img src="/video_feed?camera_name={{ camera_name }}"
-                 id="live-camera"
-                 alt="Live camera stream for {{ camera_name }}"
-                 class="live-stream">
-            <div class="live-viewport-loader" id="liveViewportLoader">
+
+            <div
+                class="live-viewport-overlay-bottom"
+                id="liveStreamTime">
+
+                Connecting...
+
+            </div>
+
+            <img
+                src="/video_feed?camera_name={{ camera_name }}"
+                id="live-camera"
+                alt="Live camera stream for {{ camera_name }}"
+                class="live-stream">
+
+            <div
+                class="live-viewport-loader"
+                id="liveViewportLoader">
+
                 <div class="loading-spinner small"></div>
+
                 <span>Initializing stream...</span>
+
             </div>
+
         </div>
+
 
         <aside class="live-side">
 
             <div class="live-panel">
+
                 <div class="live-panel-title">
+
                     <span class="live-panel-dot live-panel-dot--ok"></span>
+
                     <span>Status</span>
+
                 </div>
-                <div class="live-panel-value" id="camera-status">Online</div>
+
+                <div
+                    class="live-panel-value"
+                    id="camera-status">
+
+                    Online
+
+                </div>
+
             </div>
 
+
             <div class="live-panel">
+
                 <div class="live-panel-title">
                     <span>Resolution</span>
                 </div>
-                <div class="live-panel-value">640 × 480</div>
+
+                <div class="live-panel-value">
+                    640 × 480
+                </div>
+
             </div>
 
+
             <div class="live-panel">
+
                 <div class="live-panel-title">
                     <span>FPS</span>
                 </div>
-                <div class="live-panel-value" id="camera-fps">30</div>
+
+                <div
+                    class="live-panel-value"
+                    id="camera-fps">
+
+                    30
+
+                </div>
+
             </div>
 
+
             <div class="live-panel">
+
                 <div class="live-panel-title">
                     <span>Threat</span>
                 </div>
-                <div class="live-panel-value live-panel-value--ok" id="threat-level">LOW</div>
+
+                <div
+                    class="live-panel-value live-panel-value--ok"
+                    id="threat-level">
+
+                    LOW
+
+                </div>
+
             </div>
 
+
             <div class="live-panel live-panel--wide">
+
                 <div class="live-panel-title">
                     <span>Camera</span>
                 </div>
+
                 <div class="live-panel-meta">
-                    <div><span>Name</span><strong id="liveCameraMeta">{{ camera_name }}</strong></div>
-                    <div><span>Zone</span><strong>Primary Zone</strong></div>
-                    <div><span>Mode</span><strong>AI Active</strong></div>
+
+                    <div>
+                        <span>Name</span>
+                        <strong id="liveCameraMeta">{{ camera_name }}</strong>
+                    </div>
+
+                    <div>
+                        <span>Zone</span>
+                        <strong>Primary Zone</strong>
+                    </div>
+
+                    <div>
+                        <span>Mode</span>
+                        <strong>AI Active</strong>
+                    </div>
+
                 </div>
+
             </div>
 
         </aside>
 
     </div>
 
+
     <section class="live-panel live-panel--events">
+
         <div class="live-panel-title">
+
             <span>Recent Events</span>
-            <span class="live-panel-hint">Latest activity for this camera</span>
+
+            <span class="live-panel-hint">
+                Latest activity for this camera
+            </span>
+
         </div>
-        <div id="timeline" class="live-timeline"></div>
+
+        <div
+            id="timeline"
+            class="live-timeline">
+        </div>
+
     </section>
+
 
     <div id="emptyState" style="display:none;"></div>
 
 </div>
 
+
 <script>
+
 (function() {
+
     const img = document.getElementById('live-camera');
     const loader = document.getElementById('liveViewportLoader');
     const timeEl = document.getElementById('liveStreamTime');
 
+
     if (img) {
+
         img.addEventListener('load', function() {
-            if (loader) loader.style.display = 'none';
+
+            if (loader) {
+                loader.style.display = 'none';
+            }
+
             if (timeEl) {
+
                 const now = new Date();
+
                 const hh = String(now.getHours()).padStart(2, '0');
                 const mm = String(now.getMinutes()).padStart(2, '0');
                 const ss = String(now.getSeconds()).padStart(2, '0');
-                timeEl.textContent = now.toLocaleDateString() + ' · ' + hh + ':' + mm + ':' + ss;
+
+                timeEl.textContent =
+                    now.toLocaleDateString() +
+                    ' · ' +
+                    hh +
+                    ':' +
+                    mm +
+                    ':' +
+                    ss;
+
             }
+
         });
+
+
         img.addEventListener('error', function() {
-            if (loader) loader.innerHTML = '<span style="color:#ef4444;">Stream unavailable</span>';
-        });
-    }
 
-    const fsBtn = document.getElementById('liveFullscreenBtn');
-    if (fsBtn) {
-        fsBtn.addEventListener('click', function() {
-            const target = document.getElementById('liveViewport');
-            if (!target) return;
-            const doc = document;
-            const isFs = doc.fullscreenElement;
-            if (!isFs) {
-                (target.requestFullscreen || target.webkitRequestFullscreen || function(){}).call(target);
-            } else {
-                (doc.exitFullscreen || doc.webkitExitFullscreen || function(){}).call(doc);
+            if (loader) {
+
+                loader.innerHTML =
+                    '<span style="color:#ef4444;">Stream unavailable</span>';
+
             }
+
         });
+
     }
 
-    const snapBtn = document.getElementById('liveSnapshotBtn');
+
+    const fsBtn =
+        document.getElementById('liveFullscreenBtn');
+
+
+    if (fsBtn) {
+
+        fsBtn.addEventListener('click', function() {
+
+            const target =
+                document.getElementById('liveViewport');
+
+            if (!target) return;
+
+            const doc = document;
+
+            const isFs =
+                doc.fullscreenElement;
+
+            if (!isFs) {
+
+                (
+                    target.requestFullscreen ||
+                    target.webkitRequestFullscreen ||
+                    function(){}
+                ).call(target);
+
+            } else {
+
+                (
+                    doc.exitFullscreen ||
+                    doc.webkitExitFullscreen ||
+                    function(){}
+                ).call(doc);
+
+            }
+
+        });
+
+    }
+
+
+    const snapBtn =
+        document.getElementById('liveSnapshotBtn');
+
+
     if (snapBtn) {
+
         snapBtn.addEventListener('click', async function() {
+
             try {
-                const csrf = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
-                const r = await fetch('/api/camera/snapshot', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
-                    body: JSON.stringify({ camera_name: '{{ camera_name }}' })
-                });
+
+                const csrf =
+                    (
+                        document.querySelector(
+                            'meta[name="csrf-token"]'
+                        ) || {}
+                    ).content || '';
+
+
+                const r = await fetch(
+                    '/api/camera/snapshot',
+                    {
+                        method: 'POST',
+
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': csrf
+                        },
+
+                        body: JSON.stringify({
+                            camera_name:
+                                '{{ camera_name }}'
+                        })
+                    }
+                );
+
+
                 if (r.ok) {
-                    snapBtn.classList.add('live-icon-btn--ok');
-                    setTimeout(function(){ snapBtn.classList.remove('live-icon-btn--ok'); }, 1200);
+
+                    snapBtn.classList.add(
+                        'live-icon-btn--ok'
+                    );
+
+                    setTimeout(
+                        function() {
+                            snapBtn.classList.remove(
+                                'live-icon-btn--ok'
+                            );
+                        },
+                        1200
+                    );
+
                 }
+
             } catch (e) {}
+
         });
+
     }
 
-    if (typeof showSkeletonRows === 'function') showSkeletonRows('timeline', 5);
+
+    if (typeof showSkeletonRows === 'function') {
+
+        showSkeletonRows('timeline', 5);
+
+    }
+
+
     setTimeout(function() {
-        const tl = document.getElementById('timeline');
+
+        const tl =
+            document.getElementById('timeline');
+
         if (tl && !tl.innerHTML.trim()) {
-            tl.innerHTML = '<div class="live-timeline-empty">No recent events for this camera.</div>';
+
+            tl.innerHTML =
+                '<div class="live-timeline-empty">' +
+                'No recent events for this camera.' +
+                '</div>';
+
         }
+
     }, 800);
+
 })();
+
 </script>
 
 </div>
