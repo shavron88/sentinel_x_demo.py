@@ -1,0 +1,48 @@
+# Version control
+.git
+.gitignore
+.kilo
+.github
+
+# Secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Local state that must never be baked into an image
+sentinelx.db
+sentinelx.db-journal
+sentinelx.db-wal
+sentinelx.db-shm
+*.db.bak*
+backups/
+
+# Runtime data (mounted as volumes in docker-compose)
+evidence/screenshots/
+evidence/videos/
+logs/
+*.log
+
+# Model weights: large, and mounted/provisioned separately
+models/
+*.pt
+*.onnx
+*.engine
+
+# Caches / build artefacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.venv/
+venv/
+env/
+.envrc
+
+# Documentation and local tooling
+*.md
+!README.md
+kilo_*.py

@@ -1,9 +1,10 @@
+import os
 import time
 from typing import Dict, Any
 
 
 class AIHealthMonitor:
-    def __init__(self):
+    def __init__(self, max_queue_size=None):
         self.yolo_status = "Uninitialized"
         self.tracker_status = "Idle"
         self.pipeline_status = "Stopped"
@@ -18,7 +19,17 @@ class AIHealthMonitor:
         self.total_inference_time = 0.0
 
         self.queue_size = 0
-        self.max_queue_size = 100
+        # The health check compares the queue against this ceiling, so it must
+        # match the real DetectionQueueManager capacity. It was hardcoded to 100
+        # while the pipeline runs with 30, which made a half-full queue look
+        # critically backed up.
+        if max_queue_size is None:
+            try:
+                from config import MAX_QUEUE_SIZE
+                max_queue_size = MAX_QUEUE_SIZE
+            except Exception:
+                max_queue_size = int(os.getenv("MAX_QUEUE_SIZE", "30"))
+        self.max_queue_size = max(1, int(max_queue_size))
 
     def update_yolo_status(self, status: str):
         self.yolo_status = status

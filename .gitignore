@@ -47,6 +47,10 @@ logs/
 *.sqlite
 *.sqlite3
 sentinelx.db
+*.db.bak*
+*.db-journal
+*.db-wal
+*.db-shm
 backups/
 
 ##############################

@@ -1,5 +1,5 @@
 import sys
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, jsonify, request, session, current_app
 from camera.camera_manager import camera_manager
 from api.auth import require_auth, require_csrf
 
@@ -17,15 +17,48 @@ def _get_current_user_id():
 def handle_snapshot():
     data = request.get_json() or {}
     cam_name = data.get('camera_name', 'Camera_01')
-    
+
     stream = camera_manager.get_camera_stream(cam_name)
     if not stream:
         return jsonify({"success": False, "error": f"Camera '{cam_name}' not found"}), 404
-        
+
     success, result = stream.take_snapshot()
-    if success:
-        return jsonify({"success": True, "image": result}), 200
-    return jsonify({"success": False, "error": result}), 500
+    if not success:
+        return jsonify({"success": False, "error": result}), 500
+
+    # Register the snapshot in the evidence vault. Without this the file landed
+    # on disk only, so operator snapshots never appeared in the evidence list.
+    evidence_id = None
+    try:
+        from database.db import db_write_connection
+        from datetime import datetime
+        import json as _json
+
+        user_id = _get_current_user_id()
+        with db_write_connection() as conn:
+            cursor = conn.execute("""
+                INSERT INTO evidence (user_id, event_id, camera, image_path, metadata, timestamp)
+                VALUES (?, NULL, ?, ?, ?, ?)
+            """, (
+                user_id,
+                cam_name,
+                result,
+                _json.dumps({
+                    "event_type": "MANUAL_SNAPSHOT",
+                    "camera": cam_name,
+                    "source": "dashboard",
+                    "saved_at": datetime.now().isoformat(),
+                }),
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            ))
+            evidence_id = cursor.lastrowid
+    except Exception as e:
+        # The image was captured successfully; a vault write failure should not
+        # turn the operator action into an error.
+        current_app.logger.warning(
+            "Snapshot %s saved but not registered as evidence: %s", result, e)
+
+    return jsonify({"success": True, "image": result, "evidence_id": evidence_id}), 200
 
 
 @camera_bp.route('/start-record', methods=['POST'])
@@ -89,30 +122,35 @@ def handle_camera_alerts():
         if pipeline:
             return jsonify(_get_camera_alert_status(pipeline)), 200
         return jsonify({"camera_name": cam_name, "has_alert": False, "alert_count": 0, "latest_alert": None}), 200
-    
-    # Return all cameras' alert status
+
+    # Return alert status for this user's cameras only.
+    user_id = _get_current_user_id()
     alerts = {}
     for name, pipeline in camera_manager.pipelines.items():
-        alerts[name] = _get_camera_alert_status(pipeline)
+        owner = camera_manager.get_camera_owner(name)
+        if owner is not None and owner != user_id:
+            continue
+        alerts[name] = _get_camera_alert_status(pipeline, user_id=user_id)
     return jsonify(alerts), 200
 
 
-def _get_camera_alert_status(pipeline):
+def _get_camera_alert_status(pipeline, user_id=None):
     """Compute alert status for a camera pipeline from recent events."""
-    from database.db import get_connection
+    from database.db import db_connection
     camera_name = pipeline.name
     has_alert = False
     alert_count = 0
     latest_alert = None
-    
+
     try:
-        with get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
+        if user_id is None:
+            user_id = _get_current_user_id()
+        with db_connection() as conn:
+            cursor = conn.execute(
                 "SELECT event_type, severity, zone, confidence, timestamp FROM events "
-                "WHERE camera = ? AND severity IN ('HIGH', 'CRITICAL') "
+                "WHERE camera = ? AND user_id = ? AND severity IN ('HIGH', 'CRITICAL') "
                 "ORDER BY id DESC LIMIT 10",
-                (camera_name,)
+                (camera_name, user_id)
             )
             rows = cursor.fetchall()
             alert_count = len(rows)
@@ -201,9 +239,9 @@ def handle_add_camera():
 def handle_remove_camera(name):
     try:
         camera_manager.remove_camera(name)
-        from database.db import get_connection
+        from database.db import db_write_connection
         user_id = _get_current_user_id()
-        with get_connection() as conn:
+        with db_write_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM cameras WHERE name = ? AND user_id = ?", (name, user_id))
             conn.commit()

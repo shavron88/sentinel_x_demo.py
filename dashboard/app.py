@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 from flask import Flask, render_template, jsonify, Response, send_from_directory, send_file, request, session, redirect, url_for
 
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 # --- Sentinel-X Core & AI Imports ---
 from core.system_monitor import SystemMonitor
 from ai.health import AIHealthMonitor
@@ -34,7 +36,7 @@ def _get_user_id():
 from camera.camera_manager import camera_manager
 
 # --- Database & Dashboard Imports ---
-from database.db import get_connection
+from database.db import db_connection, db_write_connection, get_all_events
 from dashboard.store import get_events, get_stats
 from dashboard.timeline import get_timeline
 from dashboard.settings_store import SettingsStore
@@ -42,9 +44,33 @@ from dashboard.settings_store import SettingsStore
 # SocketIO Import
 try:
     from services.socket_manager import socketio
-except ModuleNotFoundError:
-    from flask_socketio import SocketIO
-    socketio = SocketIO()
+except Exception:
+    # The previous fallback re-imported flask_socketio, so it failed for exactly
+    # the same reason and a missing dependency turned into an ImportError during
+    # app startup. Degrade to a no-op stub instead: realtime updates are
+    # optional, the REST API and MJPEG feeds are not.
+    class _NullSocketIO:
+        """Stand-in used when flask-socketio is unavailable."""
+
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def init_app(self, app, *args, **kwargs):
+            pass
+
+        def emit(self, *args, **kwargs):
+            pass
+
+        def on(self, *args, **kwargs):
+            def decorator(fn):
+                return fn
+            return decorator
+
+        def run(self, *args, **kwargs):
+            pass
+
+    socketio = _NullSocketIO()
+    print("SocketIO unavailable; realtime push disabled (REST + MJPEG still work).")
 
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -61,11 +87,12 @@ app.config.update(
 # ==========================================
 # SENTINEL-X AI PIPELINE INITIALIZATION
 # ==========================================
-from config import MODEL_PATH as _MODEL_PATH
+from config import MODEL_PATH as _MODEL_PATH, MAX_QUEUE_SIZE as _MAX_QUEUE_SIZE
 
 sys_monitor = SystemMonitor()
-ai_health = AIHealthMonitor()
-queue_mgr = DetectionQueueManager(maxsize=30)
+ai_health = AIHealthMonitor(max_queue_size=_MAX_QUEUE_SIZE)
+# Use the configured capacity so the health monitor's ceiling matches reality.
+queue_mgr = DetectionQueueManager(maxsize=_MAX_QUEUE_SIZE)
 engine = YOLOInferenceEngine(model_path=_MODEL_PATH, health_monitor=ai_health)
 
 worker = YOLOWorker(queue_mgr, engine, ai_health)
@@ -73,12 +100,71 @@ recovery = AutoRecoveryManager(ai_health, queue_mgr, engine, check_interval=0.5)
 recovery.attach_worker(worker)
 
 # Start Background Threads
+_pipeline_started = False
+
+
+def start_background_services():
+    """Starts the AI worker, recovery engine and detection loop exactly once.
+
+    Importing this module used to start the worker/recovery pair immediately
+    while ``main.py --flask`` and the Docker/gunicorn entrypoints never started
+    ``core.engine.run_engine`` at all -- so those deployments served a dashboard
+    that could never produce detections, events or evidence. Every entrypoint
+    now calls this instead of relying on import side effects.
+
+    This is an explicit request, so it always starts. Use
+    ``autostart_background_services()`` for the import-time behaviour, which
+    honours ``SENTINELX_AUTOSTART=0``.
+    """
+    global _pipeline_started
+    if _pipeline_started:
+        return False
+
+    _pipeline_started = True
+    try:
+        worker.start()
+        recovery.start()
+        print("Sentinel-X AI Worker & Recovery Engine Active")
+    except Exception as e:
+        print(f"Pipeline start notice: {e}")
+
+    try:
+        import threading
+
+        from core.engine import run_engine
+
+        event_user_id = int(os.getenv("SENTINELX_USER_ID", "1"))
+        stop_event = threading.Event()
+        app.config["SENTINELX_STOP_EVENT"] = stop_event
+        thread = threading.Thread(
+            target=run_engine,
+            kwargs={"user_id": event_user_id, "stop_event": stop_event},
+            name="sentinelx-engine",
+            daemon=True,
+        )
+        thread.start()
+        app.config["SENTINELX_ENGINE_THREAD"] = thread
+        print("Sentinel-X detection engine started")
+    except Exception as e:
+        print(f"Detection engine start notice: {e}")
+    return True
+
+
+def autostart_background_services():
+    """Import-time startup. Honours SENTINELX_AUTOSTART=0 to stay import-safe.
+
+    Tests and WSGI setups that call start_background_services() themselves set
+    SENTINELX_AUTOSTART=0 so importing the module has no side effects.
+    """
+    if os.getenv("SENTINELX_AUTOSTART", "1") == "0":
+        return False
+    return start_background_services()
+
+
 try:
-    worker.start()
-    recovery.start()
-    print("✔ Sentinel-X AI Worker & Recovery Engine Active")
+    autostart_background_services()
 except Exception as e:
-    print(f"⚠️ Pipeline start notice: {e}")
+    print(f"Pipeline autostart notice: {e}")
 
 
 # ==========================================
@@ -86,7 +172,7 @@ except Exception as e:
 # ==========================================
 def _init_face_table():
     try:
-        with get_connection() as conn:
+        with db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS known_faces (
@@ -266,8 +352,21 @@ def api_csrf_token():
     """Get CSRF token for state-changing requests."""
     if not is_authenticated():
         return jsonify({"error": "Authentication required"}), 401
-    
+
     return jsonify({"csrf_token": get_csrf_token()}), 200
+
+
+@app.context_processor
+def _inject_csrf():
+    """Expose csrf_token() to every template.
+
+    base.html renders it into a meta tag so the JS wrapper can attach the
+    header synchronously, without waiting on an extra round trip.
+    """
+    try:
+        return {"csrf_token": get_csrf_token}
+    except Exception:  # pragma: no cover - outside a request context
+        return {"csrf_token": lambda: ""}
 
 
 # ==========================
@@ -410,12 +509,120 @@ def notifications_page():
     return render_template("notifications.html")
 
 
+_COPILOT_HELP = (
+    "Ask about: incidents today, high severity alerts, busiest cameras, "
+    "offline cameras, system health, storage usage, or detection trends."
+)
+
+
+def _copilot_answer(question, user_id):
+    """Answers operator questions from live system data.
+
+    This is a deterministic analyst over the same metrics the dashboard shows
+    (it is not a language model). It previously returned a hardcoded
+    "integration pending" string for every question.
+    """
+    from database.db import get_all_cameras, get_event_stats, get_all_events
+
+    q = (question or "").lower()
+    totals = get_event_stats(user_id=user_id)
+    cameras = get_all_cameras(user_id=user_id)
+    online = [c for c in cameras if (c.get("status") or "").upper() == "ONLINE"]
+    offline = [c for c in cameras if c not in online]
+
+    def wants(*keywords):
+        return any(k in q for k in keywords)
+
+    if wants("help", "what can you"):
+        return _COPILOT_HELP
+
+    if wants("offline", "down", "not working", "disconnected"):
+        if not offline:
+            return "All %d registered cameras are online." % len(cameras)
+        return "Offline cameras (%d): %s" % (
+            len(offline), ", ".join(sorted(c.get("name", "?") for c in offline)))
+
+    if wants("online", "camera status", "how many cameras"):
+        return "%d of %d cameras online (%s%%)." % (
+            len(online), len(cameras),
+            round(100.0 * len(online) / len(cameras)) if cameras else 0)
+
+    if wants("camera") and wants("busy", "most", "active"):
+        recent = get_all_events(limit=500, user_id=user_id)
+        counts = {}
+        for e in recent:
+            counts[e.get("camera", "Unknown")] = counts.get(e.get("camera", "Unknown"), 0) + 1
+        if not counts:
+            return "No recent events recorded yet."
+        top = sorted(counts.items(), key=lambda kv: kv[1], reverse=True)[:3]
+        return "Most active cameras in the last %d events: %s." % (
+            len(recent), ", ".join("%s (%d)" % (name, n) for name, n in top))
+
+    if wants("high", "critical", "severe", "alert", "threat"):
+        high = int(totals.get("high_sev", 0) or 0)
+        if not high:
+            return "No high or critical severity events recorded."
+        level = "CRITICAL" if high > 5 else "MEDIUM"
+        return ("%d high/critical severity events recorded - current threat level is %s. "
+                "Review the incident center for detail." % (high, level))
+
+    if wants("storage", "disk", "space"):
+        from flask import current_app
+        total = 0
+        screenshots_dir = os.path.join(PROJECT_ROOT, "evidence", "screenshots")
+        if os.path.isdir(screenshots_dir):
+            for dirpath, _dirs, files in os.walk(screenshots_dir):
+                for f in files:
+                    try:
+                        total += os.path.getsize(os.path.join(dirpath, f))
+                    except OSError:
+                        pass
+        return "Evidence storage in use: %.2f MB." % (total / (1024 * 1024))
+
+    if wants("health", "system", "cpu", "ram", "performance", "status"):
+        sys_stats = sys_monitor.get_stats()
+        ai_stats = ai_health.get_health_status()
+        return ("CPU %.1f%%, RAM %.1f%%, disk %.1f%%. AI engine: %s (detection FPS %s, "
+                "queue %s/%s)." % (
+                    sys_stats.get("cpu_usage_percent", 0),
+                    sys_stats.get("ram_usage_percent", 0),
+                    sys_stats.get("disk_usage_percent", 0),
+                    ai_stats.get("status", "unknown"),
+                    ai_stats.get("metrics", {}).get("detection_fps", 0),
+                    ai_stats.get("metrics", {}).get("queue_size", 0),
+                    ai_stats.get("metrics", {}).get("queue_capacity_percent", 0) and ai_health.max_queue_size,
+                ))
+
+    # Default: a factual snapshot rather than a canned string.
+    return ("%d events recorded (avg confidence %.1f%%): %d persons, %d vehicles, "
+            "%d high severity. Cameras: %d/%d online. %s" % (
+                totals.get("total", 0),
+                float(totals.get("avg_confidence", 0)) * 100,
+                totals.get("person_events", 0),
+                totals.get("vehicle_events", 0),
+                totals.get("high_sev", 0),
+                len(online), len(cameras),
+                _COPILOT_HELP))
+
+
 @app.route("/api/copilot", methods=["POST"])
+@require_auth
+@require_csrf
 def api_copilot():
-    return jsonify({
-        "response": "Backend integration pending. AI chat functionality is not yet connected to a language model.",
-        "status": "pending"
-    }), 200
+    data = request.get_json(silent=True) or {}
+    question = (data.get("question") or "").strip()
+    if not question:
+        return jsonify({"response": "Please ask a question.", "status": "error"}), 400
+    if len(question) > 500:
+        question = question[:500]
+    try:
+        return jsonify({
+            "response": _copilot_answer(question, _get_user_id()),
+            "status": "success"
+        }), 200
+    except Exception as e:
+        return jsonify({"response": "Unable to answer right now.", "status": "error",
+                        "error": str(e)}), 500
 
 
 @app.route("/settings")
@@ -427,23 +634,28 @@ def settings():
 # FACE REGISTRATION ROUTE
 # ==========================
 @app.route("/register_face", methods=["GET", "POST"])
+@require_auth
+@require_csrf
 def register_face():
     if request.method == "POST":
-        name = request.form.get("name", "")
+        name = request.form.get("name", "").strip()
         file = request.files.get("face_image")
         if file and name:
             filename = f"{secure_filename(name)}_{int(time.time())}.jpg"
-            filepath = os.path.join("dashboard", "static", "faces", filename)
-            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            faces_dir = os.path.join(PROJECT_ROOT, "dashboard", "static", "faces")
+            os.makedirs(faces_dir, exist_ok=True)
+            filepath = os.path.join(faces_dir, filename)
             file.save(filepath)
+            stored_path = os.path.relpath(filepath, PROJECT_ROOT).replace("\\", "/")
 
             try:
-                with get_connection() as conn:
-                    cursor = conn.cursor()
-                    cursor.execute("INSERT INTO known_faces (name, image_path) VALUES (?, ?)", (name, filepath))
-                    conn.commit()
+                with db_write_connection() as conn:
+                    conn.execute(
+                        "INSERT INTO known_faces (user_id, name, image_path) VALUES (?, ?, ?)",
+                        (_get_user_id(), name, stored_path)
+                    )
             except Exception as e:
-                print(f"⚠️ Failed to save face to DB: {e}")
+                print(f"Failed to save face to DB: {e}")
             return redirect(url_for("cameras"))
     return render_template("register_face.html")
 
@@ -481,20 +693,43 @@ def video_feed():
 
 @app.route("/events")
 def events():
-    return jsonify(get_events(user_id=_get_user_id()))
+    """Recent events for the current user.
+
+    Honours the limit and date filters the UI sends; previously all three query
+    parameters were ignored and every response was the same default page.
+    """
+    limit = max(1, min(request.args.get("limit", 20, type=int) or 20, 2000))
+    start_date = request.args.get("start_date") or None
+    end_date = request.args.get("end_date") or None
+    event_types = [t for t in (request.args.get("event_type") or "").split(",") if t] or None
+    severities = [s for s in (request.args.get("severity") or "").split(",") if s] or None
+    cameras = [c for c in (request.args.get("camera") or "").split(",") if c] or None
+
+    return jsonify(get_all_events(
+        limit=limit,
+        user_id=_get_user_id(),
+        start_date=start_date,
+        end_date=end_date,
+        event_types=event_types,
+        severities=severities,
+        cameras=cameras,
+    ))
+
 
 @app.route("/stats")
 def stats():
     return jsonify(get_stats(user_id=_get_user_id()))
 
+
 @app.route("/timeline")
 def timeline():
     return {"timeline": get_timeline(user_id=_get_user_id())}
 
+
 @app.route("/api/storage")
 def api_storage():
     total_size = 0
-    screenshots_dir = os.path.join("evidence", "screenshots")
+    screenshots_dir = os.path.join(PROJECT_ROOT, "evidence", "screenshots")
     if os.path.isdir(screenshots_dir):
         for dirpath, dirnames, filenames in os.walk(screenshots_dir):
             for f in filenames:
@@ -513,7 +748,7 @@ def api_storage():
 def gallery_endpoint():
     try:
         user_id = _get_user_id()
-        with get_connection() as conn:
+        with db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM evidence WHERE user_id = ? ORDER BY id DESC LIMIT 50", (user_id,))
             rows = cursor.fetchall()
@@ -525,16 +760,24 @@ def gallery_endpoint():
 def ai_summary_endpoint():
     try:
         from dashboard.store import get_stats
-        stats = get_stats(user_id=_get_user_id())
+        from database.db import get_event_stats
+        user_id = _get_user_id()
+        stats = get_stats(user_id=user_id)
+        totals = get_event_stats(user_id=user_id)
         risk = "LOW"
         if stats.get("high_severity_incidents", 0) > 5:
             risk = "HIGH"
         elif stats.get("high_severity_incidents", 0) > 0:
             risk = "MEDIUM"
+        # get_stats() never returned 'accuracy'/'avg_confidence', so this
+        # expression always fell through to the hardcoded 92.5.
+        confidence_pct = round(float(totals.get("avg_confidence", 0.0)) * 100, 1)
         return jsonify({
             "risk": risk,
             "detections": stats.get("total_incidents", 0),
-            "confidence": f"{min(stats.get('accuracy', stats.get('avg_confidence', 92.5)), 100):.1f}%",
+            "persons": stats.get("persons", 0),
+            "vehicles": stats.get("vehicles", 0),
+            "confidence": f"{min(confidence_pct, 100):.1f}%",
             "recommendation": "Review high-risk alerts" if risk != "LOW" else "Continue Monitoring"
         }), 200
     except Exception as e:
@@ -592,35 +835,28 @@ def analytics_data():
         from datetime import datetime, timedelta
         
         user_id = _get_user_id()
-        
+
         start_date = request.args.get("start_date")
         end_date = request.args.get("end_date")
         event_types_filter = request.args.get("event_types")
         severity_filter = request.args.get("severity")
         cameras_filter = request.args.get("cameras")
-        
+
         stats = get_stats(user_id=user_id)
-        events = get_events(limit=500, user_id=user_id)
-        
-        if start_date:
-            start_dt = datetime.strptime(start_date, "%Y-%m-%d")
-            events = [e for e in events if e.get("timestamp") and datetime.strptime(e.get("timestamp").split(" ")[0], "%Y-%m-%d") >= start_dt]
-        if end_date:
-            end_dt = datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1)
-            events = [e for e in events if e.get("timestamp") and datetime.strptime(e.get("timestamp").split(" ")[0], "%Y-%m-%d") < end_dt]
-        
-        if event_types_filter:
-            types = [t.strip().lower() for t in event_types_filter.split(",")]
-            events = [e for e in events if any(t in (e.get("event_type") or "").lower() for t in types)]
-        
-        if severity_filter:
-            severities = [s.strip().upper() for s in severity_filter.split(",")]
-            events = [e for e in events if (e.get("severity") or "LOW").upper() in severities]
-        
-        if cameras_filter:
-            cameras = [c.strip() for c in cameras_filter.split(",")]
-            events = [e for e in events if (e.get("camera") or "") in cameras]
-        
+
+        # Filtering happens in SQL rather than on a truncated page of rows:
+        # get_events() ignores `limit`, so "the last 500 events" were actually
+        # the last 20, and any date/type filter applied to that small slice.
+        events = get_all_events(
+            limit=2000,
+            user_id=user_id,
+            start_date=("%s 00:00:00" % start_date) if start_date else None,
+            end_date=("%s 00:00:00" % end_date) if end_date else None,
+            event_types=[t.strip() for t in event_types_filter.split(",")] if event_types_filter else None,
+            severities=[s.strip() for s in severity_filter.split(",")] if severity_filter else None,
+            cameras=[c.strip() for c in cameras_filter.split(",")] if cameras_filter else None,
+        )
+
         total_incidents = len(events)
         people = sum(1 for e in events if "person" in (e.get("event_type") or "").lower())
         vehicles = sum(1 for e in events if "vehicle" in (e.get("event_type") or "").lower())
@@ -669,8 +905,13 @@ def analytics_data():
 @app.route("/reports_data")
 def reports_data():
     try:
-        from services.report_service import ReportService
-        data = ReportService.generate_summary_data(timeframe="daily")
+        from services.report_service import ReportService, TIMEFRAME_DAYS
+        # The Reports page sends the selected period; it was hardcoded to
+        # "daily", so weekly/monthly selectors never changed the numbers.
+        requested = (request.args.get("timeframe") or "daily").lower()
+        timeframe = requested if requested in TIMEFRAME_DAYS else "daily"
+        user_id = _get_user_id()
+        data = ReportService.generate_summary_data(timeframe=timeframe, user_id=user_id)
         
         from database.db import get_all_cameras
         cameras = get_all_cameras(user_id=_get_user_id())
@@ -691,7 +932,7 @@ def reports_data():
         
         storage_bytes = 0
         try:
-            screenshots_dir = os.path.join("evidence", "screenshots")
+            screenshots_dir = os.path.join(PROJECT_ROOT, "evidence", "screenshots")
             if os.path.isdir(screenshots_dir):
                 for dirpath, dirnames, filenames in os.walk(screenshots_dir):
                     for f in filenames:
@@ -719,6 +960,7 @@ def reports_data():
             "total_events": data["metrics"]["total_incidents"],
             "total_evidence": evidence_count,
             "threat_level": "CRITICAL" if data["metrics"].get("high_severity", 0) > 5 else ("MEDIUM" if data["metrics"].get("high_severity", 0) > 0 else "LOW"),
+            "timeframe": timeframe,
             "event_summary": event_summary,
             "camera_summary": camera_summary,
             "evidence": {"images": evidence_count, "today": evidence_today, "storage": f"{storage_mb} MB"},
@@ -734,12 +976,17 @@ def reports_data():
 @app.route("/download_csv")
 def download_csv():
     try:
-        from services.report_service import ReportService
-        csv_data = ReportService.generate_csv_report(timeframe="daily")
+        from services.report_service import ReportService, TIMEFRAME_DAYS
+        requested = (request.args.get("timeframe") or "daily").lower()
+        timeframe = requested if requested in TIMEFRAME_DAYS else "daily"
+        csv_data = ReportService.generate_csv_report(
+            timeframe=timeframe, user_id=_get_user_id()
+        )
+        filename = "sentinelx_report_%s.csv" % timeframe
         return Response(
             csv_data,
             mimetype="text/csv",
-            headers={"Content-Disposition": "attachment;filename=sentinelx_report.csv"}
+            headers={"Content-Disposition": "attachment;filename=%s" % filename}
         )
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -836,7 +1083,7 @@ def api_system_cleanup():
     try:
         cutoff_days = 7
         cutoff = (datetime.now() - timedelta(days=cutoff_days)).strftime("%Y-%m-%d %H:%M:%S")
-        with get_connection() as conn:
+        with db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM evidence WHERE timestamp < ?", (cutoff,))
             deleted = cursor.rowcount
@@ -948,13 +1195,45 @@ def _start_camera_health_monitor():
     print("✔ Camera health monitor started")
 
 
+_camera_services_started = False
+
+
+def start_camera_services():
+    """Starts the camera pipelines and background watchers exactly once.
+
+    Cameras are registered with ``skip_worker=True`` because the detection loop
+    in ``core.engine`` owns inference for every pipeline; starting a per-camera
+    worker here as well would run inference twice on the same frames.
+
+    This is an explicit request, so it always starts. See
+    ``autostart_camera_services()`` for the import-time behaviour.
+    """
+    global _camera_services_started
+    if _camera_services_started:
+        return False
+    _camera_services_started = True
+
+    try:
+        _auto_start_cameras()
+        _register_existing_video_evidence()
+        camera_manager.start_video_watcher()
+        _start_camera_health_monitor()
+    except Exception as e:
+        print(f"Camera auto-start notice: {e}")
+    return True
+
+
+def autostart_camera_services():
+    """Import-time camera startup. Honours SENTINELX_AUTOSTART=0."""
+    if os.getenv("SENTINELX_AUTOSTART", "1") == "0":
+        return False
+    return start_camera_services()
+
+
 try:
-    _auto_start_cameras()
-    _register_existing_video_evidence()
-    camera_manager.start_video_watcher()
-    _start_camera_health_monitor()
+    autostart_camera_services()
 except Exception as e:
-    print(f"⚠️ Camera auto-start notice: {e}")
+    print(f"Camera auto-start notice: {e}")
 
 
 if __name__ == "__main__":

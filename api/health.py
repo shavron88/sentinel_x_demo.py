@@ -4,7 +4,7 @@ import sqlite3
 import logging
 from flask import Blueprint, jsonify, session
 from database.db import DB_PATH, get_all_cameras
-from api.auth import is_authenticated
+from api.auth import is_authenticated, get_current_user_id
 
 health_bp = Blueprint("health_bp", __name__)
 APP_START_TIME = time.time()
@@ -48,8 +48,8 @@ def get_system_health():
     ram = psutil.virtual_memory()
     disk = psutil.disk_usage('/')
 
-    # 2. Camera Metrics Aggregation
-    cameras = get_all_cameras()
+    # 2. Camera Metrics Aggregation (scoped to the requesting user)
+    cameras = get_all_cameras(user_id=get_current_user_id())
     total_cams = len(cameras)
     online_cams = sum(1 for c in cameras if c.get("status") == "ONLINE")
 

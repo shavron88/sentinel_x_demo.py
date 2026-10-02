@@ -1,42 +1,34 @@
 import json
 import logging
-from database.db import get_connection, get_all_cameras, save_camera
+from database.db import db_connection, db_write_connection, save_camera
 
 logger = logging.getLogger("SentinelX.Settings")
 
 class SettingsStore:
-    """Persists user and system settings in SQLite."""
+    """Persists user and system settings in SQLite.
 
-    @staticmethod
-    def _get_table():
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS settings (
-                key TEXT PRIMARY KEY,
-                value TEXT NOT NULL,
-                user_id INTEGER
-            )
-        """)
-        conn.commit()
-        return conn, cursor
+    The ``settings`` table is created and migrated by ``database.db.init_db`` and
+    uses PRIMARY KEY (key, user_id) so each user has an independent namespace.
+    """
 
     @staticmethod
     def get_setting(key, default=None, user_id=None):
         try:
-            conn, cursor = SettingsStore._get_table()
-            if user_id is not None:
-                cursor.execute("SELECT value FROM settings WHERE key = ? AND user_id = ?", (key, user_id))
-            else:
-                cursor.execute("SELECT value FROM settings WHERE key = ?", (key,))
-            row = cursor.fetchone()
-            conn.close()
-            if row:
-                try:
-                    return json.loads(row['value'])
-                except (json.JSONDecodeError, TypeError):
-                    return row['value']
-            return default
+            with db_connection() as conn:
+                if user_id is not None:
+                    row = conn.execute(
+                        "SELECT value FROM settings WHERE key = ? AND user_id = ?", (key, user_id)
+                    ).fetchone()
+                else:
+                    row = conn.execute(
+                        "SELECT value FROM settings WHERE key = ? ORDER BY user_id LIMIT 1", (key,)
+                    ).fetchone()
+                if row:
+                    try:
+                        return json.loads(row['value'])
+                    except (json.JSONDecodeError, TypeError):
+                        return row['value']
+                return default
         except Exception as e:
             logger.error(f"Error getting setting {key}: {e}")
             return default
@@ -44,19 +36,13 @@ class SettingsStore:
     @staticmethod
     def set_setting(key, value, user_id=None):
         try:
-            conn, cursor = SettingsStore._get_table()
-            if user_id is not None:
-                cursor.execute(
+            stored = value if isinstance(value, str) else json.dumps(value)
+            effective_user = 1 if user_id is None else user_id
+            with db_write_connection() as conn:
+                conn.execute(
                     "INSERT OR REPLACE INTO settings (key, value, user_id) VALUES (?, ?, ?)",
-                    (key, json.dumps(value) if not isinstance(value, str) else value, user_id)
+                    (key, stored, effective_user)
                 )
-            else:
-                cursor.execute(
-                    "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
-                    (key, json.dumps(value) if not isinstance(value, str) else value)
-                )
-            conn.commit()
-            conn.close()
             return True
         except Exception as e:
             logger.error(f"Error setting {key}: {e}")
@@ -65,20 +51,20 @@ class SettingsStore:
     @staticmethod
     def get_all_settings(user_id=None):
         try:
-            conn, cursor = SettingsStore._get_table()
-            if user_id is not None:
-                cursor.execute("SELECT key, value FROM settings WHERE user_id = ?", (user_id,))
-            else:
-                cursor.execute("SELECT key, value FROM settings")
-            rows = cursor.fetchall()
-            conn.close()
-            settings = {}
-            for row in rows:
-                try:
-                    settings[row['key']] = json.loads(row['value'])
-                except (json.JSONDecodeError, TypeError):
-                    settings[row['key']] = row['value']
-            return settings
+            with db_connection() as conn:
+                if user_id is not None:
+                    rows = conn.execute(
+                        "SELECT key, value FROM settings WHERE user_id = ?", (user_id,)
+                    ).fetchall()
+                else:
+                    rows = conn.execute("SELECT key, value FROM settings").fetchall()
+                settings = {}
+                for row in rows:
+                    try:
+                        settings[row['key']] = json.loads(row['value'])
+                    except (json.JSONDecodeError, TypeError):
+                        settings[row['key']] = row['value']
+                return settings
         except Exception as e:
             logger.error(f"Error getting all settings: {e}")
             return {}

@@ -1,12 +1,22 @@
 import logging
 
 try:
-    from database.db import get_all_events, get_all_cameras
-except ImportError:
-    def get_all_events(limit=50):
+    from database.db import (
+        get_all_events,
+        get_all_cameras,
+        get_event_stats,
+        PERSON_EVENT_TYPES,
+        VEHICLE_EVENT_TYPES,
+    )
+except ImportError:  # pragma: no cover - defensive
+    def get_all_events(limit=50, user_id=None, **kwargs):
         return []
-    def get_all_cameras():
+    def get_all_cameras(user_id=None):
         return []
+    def get_event_stats(user_id=None, **kwargs):
+        return {}
+    PERSON_EVENT_TYPES = ()
+    VEHICLE_EVENT_TYPES = ()
 
 logger = logging.getLogger("SentinelX.Store")
 
@@ -63,13 +73,20 @@ def get_stats(user_id=None):
 
 
 def _compute_db_stats(user_id=None):
-    events = get_all_events(limit=100, user_id=user_id)
+    """Builds the dashboard KPI payload.
+
+    Incident/person/vehicle counters come from the ``event_stats_daily``
+    rollup (all-time) instead of scanning the last 100 event rows, which both
+    capped the counters at 100 and cost a full scan per poll.
+    """
     cameras = get_all_cameras(user_id=user_id)
+    totals = get_event_stats(user_id=user_id)
 
     total_cameras = len(cameras)
-    online_cameras = sum(1 for c in cameras if c.get("status") == "ONLINE")
-    total_events = len(events)
-    high_severity_count = sum(1 for e in events if e.get("severity") == "HIGH")
+    online_cameras = sum(1 for c in cameras if (c.get("status") or "").upper() == "ONLINE")
+
+    total_events = int(totals.get("total", 0) or 0)
+    high_severity_count = int(totals.get("high_sev", 0) or 0)
 
     threat_level = "LOW"
     if high_severity_count > 5:
@@ -79,11 +96,8 @@ def _compute_db_stats(user_id=None):
 
     avg_fps = 0.0
     if total_cameras > 0:
-        fps_sum = sum(c.get("fps", 0.0) for c in cameras)
+        fps_sum = sum(float(c.get("fps") or 0.0) for c in cameras)
         avg_fps = round(fps_sum / total_cameras, 1)
-
-    person_count = sum(1 for e in events if "PERSON" in (e.get("event_type") or "").upper())
-    vehicle_count = sum(1 for e in events if "VEHICLE" in (e.get("event_type") or "").upper())
 
     return {
         "total_cameras": total_cameras,
@@ -92,8 +106,8 @@ def _compute_db_stats(user_id=None):
         "high_severity_incidents": high_severity_count,
         "threat_level": threat_level,
         "fps": avg_fps,
-        "persons": person_count,
-        "vehicles": vehicle_count,
+        "persons": int(totals.get("person_events", 0) or 0),
+        "vehicles": int(totals.get("vehicle_events", 0) or 0),
         "alerts": high_severity_count,
-        "threat": threat_level
+        "threat": threat_level,
     }

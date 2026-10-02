@@ -39,7 +39,13 @@ def _update_threat_level(current_threat: str, severity: str) -> str:
     return current_threat
 
 
-def run_engine():
+def run_engine(user_id=1, stop_event=None):
+    """Main detection/event loop.
+
+    Runs until ``stop_event`` is set (a threading.Event) or the process exits.
+    ``user_id`` attributes every event this engine records to a tenant; it was
+    previously always the hardcoded default of 1.
+    """
     print("========== SENTINELX ENGINE STARTED ==========")
 
     camera = CameraManager()
@@ -69,7 +75,7 @@ def run_engine():
     camera.start_video_watcher()
 
     try:
-        while True:
+        while not (stop_event is not None and stop_event.is_set()):
             pipelines = camera.pipelines
             if not pipelines:
                 now = time.time()
@@ -80,6 +86,12 @@ def run_engine():
                 continue
 
             for cam_name, pipeline in pipelines.items():
+                # Also check inside the per-camera loop: inference on CPU can
+                # take seconds per frame, so a shutdown requested mid-sweep
+                # should not have to wait for every remaining camera.
+                if stop_event is not None and stop_event.is_set():
+                    break
+
                 if not pipeline.is_running or pipeline.engine is None:
                     continue
 
@@ -119,8 +131,11 @@ def run_engine():
                         cls_id = det["class_id"]
                         track_id = det.get("track_id")
                         x1, y1, x2, y2 = det["bbox"]
-                        cx = ((x1 + x2) / 2) / infer_h
-                        cy = ((y1 + y2) / 2) / infer_w
+                        # Detections are produced at (infer_w, infer_h); normalise
+                        # x by width and y by height. These were previously
+                        # swapped, which skewed every zone/heatmap position.
+                        cx = ((x1 + x2) / 2) / infer_w
+                        cy = ((y1 + y2) / 2) / infer_h
 
                         if cls_id == 0:
                             person_count += 1
@@ -155,26 +170,25 @@ def run_engine():
                         x1, y1, x2, y2 = [int(v * scale_x) if i % 2 == 0 else int(v * scale_y) for i, v in enumerate(det["bbox"])]
                         cv2.rectangle(clean_frame, (x1, y1), (x2, y2), (255, 255, 0), 2)
 
-                    if should_infer:
-                        crowd_event = pipeline.crowd_detector.detect(person_count)
-                        if crowd_event:
-                            events.append(crowd_event)
+                    crowd_event = pipeline.crowd_detector.detect(person_count)
+                    if crowd_event:
+                        events.append(crowd_event)
 
-                        detector_events = pipeline.event_manager.process(detections)
-                        if detector_events:
-                            events.extend(detector_events)
+                    detector_events = pipeline.event_manager.process(detections)
+                    if detector_events:
+                        events.extend(detector_events)
 
-                        abandoned_events = pipeline.abandoned_detector.update(detections)
-                        if abandoned_events:
-                            events.extend(abandoned_events)
+                    abandoned_events = pipeline.abandoned_detector.update(detections)
+                    if abandoned_events:
+                        events.extend(abandoned_events)
 
-                        fall_events = pipeline.fall_detector.detect(detections)
-                        if fall_events:
-                            events.extend(fall_events)
+                    fall_events = pipeline.fall_detector.detect(detections)
+                    if fall_events:
+                        events.extend(fall_events)
 
-                        weapon_events = pipeline.weapon_detector.detect(detections)
-                        if weapon_events:
-                            events.extend(weapon_events)
+                    weapon_events = pipeline.weapon_detector.detect(detections)
+                    if weapon_events:
+                        events.extend(weapon_events)
 
                 now = time.time()
                 if cam_name not in fps_trackers:
@@ -229,7 +243,8 @@ def run_engine():
                         confidence=event.get("confidence", 0.0),
                         duration=int(duration),
                         track_id=track_id if track_id is not None else -1,
-                        metadata={"duration": int(duration)}
+                        metadata={"duration": int(duration)},
+                        user_id=user_id
                     )
 
                     add_event({
@@ -260,7 +275,8 @@ def run_engine():
                             event["type"],
                             track_id if track_id is not None else -1,
                             event_id=event_id,
-                            camera=cam_name
+                            camera=cam_name,
+                            user_id=user_id
                         )
 
                 set_frame(clean_frame, camera_name=cam_name)

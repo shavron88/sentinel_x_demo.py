@@ -9,7 +9,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 # Imports
-from dashboard.app import app
+from dashboard.app import app, start_background_services, start_camera_services
 
 # Optional DB and Core Engine setup
 try:
@@ -18,29 +18,51 @@ try:
 except ImportError:
     pass
 
-try:
-    from core.engine import run_engine
-    HAS_ENGINE = True
-except ImportError:
-    HAS_ENGINE = False
+
+def _port():
+    return int(os.getenv("PORT", "5000"))
 
 
-def start_ai():
-    from core.engine import run_engine
-    run_engine()
+def _host():
+    return os.getenv("HOST", "127.0.0.1")
 
 
-if __name__ == "__main__":
-    if HAS_ENGINE:
-        ai_thread = Thread(target=start_ai, daemon=True)
-        ai_thread.start()
-        print("✔ AI Engine Started in background thread.")
+def shutdown():
+    """Stops the detection engine and releases camera handles."""
+    stop_event = app.config.get("SENTINELX_STOP_EVENT")
+    if stop_event is not None:
+        stop_event.set()
+    thread = app.config.get("SENTINELX_ENGINE_THREAD")
+    if thread is not None:
+        thread.join(timeout=60)
+    print("SentinelX stopped cleanly.")
+
+
+def serve():
+    """Starts the services and serves the dashboard.
+
+    ``dashboard.app`` already starts the detection engine and camera services on
+    import; calling the starters here too is harmless because they are
+    idempotent, and it keeps this entrypoint correct if autostart is disabled.
+    """
+    start_background_services()
+    start_camera_services()
+
+    from werkzeug.serving import make_server
 
     print("====================================")
     print("   SentinelX AI Dashboard Starting   ")
-    print("   Open Browser: http://127.0.0.1:5000")
+    print(f"   Open Browser: http://{_host()}:{_port()}")
     print("====================================")
 
-    from werkzeug.serving import make_server
-    server = make_server("127.0.0.1", 5000, app, threaded=True)
-    server.serve_forever()
+    server = make_server(_host(), _port(), app, threaded=True)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\nShutting down SentinelX...")
+    finally:
+        shutdown()
+
+
+if __name__ == "__main__":
+    serve()

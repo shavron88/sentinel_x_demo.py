@@ -17,6 +17,10 @@ docstring_parser==0.18.0
 fastapi==0.115.0
 filelock==3.29.5
 Flask==3.0.3
+# Required by services/socket_manager.py and the dashboard's SocketIO usage.
+Flask-SocketIO==5.3.6
+# Production WSGI server used by the Dockerfile CMD.
+gunicorn==23.0.0
 fonttools==4.63.0
 fsspec==2026.6.0
 h11==0.16.0

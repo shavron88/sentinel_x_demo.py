@@ -186,10 +186,16 @@ async function loadSystemHealthPanel(container) {
     const response = await fetch("/api/v1/health");
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
-    
+
     const system = data.system || {};
     const ai = data.ai_engine || {};
-    
+
+    // /api/v1/health reports cpu_usage_percent / ram_usage_percent /
+    // disk_usage_percent -- there is no system.cpu / system.ram / system.gpu, so
+    // the panel used to render "--" for every metric.
+    const pct = (value) => (typeof value === "number" ? value.toFixed(1) : "--");
+    const aiHealthy = ["HEALTHY", "Healthy", "RUNNING", "Running"].includes(ai.status);
+
     container.innerHTML = `
         <div class="panel-header">
             <h3>🖥 System Health</h3>
@@ -198,19 +204,19 @@ async function loadSystemHealthPanel(container) {
             <div class="mini-health-list">
                 <div class="mini-health-item">
                     <span>CPU</span>
-                    <span class="mini-health-value">${system.cpu || '--'}%</span>
+                    <span class="mini-health-value">${pct(system.cpu_usage_percent)}%</span>
                 </div>
                 <div class="mini-health-item">
                     <span>RAM</span>
-                    <span class="mini-health-value">${system.ram || '--'}%</span>
+                    <span class="mini-health-value">${pct(system.ram_usage_percent)}%</span>
                 </div>
                 <div class="mini-health-item">
-                    <span>GPU</span>
-                    <span class="mini-health-value">${system.gpu || '--'}%</span>
+                    <span>Disk</span>
+                    <span class="mini-health-value">${pct(system.disk_usage_percent)}%</span>
                 </div>
                 <div class="mini-health-item">
                     <span>AI Engine</span>
-                    <span class="mini-health-value ${ai.status === 'HEALTHY' ? 'healthy' : 'unhealthy'}">${ai.status || 'UNKNOWN'}</span>
+                    <span class="mini-health-value ${aiHealthy ? 'healthy' : 'unhealthy'}">${escapeHtml(ai.status || 'UNKNOWN')}</span>
                 </div>
             </div>
         </div>

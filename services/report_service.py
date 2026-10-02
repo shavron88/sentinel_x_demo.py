@@ -1,33 +1,34 @@
 import csv
 import io
-import json
 import logging
 from datetime import datetime, timedelta
-from database.db import get_connection
+
+from database.db import get_all_events
 
 logger = logging.getLogger("SentinelX.ReportService")
+
+TIMEFRAME_DAYS = {"daily": 1, "weekly": 7, "monthly": 30, "yearly": 365}
+MAX_REPORT_ROWS = 20000
+
 
 class ReportService:
     """Generates Structured Exports (CSV, PDF Data, Aggregated Summaries)."""
 
     @staticmethod
-    def _fetch_events_for_timeframe(days=1):
-        """Fetches events from DB based on rolling days filter."""
+    def _fetch_events_for_timeframe(days=1, user_id=None):
+        """Fetches the current user's events within a rolling window."""
         cutoff = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
-        with get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                "SELECT * FROM events WHERE timestamp >= ? ORDER BY id DESC",
-                (cutoff,)
-            )
-            return [dict(row) for row in cursor.fetchall()]
+        return get_all_events(limit=MAX_REPORT_ROWS, user_id=user_id, start_date=cutoff)
+
+    @staticmethod
+    def _resolve_days(timeframe):
+        return TIMEFRAME_DAYS.get(str(timeframe or "daily").lower(), 1)
 
     @classmethod
-    def generate_csv_report(cls, timeframe="daily"):
+    def generate_csv_report(cls, timeframe="daily", user_id=None):
         """Generates an in-memory CSV file stream."""
-        days_map = {"daily": 1, "weekly": 7, "monthly": 30}
-        days = days_map.get(timeframe.lower(), 1)
-        events = cls._fetch_events_for_timeframe(days)
+        days = cls._resolve_days(timeframe)
+        events = cls._fetch_events_for_timeframe(days, user_id=user_id)
 
         output = io.StringIO()
         writer = csv.writer(output)
@@ -37,6 +38,10 @@ class ReportService:
 
         # Data Rows
         for e in events:
+            try:
+                confidence = "%.2f" % float(e.get("confidence") or 0.0)
+            except (TypeError, ValueError):
+                confidence = "0.00"
             writer.writerow([
                 e.get("id"),
                 e.get("timestamp"),
@@ -44,7 +49,7 @@ class ReportService:
                 e.get("severity"),
                 e.get("camera"),
                 e.get("zone"),
-                f"{e.get('confidence', 0.0):.2f}",
+                confidence,
                 e.get("duration", 0.0)
             ])
 
@@ -52,16 +57,15 @@ class ReportService:
         return output.getvalue()
 
     @classmethod
-    def generate_summary_data(cls, timeframe="daily"):
+    def generate_summary_data(cls, timeframe="daily", user_id=None):
         """Generates structured metrics summary for UI rendering or PDF generation."""
-        days_map = {"daily": 1, "weekly": 7, "monthly": 30}
-        days = days_map.get(timeframe.lower(), 1)
-        events = cls._fetch_events_for_timeframe(days)
+        days = cls._resolve_days(timeframe)
+        events = cls._fetch_events_for_timeframe(days, user_id=user_id)
 
         total_incidents = len(events)
-        critical_count = sum(1 for e in events if e.get("severity") == "HIGH")
-        medium_count = sum(1 for e in events if e.get("severity") == "MEDIUM")
-        low_count = sum(1 for e in events if e.get("severity") == "LOW")
+        critical_count = sum(1 for e in events if (e.get("severity") or "").upper() in ("HIGH", "CRITICAL"))
+        medium_count = sum(1 for e in events if (e.get("severity") or "").upper() == "MEDIUM")
+        low_count = sum(1 for e in events if (e.get("severity") or "").upper() == "LOW")
 
         # Top offending camera & zone
         cam_counts = {}

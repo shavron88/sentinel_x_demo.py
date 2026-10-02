@@ -36,7 +36,7 @@ async function sendQuestion() {
         
     } catch (err) {
         console.error("Copilot error:", err);
-        loadingMsg.textContent = "Backend integration pending. AI chat is not yet connected.";
+        loadingMsg.textContent = "Unable to reach the analytics service. Please try again.";
         loadingMsg.className = "ai-message error";
     }
     

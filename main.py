@@ -167,8 +167,29 @@ def main():
 
     if args.flask:
         print("[SENTINEL-X] Starting Flask Dashboard...")
-        from dashboard.app import app
-        app.run(host="0.0.0.0", port=5000, debug=True)
+        from dashboard.app import app, start_background_services, start_camera_services
+
+        # The detection engine and camera pipelines must run here too, otherwise
+        # `--flask` serves a dashboard that never produces detections or events.
+        start_background_services()
+        start_camera_services()
+
+        host = os.getenv("HOST", "0.0.0.0")
+        port = int(os.getenv("PORT", "5000"))
+        # debug=True exposes the Werkzeug console (remote code execution), so it
+        # is opt-in via FLASK_DEBUG instead of hardcoded on.
+        debug = os.getenv("FLASK_DEBUG", "0").lower() in ("1", "true", "yes")
+        try:
+            app.run(host=host, port=port, debug=debug, threaded=True)
+        except KeyboardInterrupt:
+            print("\n[SENTINEL-X] Shutting down...")
+        finally:
+            stop_event = app.config.get("SENTINELX_STOP_EVENT")
+            if stop_event is not None:
+                stop_event.set()
+            thread = app.config.get("SENTINELX_ENGINE_THREAD")
+            if thread is not None:
+                thread.join(timeout=60)
         return
 
     pipeline = SentinelXPipeline(demo=args.demo)

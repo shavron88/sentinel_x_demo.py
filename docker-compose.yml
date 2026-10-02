@@ -28,7 +28,7 @@ services:
       - EVENT_COOLDOWN=600
       - LOITERING_THRESHOLD=30
       - CROWD_THRESHOLD=5
-      - MAX_QUEUE_SIZE=30
+      - MAX_QUEUE_SIZE=10
       - RTSP_TIMEOUT_MS=5000
       - RTSP_BUFFER_SIZE=1
       - RTSP_TRANSPORT=tcp
@@ -36,7 +36,9 @@ services:
       - /dev/video0:/dev/video0
     shm_size: '2gb'
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000/api/v1/health')"]
+      # /health is public; /api/v1/health is session-authenticated and would
+      # return 401 here, marking a healthy container as unhealthy.
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:5000/health', timeout=5).status == 200 else 1)"]
       interval: 30s
       timeout: 10s
       start_period: 40s

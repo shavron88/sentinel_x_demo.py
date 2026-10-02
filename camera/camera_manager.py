@@ -57,6 +57,14 @@ class CameraStream:
 
         self._thread = None
         self._lock = threading.Lock()
+        # Serializes every touch of self.cap (open, read, seek, release).
+        # Releasing a cv2.VideoCapture while another thread is inside read()
+        # trips an FFmpeg assertion (libavcodec/pthread_frame.c) and aborts
+        # the whole process, so the handle is never used outside this lock.
+        self._cap_lock = threading.RLock()
+        # Bounded wait for the capture thread to leave read() during stop().
+        # Must exceed the 5s in-loop read-timeout guard.
+        self.stop_join_timeout = 12.0
 
         # Detect if source is a video file (for EOF handling)
         self._is_video = self._is_video_file()
@@ -86,13 +94,28 @@ class CameraStream:
         self.is_running = False
         if self.is_recording:
             self.stop_recording()
+        # Let the capture thread leave read() before releasing its handle:
+        # releasing across threads is what crashes FFmpeg.
+        thread = self._thread
+        if thread is not None and thread.is_alive():
+            thread.join(timeout=self.stop_join_timeout)
+            if thread.is_alive():
+                logger.warning(
+                    f"[{self.name}] capture thread still busy after "
+                    f"{self.stop_join_timeout}s; leaving handle to the capture "
+                    f"thread to release (cross-thread release is unsafe)."
+                )
+                self.status = "OFFLINE"
+                self._sync_db()
+                return
+        self._thread = None
         self._safe_release()
         self.status = "OFFLINE"
         self._sync_db()
 
     def restart(self):
         """Restarts the underlying cv2 capture connection."""
-        with self.lock:
+        with self._cap_lock:
             if self.cap:
                 try:
                     self.cap.release()
@@ -225,7 +248,8 @@ class CameraStream:
                         backend = cv2.CAP_FFMPEG
                     else:
                         backend = 0
-                    self.cap = self._open_capture(target, backend)
+                    with self._cap_lock:
+                        self.cap = self._open_capture(target, backend)
 
                     if self.cap is not None and self._is_rtsp():
                         self._configure_rtsp(self.cap)
@@ -253,7 +277,12 @@ class CameraStream:
                             vfps = self.cap.get(cv2.CAP_PROP_FPS)
                             self._video_frame_delay = (1.0 / vfps) if (vfps and vfps > 0) else 0.0
 
-                ret, frame = self.cap.read()
+                with self._cap_lock:
+                    cap = self.cap
+                    if cap is None or not cap.isOpened():
+                        ret, frame = False, None
+                    else:
+                        ret, frame = cap.read()
                 read_time = time.time() - ping_start
                 self.latency = round(read_time * 1000, 2)  # ms
 
@@ -274,14 +303,16 @@ class CameraStream:
                     # pipeline keeps running; only the capture position resets.
                     if self._is_video:
                         logger.info(f"[{self.name}] Video file reached EOF; looping to frame 0.")
-                        if self.cap and self.cap.isOpened():
-                            seek_ok = self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                            if seek_ok:
-                                self.status = "ONLINE"
-                                self.network_errors = 0
-                                self.reconnects = 0
-                                self._sync_db()
-                                continue
+                        with self._cap_lock:
+                            cap = self.cap
+                            seek_ok = bool(cap is not None and cap.isOpened()
+                                           and cap.set(cv2.CAP_PROP_POS_FRAMES, 0))
+                        if seek_ok:
+                            self.status = "ONLINE"
+                            self.network_errors = 0
+                            self.reconnects = 0
+                            self._sync_db()
+                            continue
                         # If seek failed, release and let the top of the loop reopen
                         self.status = "RECONNECTING"
                         self._safe_release()
@@ -359,13 +390,18 @@ class CameraStream:
             return self.latest_frame.copy() if self.latest_frame is not None else None
 
     def _safe_release(self):
-        """Releases the cv2 capture handle defensively (DShow can raise on release)."""
-        if self.cap:
-            try:
-                self.cap.release()
-            except Exception as e:
-                logger.warning(f"[{self.name}] cv2 capture release error (ignored): {e}")
-        self.cap = None
+        """Releases the cv2 capture handle defensively (DShow can raise on release).
+
+        Runs under _cap_lock so a release can never overlap a read() in the
+        capture thread -- that race aborts the interpreter inside FFmpeg.
+        """
+        with self._cap_lock:
+            if self.cap:
+                try:
+                    self.cap.release()
+                except Exception as e:
+                    logger.warning(f"[{self.name}] cv2 capture release error (ignored): {e}")
+            self.cap = None
 
     def take_snapshot(self):
         """Captures current frame and saves image file."""
@@ -410,7 +446,12 @@ class CameraStream:
 
         self.is_recording = False
         if self.video_writer:
-            self.video_writer.release()
+            # VideoWriter.release() can raise (codec/driver teardown); never let
+            # it strand the writer handle or mask the caller's return value.
+            try:
+                self.video_writer.release()
+            except Exception as e:
+                logger.warning(f"[{self.name}] VideoWriter release error (ignored): {e}")
             self.video_writer = None
 
         saved_file = self.recording_filepath
@@ -803,7 +844,11 @@ class CameraManager:
             cls._instance._preprocessor = VideoPreprocessor()
             cls._instance._shared_engine = None
             cls._instance._shared_engine_health = None
-            cls._instance._default_camera_created = True
+            # Must start False: _ensure_default_camera() is guarded by this
+            # flag, and seeding it True here meant the default Camera_01 was
+            # never created for a fresh process.
+            cls._instance._default_camera_created = False
+            cls._instance._camera_owners = {}
         return cls._instance
 
     def _get_shared_engine(self):
@@ -833,6 +878,20 @@ class CameraManager:
                 shared_engine=shared_engine,
             )
             self._default_camera_created = True
+            self._camera_owners["Camera_01"] = self._current_user_id
+            # Persist it so the camera survives a restart and keeps its owner.
+            if self._current_user_id:
+                try:
+                    from database.db import save_camera
+                    save_camera(
+                        name="Camera_01",
+                        stream_url="0",
+                        location="Main Entrance",
+                        status="ONLINE",
+                        user_id=self._current_user_id,
+                    )
+                except Exception as e:
+                    print(f"Could not persist default camera for user {self._current_user_id}: {e}")
             return pipeline
         return self.pipelines.get("Camera_01")
 
@@ -897,14 +956,18 @@ class CameraManager:
         self.stop_all()
         self._current_user_id = user_id
         self._default_camera_created = False
+        self._camera_owners = {}
         shared_engine = self._get_shared_engine()
 
         try:
             from database.db import get_all_cameras
             cameras = get_all_cameras(user_id=user_id)
             for cam in cameras:
+                name = cam.get("name", "")
+                if not name:
+                    continue
                 self.add_camera(
-                    name=cam.get("name", ""),
+                    name=name,
                     ip_url=cam.get("stream_url", ""),
                     zone=cam.get("location", "General Area"),
                     auto_start=True,
@@ -913,8 +976,29 @@ class CameraManager:
                     skip_worker=True,
                     shared_engine=shared_engine,
                 )
+                self._camera_owners[name] = user_id
+
+            # A user with no configured cameras still needs a usable feed, and
+            # the pipeline it is created from must be recorded against that
+            # user -- otherwise the camera shows up in every tenant's UI.
+            if not self.pipelines:
+                pipeline = self._ensure_default_camera()
+                if pipeline is not None:
+                    self._camera_owners[pipeline.name] = user_id
         except Exception as e:
             print(f"Error loading cameras for user {user_id}: {e}")
+
+    def get_camera_owner(self, name):
+        """Returns the user_id a running camera belongs to (None if unknown)."""
+        return getattr(self, "_camera_owners", {}).get(name)
+
+    def get_status_for_user(self, user_id):
+        """Running-pipeline status filtered to the cameras owned by a user."""
+        return {
+            name: status
+            for name, status in self.get_all_status().items()
+            if getattr(self, "_camera_owners", {}).get(name) == user_id
+        }
 
     def add_camera(self, name, ip_url, zone="DEFAULT", rtsp_config=None, reconnect_delay=5, max_queue_size=30, auto_start=True, validator=None, preprocessor=None, skip_worker=False, shared_engine=None):
         """Adds a new camera with its own independent pipeline."""

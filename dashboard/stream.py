@@ -76,24 +76,42 @@ def _update_fps():
         _last_fps_time = time.time()
 
 
-def _draw_status_overlay(frame, camera_name="Camera", status="ONLINE", fps=0.0, queue_size=0):
-    """Draws status information, timestamp, and checks against registered faces."""
-    try:
-        from database.db import get_connection
-        with get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT name FROM known_faces")
-            known_faces = cursor.fetchall()
+_known_faces_cache = []
+_known_faces_cached_at = 0.0
+_KNOWN_FACES_TTL = 30.0
 
-            # Simple UI text integration for known faces overlay test
-            y_offset = 60
-            for face in known_faces:
-                name = face["name"] if isinstance(face, dict) else face[0]
-                cv2.putText(frame, f"Target: {name}", (20, y_offset),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
-                y_offset += 25
+
+def _get_known_face_names():
+    """Returns registered face names, cached for _KNOWN_FACES_TTL seconds.
+
+    The overlay runs for every frame of every MJPEG stream; querying SQLite on
+    each frame added a database round trip per frame per viewer. The roster of
+    registered faces changes only when someone registers a new one.
+    """
+    global _known_faces_cache, _known_faces_cached_at
+    now = time.time()
+    if _known_faces_cache and (now - _known_faces_cached_at) < _KNOWN_FACES_TTL:
+        return _known_faces_cache
+    try:
+        from database.db import db_connection
+        with db_connection() as conn:
+            rows = conn.execute("SELECT name FROM known_faces").fetchall()
+        _known_faces_cache = [r["name"] for r in rows if r["name"]]
+        _known_faces_cached_at = now
     except Exception as e:
         logger.debug(f"Face overlay lookup notice: {e}")
+        _known_faces_cached_at = now
+    return _known_faces_cache
+
+
+def _draw_status_overlay(frame, camera_name="Camera", status="ONLINE", fps=0.0, queue_size=0):
+    """Draws status information, timestamp, and checks against registered faces."""
+    # Simple UI text integration for known faces overlay test
+    y_offset = 60
+    for name in _get_known_face_names():
+        cv2.putText(frame, f"Target: {name}", (20, y_offset),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+        y_offset += 25
 
     # Standard status header info
     cv2.putText(frame, f"{camera_name} | Status: {status} | FPS: {fps}", (20, 30),

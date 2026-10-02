@@ -10,7 +10,16 @@ import random
 from datetime import datetime, timedelta
 from flask import session, request, jsonify
 
-DB_PATH = "sentinelx.db"
+# Absolute, project-root-resolved path shared with database.db. This module
+# previously hardcoded a CWD-relative "sentinelx.db", so it read and wrote a
+# *different* database file from the rest of the application (which is how
+# accounts created via signup could fail to log in).
+try:
+    from config import DB_PATH
+except Exception:  # pragma: no cover
+    DB_PATH = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sentinelx.db")
+
 DEMO_USERNAME = os.getenv("SENTINELX_USER", "sentinelx_admin")
 DEMO_PASSWORD_HASH = hashlib.sha256(
     os.getenv("SENTINELX_PASSWORD", "SentinelX_SecurePassword2026!").encode()
@@ -19,13 +28,25 @@ DEMO_PASSWORD_HASH = hashlib.sha256(
 SESSION_TIMEOUT_MINUTES = int(os.getenv("SESSION_TIMEOUT", "60"))
 RATE_LIMIT_WINDOW_SECONDS = 60
 RATE_LIMIT_MAX_REQUESTS = 60
-_rate_limit_store = {}
 
-# Temporary store for pending OTP verifications { email: {"otp": "123456", "expires": timestamp, "username": ..., "password_hash": ...} }
+# Temporary store for pending OTP verifications
+# { email: {"otp": "123456", "expires": timestamp, "username": ..., "password_hash": ...} }
 _pending_otp_store = {}
+OTP_TTL_SECONDS = 600
+MAX_PENDING_OTPS = 512
+
+# Reuse the bounded, lock-protected limiter from database.db instead of keeping
+# a second unbounded copy of the same logic.
+try:
+    from database.db import _check_rate_limit as _shared_check_rate_limit
+except Exception:  # pragma: no cover
+    _shared_check_rate_limit = None
+    _rate_limit_store = {}
 
 
 def _check_rate_limit(key):
+    if _shared_check_rate_limit is not None:
+        return _shared_check_rate_limit(key)
     now = time.time()
     window_start = now - RATE_LIMIT_WINDOW_SECONDS
     if key not in _rate_limit_store:
@@ -35,6 +56,23 @@ def _check_rate_limit(key):
         return False
     _rate_limit_store[key].append(now)
     return True
+
+
+def _prune_pending_otps(now=None):
+    """Drops expired OTP entries and caps the store size.
+
+    ``_pending_otp_store`` was only ever appended to, so every signup attempt
+    leaked an entry for the lifetime of the process.
+    """
+    now = time.time() if now is None else now
+    for email in [e for e, v in _pending_otp_store.items()
+                  if v.get("expires", 0) < now]:
+        _pending_otp_store.pop(email, None)
+
+    if len(_pending_otp_store) > MAX_PENDING_OTPS:
+        ordered = sorted(_pending_otp_store.items(), key=lambda kv: kv[1].get("expires", 0))
+        for email, _ in ordered[:len(_pending_otp_store) - MAX_PENDING_OTPS]:
+            _pending_otp_store.pop(email, None)
 
 
 def is_authenticated():
@@ -164,6 +202,8 @@ def signup(username, password, email):
 
 def verify_otp_and_register(email, otp_code):
     """Step 2: Verify OTP code and save user permanently to database."""
+    _prune_pending_otps()
+
     if email not in _pending_otp_store:
         return False, "No active signup request found for this email. Please sign up again."
 

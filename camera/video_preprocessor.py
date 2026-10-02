@@ -31,6 +31,13 @@ class VideoPreprocessor:
         self.normalize_color = normalize_color
         self.add_timestamp = add_timestamp
         self.enforce_aspect_ratio = enforce_aspect_ratio
+        # CLAHE and the gamma LUT are stateless with respect to the input frame,
+        # so they are built once instead of on every frame of every camera.
+        self._clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        self._gamma = 1.2
+        self._lut = np.array(
+            [((i / 255.0) ** (1.0 / self._gamma)) * 255 for i in np.arange(256)]
+        ).astype("uint8")
 
     def process(self, frame):
         """Apply preprocessing to a single frame."""
@@ -61,17 +68,12 @@ class VideoPreprocessor:
         """Apply CLAHE and mild contrast normalization."""
         lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
         l, a, b = cv2.split(lab)
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-        l = clahe.apply(l)
+        l = self._clahe.apply(l)
         lab = cv2.merge([l, a, b])
         frame = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
 
-        # Mild gamma correction for consistent brightness
-        gamma = 1.2
-        inv_gamma = 1.0 / gamma
-        table = np.array([((i / 255.0) ** inv_gamma) * 255 for i in np.arange(256)]).astype("uint8")
-        frame = cv2.LUT(frame, table)
-        return frame
+        # Mild gamma correction for consistent brightness (precomputed LUT)
+        return cv2.LUT(frame, self._lut)
 
     def _add_timestamp(self, frame):
         """Overlay a CCTV-style timestamp in the top-right corner."""

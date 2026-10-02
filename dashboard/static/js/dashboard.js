@@ -157,13 +157,13 @@ async function updateDashboard() {
 
 async function loadAIFeed() {
     // Skip if this page has no timeline element
-    if (!document.getElementById("timeline")) return;
+    const feed = document.getElementById("timeline");
+    if (!feed) return;
 
     try {
         const response = await fetch("/timeline");
 
         const data = await response.json();
-        const feed = document.getElementById("timeline");
 
         if(!feed) return;
 
@@ -263,10 +263,29 @@ async function loadAIFeed() {
     }
 
 }
-// Refresh at reasonable intervals to avoid excessive server load
+// Refresh at reasonable intervals to avoid excessive server load.
+// base.html loads this file on every authenticated page, so each timer is armed
+// only when the element it feeds is actually present. Without this guard every
+// page (settings, cameras, reports, ...) polled /stats and /events every 2s.
 window._dashboardIntervals = window._dashboardIntervals || [];
-window._dashboardIntervals.push(setInterval(updateDashboard, 2000));
-window._dashboardIntervals.push(setInterval(loadAIFeed, 5000));
+const _hasDashboardDom = Boolean(
+    document.getElementById("dashboardError") ||
+    document.getElementById("statTotalEvents") ||
+    document.getElementById("kpi-total") ||
+    document.querySelector("[data-dashboard-widget]")
+);
+
+if (_hasDashboardDom) {
+    window._dashboardIntervals.push(setInterval(updateDashboard, 2000));
+} else {
+    updateDashboard();
+}
+
+if (document.getElementById("timeline")) {
+    window._dashboardIntervals.push(setInterval(loadAIFeed, 5000));
+} else {
+    loadAIFeed();
+}
 
 let lastAlertedEventId = null;
 
@@ -290,12 +309,10 @@ async function updateAlerts() {
     }
 }
 
+// High-severity toasts are a dashboard concern; other pages still get the
+// initial call once so nothing is missed on navigation.
 window._dashboardIntervals.push(setInterval(updateAlerts, 5000));
 updateAlerts();
-
-// Run immediately
-updateDashboard();
-loadAIFeed();
 // ==========================
 // Evidence Gallery
 // ==========================
@@ -561,11 +578,17 @@ async function updateSystemHealthCards() {
     }
 }
 
-window._dashboardIntervals.push(setInterval(updateSystemHealthCards, 5000));
-updateSystemHealthCards();
+// Each poller is armed only when the widget it fills is on the page, so pages
+// that merely inherit base.html do not keep hitting these endpoints.
+if (document.getElementById("sys-dot-dashboard") || document.getElementById("sys-val-dashboard")) {
+    window._dashboardIntervals.push(setInterval(updateSystemHealthCards, 5000));
+    updateSystemHealthCards();
+}
 
-window._dashboardIntervals.push(setInterval(loadAISummary, 5000));
-loadAISummary();
+if (document.getElementById("ai-risk-level")) {
+    window._dashboardIntervals.push(setInterval(loadAISummary, 5000));
+    loadAISummary();
+}
 
 /* ==========================================
    CAMERA CONTROLS
@@ -719,8 +742,10 @@ function updateAllCameraCards(){
     });
 }
 
-window._dashboardIntervals.push(setInterval(updateAllCameraCards, CAMERA_UPDATE_INTERVAL_MS));
-updateAllCameraCards();
+if (document.querySelector(".camera-hero[data-camera-name]")) {
+    window._dashboardIntervals.push(setInterval(updateAllCameraCards, CAMERA_UPDATE_INTERVAL_MS));
+    updateAllCameraCards();
+}
 
 /* ==========================================
    PER-CAMERA CONTROLS (snapshot / record / replay)
@@ -956,7 +981,9 @@ function updateDetectionChart(){
         });
 }
 
-window._dashboardIntervals.push(setInterval(updateDetectionChart, 10000));
+if (document.getElementById("detectionChart") || document.getElementById("detection-history-chart")) {
+    window._dashboardIntervals.push(setInterval(updateDetectionChart, 10000));
+}
 
 /* ==========================================
    AI PERFORMANCE
@@ -1311,8 +1338,10 @@ async function updateAIPerformance() {
 if (typeof loadEvidence === 'function') loadEvidence();
 initDetectionChart();
 updateDetectionChart();
-window._dashboardIntervals.push(setInterval(updateAIPerformance, 5000));
-updateAIPerformance();
+if (document.getElementById("perfChartContainer") || document.getElementById("aiPerfMetrics")) {
+    window._dashboardIntervals.push(setInterval(updateAIPerformance, 5000));
+    updateAIPerformance();
+}
 
 // Watch for theme changes and re-apply chart colors
 if (typeof refreshChartsOnThemeChange === 'function') refreshChartsOnThemeChange();

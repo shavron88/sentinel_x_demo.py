@@ -579,8 +579,47 @@ window.addEventListener("resize", () => {
 // =========================
 
 (function() {
-    // Fetch CSRF token on page load and store for AJAX requests
-    fetch("/api/auth/csrf-token")
+    // The token is rendered server-side into a <meta> tag by base.html, so it
+    // is available synchronously and no request can race ahead of the fetch.
+    var meta = document.querySelector('meta[name="sentinelx-csrf"]');
+    if (meta && meta.content) {
+        window.__SENTINELX_CSRF__ = meta.content;
+        try { sessionStorage.setItem("sentinelx_csrf", meta.content); } catch(e) {}
+    }
+
+    function currentToken() {
+        if (window.__SENTINELX_CSRF__) return window.__SENTINELX_CSRF__;
+        try { return sessionStorage.getItem("sentinelx_csrf"); } catch(e) { return null; }
+    }
+
+    // Automatically attach the CSRF header to every state-changing request.
+    // Previously each page had to remember to do this, so settings saves,
+    // snapshots, deletions and chat all returned 403.
+    var SAFE_METHODS = { GET: 1, HEAD: 1, OPTIONS: 1, TRACE: 1 };
+    var nativeFetch = window.fetch && window.fetch.bind(window);
+    if (nativeFetch) {
+        window.fetch = function(input, init) {
+            try {
+                var method = ((init && init.method) ||
+                              (input && input.method) || "GET").toUpperCase();
+                if (!SAFE_METHODS[method]) {
+                    var token = currentToken();
+                    if (token) {
+                        if (!init) { init = {}; }
+                        var headers = new Headers(init.headers || {});
+                        if (!headers.has("X-CSRF-Token")) {
+                            headers.set("X-CSRF-Token", token);
+                        }
+                        init.headers = headers;
+                    }
+                }
+            } catch (e) { /* Never let the wrapper break a request */ }
+            return nativeFetch(input, init);
+        };
+    }
+
+    // Keep the cached token fresh across long-lived tabs.
+    fetch("/api/auth/csrf-token", { headers: { "Accept": "application/json" } })
         .then(function(r) { return r.ok ? r.json() : null; })
         .then(function(data) {
             if (data && data.csrf_token) {

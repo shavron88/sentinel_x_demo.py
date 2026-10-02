@@ -1,11 +1,13 @@
 async function loadSecurityMap() {
     const container = document.querySelector(".map-container");
     const tooltip = document.getElementById("mapTooltip");
-    
+
     if (!container) return;
-    
-    showSkeletonCards("map-container", 1);
-    
+
+    // NOTE: do not call showSkeletonCards("map-container", ...). That helper
+    // replaces the container's innerHTML, which destroyed the floor plan and
+    // every marker on the map. The markers are updated in place below instead.
+
     try {
         const [camerasRes, eventsRes] = await Promise.all([
             fetch("/api/cameras"),
@@ -72,15 +74,22 @@ async function loadSecurityMap() {
                     pin: '<svg class="marker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>'
                 };
                 const iconMap = {
-                    'fall detection': SVG.alert,
-                    'weapon detected': SVG.alert,
-                    'running detected': SVG.run,
-                    'person detected': SVG.person,
-                    'vehicle detected': SVG.vehicle,
-                    'crowd detected': SVG.crowd,
-                    'loitering detected': SVG.pin
+                    // Event types are stored upper-snake (PERSON_DETECTED,
+                    // FALL_DETECTED, ...), so these keys must use underscores.
+                    'fall_detected': SVG.alert,
+                    'weapon_detected': SVG.alert,
+                    'abandoned_object': SVG.alert,
+                    'line_crossing': SVG.run,
+                    'running_detected': SVG.run,
+                    'person_detected': SVG.person,
+                    'vehicle_detected': SVG.vehicle,
+                    'car_detected': SVG.vehicle,
+                    'truck_detected': SVG.vehicle,
+                    'crowd_detected': SVG.crowd,
+                    'loitering': SVG.pin,
+                    'loitering_detected': SVG.pin
                 };
-                const etype = (evt.event_type || 'Unknown').toLowerCase();
+                const etype = (evt.event_type || 'Unknown').toLowerCase().trim();
                 const icon = iconMap[etype] || SVG.pin;
                 marker.innerHTML = icon;
                 marker.title = evt.event_type || 'Event';
