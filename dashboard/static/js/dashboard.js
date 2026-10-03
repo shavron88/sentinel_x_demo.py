@@ -47,45 +47,45 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-async function updateDashboard() {
-    // Skip if this page has no dashboard elements
-    if (!document.getElementById("stats-grid") && !document.getElementById("person-count") && !document.getElementById("kpi-threat")) {
+// The KPI grid is rebuilt in place on every refresh, so skeletons are only
+// shown on the very first paint. Previously this ran on every 2s tick, which
+// destroyed and recreated the stat cards 30 times a minute -- and because
+// /stats takes 300ms-1.2s under real load, the dashboard spent most of its
+// time showing skeletons.
+let _dashboardPrimed = false;
+
+// Render-only entry point, used by the single-flight poller so the DOM write
+// can never be interleaved with a second in-flight request.
+function updateDashboardFromStats(stats) {
+    _dashboardPrimed = true;
+
+    hideSkeletons();
+
+    // Clear any previous error message on successful fetch
+    const errorEl = document.getElementById("dashboardError");
+    if (errorEl) {
+        errorEl.innerHTML = "";
+        errorEl.style.display = "none";
+    }
+
+    if (!stats || Object.keys(stats).length === 0) {
+        showEmptyState("emptyState", "No Data Available", "Dashboard data is not available.", [{label:"Refresh", onclick:"updateDashboard()", class:"btn-primary"}]);
         return;
     }
 
-    showSkeletonCards("stats-grid", 4);
+    const cameraFPS = document.getElementById("camera-fps");
 
-    try {
-        const response = await fetch("/stats");
-        const stats = await response.json();
+    if(cameraFPS){
+        cameraFPS.innerText = stats.fps;
+    }
 
-        hideSkeletons();
+    const personElement = document.getElementById("person-count");
+    const vehicleElement = document.getElementById("vehicle-count");
+    const alertElement = document.getElementById("alert-count");
+    const fpsElement = document.getElementById("fps");
+    updateSystemStatus(stats);
 
-        // Clear any previous error message on successful fetch
-        const errorEl = document.getElementById("dashboardError");
-        if (errorEl) {
-            errorEl.innerHTML = "";
-            errorEl.style.display = "none";
-        }
-
-        if (!stats || Object.keys(stats).length === 0) {
-            showEmptyState("emptyState", "No Data Available", "Dashboard data is not available.", [{label:"Refresh", onclick:"updateDashboard()", class:"btn-primary"}]);
-            return;
-        }
-
-        const cameraFPS = document.getElementById("camera-fps");
-
-        if(cameraFPS){
-            cameraFPS.innerText = stats.fps;
-        }
-
-        const personElement = document.getElementById("person-count");
-        const vehicleElement = document.getElementById("vehicle-count");
-        const alertElement = document.getElementById("alert-count");
-        const fpsElement = document.getElementById("fps");
-        updateSystemStatus(stats);
-
-        if(document.getElementById("person-count-footer"))
+    if(document.getElementById("person-count-footer"))
             document.getElementById("person-count-footer").innerText = stats.persons;
 
         if(document.getElementById("vehicle-count-footer"))
@@ -142,31 +142,48 @@ async function updateDashboard() {
             document.getElementById("health-threat").innerText = stats.threat;
 
         // Update new KPI bar
-        await updateKPIBar(stats);
+        return updateKPIBar(stats);
+}
 
+// Fetcher used for the initial paint, by the Retry button, and on pages with
+// no dashboard widgets. The steady-state refresh goes through pollSafely().
+async function updateDashboard() {
+    if (!document.getElementById("stats-grid") && !document.getElementById("person-count") && !document.getElementById("kpi-threat")) {
+        return;
+    }
+
+    if (!_dashboardPrimed) {
+        showSkeletonCards("stats-grid", 4);
+    }
+
+    try {
+        const response = await fetch("/stats", { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const stats = await response.json();
+        ConnectionState.ok();
+        await updateDashboardFromStats(stats);
     } catch (err) {
         console.log("Dashboard Error:", err);
+        ConnectionState.fail();
+        // Never strand the operator on a permanent skeleton wall.
+        if (!_dashboardPrimed) {
+            _dashboardPrimed = true;
+            hideSkeletons();
+        }
         const errorEl = document.getElementById("dashboardError");
         if (errorEl) {
-            errorEl.innerHTML = '<div style="color:#ef4444;padding:10px;text-align:center;">Unable to load dashboard data. <button onclick="updateDashboard()" style="background:none;border:none;color:#3b82f6;cursor:pointer;text-decoration:underline;">Retry</button></div>';
+            errorEl.innerHTML = '<div style="color:#ef4444;padding:10px;text-align:center;">Unable to load dashboard data. <button type="button" onclick="updateDashboard()" style="background:none;border:none;color:#3b82f6;cursor:pointer;text-decoration:underline;">Retry</button></div>';
             errorEl.style.display = "block";
         }
     }
 }
 
 
-async function loadAIFeed() {
-    // Skip if this page has no timeline element
+function renderTimeline(data) {
     const feed = document.getElementById("timeline");
     if (!feed) return;
 
-    try {
-        const response = await fetch("/timeline");
-
-        const data = await response.json();
-
-        if(!feed) return;
-
+    {
         feed.innerHTML = "";
         const timelineItems = data.timeline || [];
 
@@ -222,8 +239,8 @@ async function loadAIFeed() {
 
             // Show More button for long descriptions
             if (truncateTitle) {
-                html += '<span class="ai-feed-more" onclick="document.getElementById(\'extra-' + index + '\').classList.add(\'visible\'); this.style.display=\'none\';">Show More</span>';
-                html += '<div class="ai-feed-extra" id="extra-' + index + '">' + escapeHtml(event.slice(80)) + '</div>';
+                html += '<button type="button" class="ai-feed-more" data-toggle="extra-' + index + '" aria-expanded="false">Show More</button>';
+                html += '<div class="ai-feed-extra" id="extra-' + index + '" hidden>' + escapeHtml(event.slice(80)) + '</div>';
             }
 
             // Extra details if present
@@ -249,14 +266,41 @@ async function loadAIFeed() {
         });
 
         feed.scrollTop = feed.scrollHeight;
+    }
 
+    // "Show More" toggles via a data attribute rather than an inline handler
+    // that embedded the item index in a JavaScript string.
+    feed.querySelectorAll(".ai-feed-more").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const target = document.getElementById(btn.getAttribute("data-toggle"));
+            if (!target) return;
+            const expanded = btn.getAttribute("aria-expanded") === "true";
+            target.hidden = expanded;
+            btn.setAttribute("aria-expanded", String(!expanded));
+            btn.textContent = expanded ? "Show More" : "Show Less";
+        });
+    });
+}
+
+async function loadAIFeed() {
+    // Skip if this page has no timeline element
+    const feed = document.getElementById("timeline");
+    if (!feed) return;
+
+    try {
+        const response = await fetch("/timeline", { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        ConnectionState.ok();
+        renderTimeline(data);
     } catch(err) {
 
         console.log(err);
+        ConnectionState.fail();
 
         if(feed){
 
-            feed.innerHTML = '<div style="color:#ef4444;font-size:12px;padding:10px;">Unable to load timeline. <button onclick="loadAIFeed()" style="background:none;border:none;color:#3b82f6;cursor:pointer;text-decoration:underline;">Retry</button></div>';
+            feed.innerHTML = '<div style="color:#ef4444;font-size:12px;padding:10px;">Unable to load timeline. <button type="button" onclick="loadAIFeed()" style="background:none;border:none;color:#3b82f6;cursor:pointer;text-decoration:underline;">Retry</button></div>';
 
         }
 
@@ -276,13 +320,19 @@ const _hasDashboardDom = Boolean(
 );
 
 if (_hasDashboardDom) {
-    window._dashboardIntervals.push(setInterval(updateDashboard, 2000));
+    // pollSafely keeps one request in flight, skips hidden tabs and reports
+    // failures so the connection banner can surface them.
+    window.pollSafely("stats", "/stats", 3000, data => {
+        updateDashboardFromStats(data);
+    });
 } else {
     updateDashboard();
 }
 
 if (document.getElementById("timeline")) {
-    window._dashboardIntervals.push(setInterval(loadAIFeed, 5000));
+    window.pollSafely("timeline", "/timeline", 5000, data => {
+        renderTimeline(data);
+    });
 } else {
     loadAIFeed();
 }
@@ -291,7 +341,8 @@ let lastAlertedEventId = null;
 
 async function updateAlerts() {
     try {
-        const response = await fetch("/events");
+        // limit=1: only the newest row is needed to decide whether to alert.
+        const response = await fetch("/events?limit=1", { cache: "no-store" });
         const events = await response.json();
         if (!Array.isArray(events) || events.length === 0) return;
         const latest = events[0];
@@ -305,14 +356,34 @@ async function updateAlerts() {
             );
         }
     } catch (e) {
-        // silent
+        ConnectionState.fail();
     }
 }
 
-// High-severity toasts are a dashboard concern; other pages still get the
-// initial call once so nothing is missed on navigation.
-window._dashboardIntervals.push(setInterval(updateAlerts, 5000));
-updateAlerts();
+// High-severity toasts are a dashboard concern. Previously this polled a
+// 50-row /events response every 5s on *every* authenticated page and threw it
+// away on the ones that render no alerts, competing with the inference engine.
+if (_hasDashboardDom) {
+    window.pollSafely("alerts", "/events?limit=1", 5000, data => {
+        handleAlertEvents(Array.isArray(data) ? data : []);
+    });
+} else {
+    updateAlerts();          // one initial call, then no polling
+}
+
+function handleAlertEvents(events) {
+    if (!events.length) return;
+    const latest = events[0];
+    if (latest.id !== lastAlertedEventId &&
+        (latest.severity === "HIGH" || latest.severity === "CRITICAL")) {
+        lastAlertedEventId = latest.id;
+        showToast(
+            latest.severity === "CRITICAL" ? "Critical Alert" : "High Alert",
+            `${latest.event_type || "Event"} detected at ${latest.zone || "Unknown zone"}`,
+            latest.severity === "CRITICAL" ? "danger" : "warning"
+        );
+    }
+}
 // ==========================
 // Evidence Gallery
 // ==========================

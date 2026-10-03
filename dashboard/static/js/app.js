@@ -2,6 +2,127 @@ let notifications = [];
 let soundEnabled = true;
 let alertPopupActive = false;
 
+// app.js is the first script on every authenticated page, so it cannot rely on
+// a later file to have defined escapeHtml(). Identical implementations exist
+// in several page scripts; this one guarantees the core bundle stands alone.
+if (typeof window.escapeHtml !== "function") {
+    window.escapeHtml = function (text) {
+        if (text == null) return "";
+        const div = document.createElement("div");
+        div.textContent = String(text);
+        return div.innerHTML;
+    };
+}
+
+const ICONS = { success: "✅", warning: "⚠️", danger: "🚨", info: "ℹ️" };
+
+/* ==========================================
+   CONNECTION STATE
+   Every poll used to swallow its error, so a dead backend left the dashboard
+   showing stale numbers with no indication anything was wrong. For a
+   surveillance product that is the dangerous state: "no threats" and
+   "detection is down" looked identical.
+========================================= */
+const ConnectionState = (() => {
+    let el = null;
+    let failures = 0;
+    let lastOk = Date.now();
+    let stamp = null;
+
+    function ensure() {
+        if (!el) {
+            el = document.createElement("div");
+            el.className = "conn-banner";
+            el.setAttribute("role", "alert");
+            el.setAttribute("aria-live", "assertive");
+            el.hidden = true;
+            document.body.appendChild(el);
+        }
+        return el;
+    }
+
+    function setStamp() {
+        if (!stamp) stamp = document.getElementById("dataFreshness");
+        if (stamp) stamp.textContent = new Date(lastOk).toLocaleTimeString();
+    }
+
+    function markStale(stale) {
+        if (!stamp) stamp = document.getElementById("dataFreshness");
+        if (stamp) stamp.parentElement.classList.toggle("is-stale", stale);
+    }
+
+    return {
+        ok() {
+            lastOk = Date.now();
+            failures = 0;
+            setStamp();
+            markStale(false);
+            const node = ensure();
+            if (!node.hidden) {
+                node.hidden = true;
+            }
+        },
+        fail() {
+            failures += 1;
+            markStale(true);
+            if (failures < 2) return;          // ignore a single blip
+            const node = ensure();
+            node.textContent =
+                `Live data unavailable - showing last known values from `
+                + `${new Date(lastOk).toLocaleTimeString()}. Retrying...`;
+            node.hidden = false;
+        },
+        get lastSuccess() { return lastOk; }
+    };
+})();
+window.ConnectionState = ConnectionState;
+
+/* ==========================================
+   SINGLE-FLIGHT POLLER
+   setInterval does not wait for the previous request. Whenever a response was
+   slower than the interval (routine on this box, where /stats measured up to
+   1.2s against a 2s tick) several calls overlapped and whichever resolved last
+   won, so stale values overwrote fresh ones. This keeps at most one request in
+   flight per key, pauses while the tab is hidden, and reports failures.
+========================================= */
+window.pollSafely = function (key, url, intervalMs, onData, onError) {
+    const inflight = (window._inflight = window._inflight || {});
+    let stopped = false;
+    let timer = null;
+
+    async function tick() {
+        if (stopped || document.hidden) return;
+        if (inflight[key]) return;                       // single-flight
+        inflight[key] = true;
+        try {
+            const res = await fetch(url, { cache: "no-store", headers: { "Accept": "application/json" } });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            ConnectionState.ok();
+            if (typeof onData === "function") onData(data);
+        } catch (err) {
+            ConnectionState.fail();
+            if (typeof onError === "function") onError(err);
+        } finally {
+            inflight[key] = false;
+        }
+    }
+
+    tick();
+    timer = setInterval(tick, intervalMs);
+    (window._dashboardIntervals = window._dashboardIntervals || []).push(timer);
+
+    // Catch up immediately when the operator comes back to the tab.
+    document.addEventListener("visibilitychange", () => {
+        if (!document.hidden && !stopped) tick();
+    });
+
+    return function stop() {
+        stopped = true;
+        if (timer) clearInterval(timer);
+    };
+};
+
 /* ==========================================
    GLOBAL THEME RESTORE
    Runs on every page to apply saved theme.
@@ -11,11 +132,10 @@ let alertPopupActive = false;
 function restoreTheme() {
     try {
         const saved = localStorage.getItem('sentinelx-theme');
-        // Force dark theme - clear any saved light theme
-        if (saved === 'light') {
-            localStorage.removeItem('sentinelx-theme');
-        }
-        if (saved && ['dark', 'midnight'].includes(saved)) {
+        // Honour the stored theme rather than deleting 'light'. The previous
+        // behaviour threw the operator's choice away on every page load even
+        // though the theme system implements light fully.
+        if (saved && ['dark', 'light', 'midnight'].includes(saved)) {
             document.documentElement.setAttribute('data-theme', saved);
         } else {
             document.documentElement.setAttribute('data-theme', 'dark');
@@ -161,24 +281,21 @@ const AudioEngine = {
 function showToast(title, message, type = "info", persistent = false) {
     AudioEngine.play(type);
 
-    const icons = {
-        success: "✅",
-        warning: "⚠️",
-        danger: "🚨",
-        info: "ℹ️"
-    };
+    const icon = ICONS[type] || ICONS.info;
 
     const toast = document.createElement("div");
     toast.className = `toast toast-${type}`;
     toast.innerHTML = `
-        <div class="toast-icon">${icons[type]}</div>
+        <div class="toast-icon">${icon}</div>
         <div class="toast-body">
             <div class="toast-title">${escapeHtml(title)}</div>
             <div class="toast-message">${escapeHtml(message)}</div>
         </div>
         <div class="toast-progress"></div>
-        <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+        <button class="toast-close" type="button" aria-label="Dismiss notification">✕</button>
     `;
+    toast.querySelector(".toast-close")
+        .addEventListener("click", () => toast.remove());
 
     const container = document.getElementById("toast-container");
     if (container) {
@@ -229,29 +346,71 @@ function showToast(title, message, type = "info", persistent = false) {
 
 function showAlertPopup(notification) {
     if (alertPopupActive) return;
-    alertPopupActive = true;
-
     const modal = document.getElementById("alertPopup");
     if (!modal) return;
+    alertPopupActive = true;
+    _lastFocused = document.activeElement;
 
     document.getElementById("alertPopupTitle").textContent = notification.title;
     document.getElementById("alertPopupMessage").textContent = notification.message;
     document.getElementById("alertPopupTime").textContent = notification.time;
 
+    modal.hidden = false;
     modal.classList.add("active");
     document.body.style.overflow = "hidden";
 
+    // Move focus into the dialog so keyboard users are not stranded behind it.
+    const ack = modal.querySelector(".alert-popup-btn-ack");
+    if (ack) ack.focus();
+
     AudioEngine.play("danger");
 }
+
+let _lastFocused = null;
 
 function closeAlertPopup() {
     const modal = document.getElementById("alertPopup");
     if (modal) {
         modal.classList.remove("active");
+        modal.hidden = true;
         document.body.style.overflow = "";
         alertPopupActive = false;
+        // Return focus to whatever opened the dialog.
+        if (_lastFocused && typeof _lastFocused.focus === "function") {
+            _lastFocused.focus();
+        }
+        _lastFocused = null;
     }
 }
+
+// Escape closes the dialog and Tab is trapped inside it. Without this the
+// popup could not be dismissed from the keyboard at all.
+document.addEventListener("keydown", (e) => {
+    const modal = document.getElementById("alertPopup");
+    if (!modal || !alertPopupActive) return;
+
+    if (e.key === "Escape") {
+        e.preventDefault();
+        closeAlertPopup();
+        return;
+    }
+    if (e.key !== "Tab") return;
+
+    const focusables = modal.querySelectorAll(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    if (!focusables.length) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+
+    if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+    }
+});
 
 // =========================
 // NOTIFICATION PERSISTENCE
@@ -293,13 +452,26 @@ function markAllAsRead() {
 function updateNotificationPanel() {
     const list = document.getElementById("notification-list");
     const count = document.getElementById("notification-count");
+    const btn = document.getElementById("notification-btn");
 
     if (!list) return;
 
+    // The badge showed the unread count, but the *total* whenever nothing was
+    // unread -- so the number silently changed meaning. It now always means
+    // "unread" and is hidden at zero, with an accessible label.
+    const unread = notifications.filter(n => !n.read).length;
+
     if (count) {
-        const unread = notifications.filter(n => !n.read).length;
-        count.innerText = unread > 0 ? unread : notifications.length;
-        count.style.display = notifications.length > 0 ? "flex" : "none";
+        count.textContent = unread > 99 ? "99+" : String(unread);
+        count.hidden = unread === 0;
+        count.classList.toggle("is-read", unread === 0);
+    }
+    if (btn) {
+        btn.setAttribute("aria-label",
+            unread ? `${unread} unread notification${unread === 1 ? "" : "s"}`
+                   : "Notifications");
+        btn.setAttribute("aria-expanded",
+            String(document.getElementById("notification-panel")?.classList.contains("active") || false));
     }
 
     if (notifications.length === 0) {
@@ -317,25 +489,54 @@ function updateNotificationPanel() {
 
     let html = "";
     notifications.slice(0, 10).forEach(item => {
+        // These values originate from detection data (camera/zone names) and
+        // are persisted to localStorage, so they are escaped here exactly as
+        // showToast() escapes them on the way in. The id also went into an
+        // inline onclick, so actions are delegated instead.
+        const icon = ICONS[item.type] || ICONS.info;
         html += `
-            <div class="notification-item ${item.read ? "read" : "unread"}" data-id="${item.id}" onclick="markAsRead('${item.id}')">
-                <div class="notification-item-icon notification-${item.type}">
-                    ${item.type === "danger" ? "🚨" : item.type === "warning" ? "⚠️" : item.type === "success" ? "✅" : "ℹ️"}
+            <div class="notification-item ${item.read ? "read" : "unread"}"
+                 data-id="${escapeHtml(item.id)}" role="button" tabindex="0">
+                <div class="notification-item-icon notification-${escapeHtml(item.type)}">
+                    ${icon}
                 </div>
                 <div class="notification-item-content">
-                    <div class="notification-item-title">${item.title}</div>
-                    <div class="notification-item-message">${item.message}</div>
-                    <div class="notification-item-time">${item.time}</div>
+                    <div class="notification-item-title">${escapeHtml(item.title)}</div>
+                    <div class="notification-item-message">${escapeHtml(item.message)}</div>
+                    <div class="notification-item-time">${escapeHtml(item.time)}</div>
                 </div>
             </div>
         `;
     });
 
     if (notifications.length > 10) {
-        html += `<div class="notification-view-all" onclick="window.location.href='/notifications'">View all ${notifications.length} notifications →</div>`;
+        html += `<div class="notification-view-all" data-view-all="1">View all ${notifications.length} notifications →</div>`;
     }
 
     list.innerHTML = html;
+
+    list.querySelectorAll(".notification-item").forEach(el => {
+        const activate = () => markAsRead(el.getAttribute("data-id"));
+        el.addEventListener("click", activate);
+        el.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                activate();
+            }
+        });
+    });
+    const viewAll = list.querySelector("[data-view-all]");
+    if (viewAll) {
+        viewAll.setAttribute("role", "button");
+        viewAll.setAttribute("tabindex", "0");
+        viewAll.addEventListener("click", () => { window.location.href = "/notifications"; });
+        viewAll.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                window.location.href = "/notifications";
+            }
+        });
+    }
 }
 
 function markAsRead(id) {
@@ -374,15 +575,26 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btn && panel) {
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
-            panel.classList.toggle("active");
-            if (panel.classList.contains("active")) {
+            const open = panel.classList.toggle("active");
+            btn.setAttribute("aria-expanded", String(open));
+            if (open) {
                 updateNotificationPanel();
+            }
+        });
+
+        // Escape closes the panel and returns focus to the trigger.
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && panel.classList.contains("active")) {
+                panel.classList.remove("active");
+                btn.setAttribute("aria-expanded", "false");
+                btn.focus();
             }
         });
 
         document.addEventListener("click", (e) => {
             if (!panel.contains(e.target) && !btn.contains(e.target)) {
                 panel.classList.remove("active");
+                btn.setAttribute("aria-expanded", "false");
             }
         });
     }
@@ -444,32 +656,48 @@ document.addEventListener("DOMContentLoaded", () => {
 // SIDEBAR TOGGLE (MOBILE)
 // =========================
 
-function toggleSidebar() {
+function toggleSidebar(force) {
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("sidebarOverlay");
+    const toggle = document.getElementById("sidebarToggle");
     if (!sidebar || !overlay) return;
 
-    const isOpen = sidebar.classList.contains("open");
+    const isOpen = force !== undefined
+        ? !!force
+        : !sidebar.classList.contains("open");
+
+    sidebar.classList.toggle("open", isOpen);
+    overlay.classList.toggle("active", isOpen);
+    if (toggle) toggle.setAttribute("aria-expanded", String(isOpen));
+    document.body.style.overflow = isOpen ? "hidden" : "";
 
     if (isOpen) {
-        sidebar.classList.remove("open");
-        overlay.classList.remove("active");
-        document.body.style.overflow = "";
+        // Move focus into the drawer so keyboard users are not left behind it.
+        const first = sidebar.querySelector("a, button");
+        if (first) first.focus();
+        document.addEventListener("keydown", onSidebarEscape);
     } else {
-        sidebar.classList.add("open");
-        overlay.classList.add("active");
-        document.body.style.overflow = "hidden";
+        document.removeEventListener("keydown", onSidebarEscape);
+        if (toggle && force === false) toggle.focus();
+    }
+}
+
+function onSidebarEscape(e) {
+    if (e.key === "Escape") {
+        e.preventDefault();
+        toggleSidebar(false);
     }
 }
 
 // Close sidebar on window resize to desktop
-
 window.addEventListener("resize", () => {
     if (window.innerWidth > 1024) {
         const sidebar = document.getElementById("sidebar");
         const overlay = document.getElementById("sidebarOverlay");
+        const toggle = document.getElementById("sidebarToggle");
         if (sidebar) sidebar.classList.remove("open");
         if (overlay) overlay.classList.remove("active");
+        if (toggle) toggle.setAttribute("aria-expanded", "false");
         document.body.style.overflow = "";
     }
 });

@@ -1,9 +1,17 @@
+import re
 import sys
 from flask import Blueprint, jsonify, request, session, current_app
 from camera.camera_manager import camera_manager
 from api.auth import require_auth, require_csrf
 
 camera_bp = Blueprint('camera', __name__, url_prefix='/api/camera')
+
+# Camera names and sources are echoed back into the dashboard and into inline
+# handlers. Restricting them to a safe alphabet means a name can never be
+# markup, so a stored-XSS payload cannot be persisted in the first place.
+CAMERA_NAME_RE = re.compile(r"^[A-Za-z0-9 _.\-()]{1,64}$")
+# Device indices ("0"), RTSP/HTTP URLs and local file paths.
+CAMERA_SOURCE_RE = re.compile(r"^[A-Za-z0-9 _.\-:/\\]{1,512}$")
 
 
 def _get_current_user_id():
@@ -205,6 +213,16 @@ def handle_add_camera():
 
     if not name or not source:
         return jsonify({"success": False, "error": "Name and source are required."}), 400
+    if not CAMERA_NAME_RE.match(name):
+        return jsonify({
+            "success": False,
+            "error": "Name may only contain letters, numbers, spaces and . _ - ( ), up to 64 characters."
+        }), 400
+    if not CAMERA_SOURCE_RE.match(source):
+        return jsonify({
+            "success": False,
+            "error": "Source may only contain letters, numbers and . _ - : / \\ characters."
+        }), 400
 
     try:
         rtsp_config = {

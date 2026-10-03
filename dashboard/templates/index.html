@@ -1551,7 +1551,13 @@
 
 <div class="page-content fade-in">
 
-<div id="dashboardError" style="display:none;"></div>
+<!-- Page-level heading for screen-reader users; the visual layout already
+     communicates the page, but heading navigation needs a real anchor. -->
+<h1 class="sr-only">SentinelX &mdash; Operations Dashboard</h1>
+
+<!-- role=alert so a failure to load live data is announced, not just drawn.
+     Without this the banner was invisible to assistive technology. -->
+<div id="dashboardError" role="alert" aria-live="assertive" style="display:none;"></div>
 
 <div id="emptyState" style="display:none;"></div>
 

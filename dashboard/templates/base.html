@@ -14,13 +14,11 @@
 
     <script>
         try {
+            // Honour any theme the operator actually chose. This used to delete
+            // a stored 'light' preference on every page load, so the choice was
+            // silently discarded even though the stylesheet fully implements it.
             var savedTheme = localStorage.getItem('sentinelx-theme');
-            // Force dark theme - clear any saved light theme
-            if (savedTheme === 'light') {
-                localStorage.removeItem('sentinelx-theme');
-                savedTheme = null;
-            }
-            if (savedTheme && ['dark', 'midnight'].indexOf(savedTheme) !== -1) {
+            if (savedTheme && ['dark', 'light', 'midnight'].indexOf(savedTheme) !== -1) {
                 document.documentElement.setAttribute('data-theme', savedTheme);
             } else {
                 document.documentElement.setAttribute('data-theme', 'dark');
@@ -119,6 +117,9 @@
     <!-- Responsive system — mobile-first responsive design -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}?v=20260831">
 
+<!-- Performance layer LAST: low-power mode, reduced-motion, connection banner -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/perf.css') }}?v=20261003">
+
     <!-- variables.css comment removed — variables are in theme-system.css -->
 
     <style>
@@ -189,7 +190,62 @@
     }
     .status-dot { animation: statusDotBreathe 3s ease-in-out infinite; }
     .sidebar-footer .status-dot { color: var(--ev-success); }
+
+    /* ═══ Screen-reader-only utility ═══ */
+    .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+    }
+
+    /* ═══ Connection lost banner ═══ */
+    .conn-banner {
+        position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+        z-index: 9998; padding: 10px 18px; border-radius: 8px;
+        background: #7f1d1d; color: #fff; font-size: 13px; line-height: 1.4;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .45); max-width: min(92vw, 560px);
+    }
+    .conn-banner[hidden] { display: none; }
+
+    /* ═══ Reduced motion ═══
+       The entrance/stagger/pulse animations above are defined here, outside
+       every stylesheet, so they had no guard at all. 41 infinite animations
+       run across the app; this switches them off for operators who asked the
+       OS to reduce motion. */
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: .01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: .01ms !important;
+            scroll-behavior: auto !important;
+        }
+        .status-dot { animation: none !important; }
+        .main-content, .sidebar-brand, .sidebar-nav-link,
+        .sidebar-nav-link.active::before { animation: none !important; }
+    }
     </style>
+
+    <!-- ═══ Low-power mode ═══
+         backdrop-filter/filter: blur are extremely expensive to composite
+         above live MJPEG video: the blurred backdrop is recomputed on every
+         video frame. 54 backdrop-filter + 42 blur declarations ship in the
+         stylesheets, so they are switched off wholesale on weak hardware or
+         whenever several feeds are on screen. -->
+    <script>
+        (function () {
+            var cores = navigator.hardwareConcurrency || 4;
+            var mem = navigator.deviceMemory || 4;
+            var reduceData = window.matchMedia &&
+                window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            function apply() {
+                var feeds = document.querySelectorAll('img[src*="/video_feed"]').length;
+                var lite = cores <= 4 || mem <= 4 || feeds > 4 || reduceData;
+                document.documentElement.classList.toggle('lite-off', lite);
+            }
+            apply();
+            document.addEventListener('DOMContentLoaded', apply);
+            window.addEventListener('load', apply);
+        })();
+    </script>
 
 </head>
 
@@ -207,7 +263,10 @@
 
     <!-- ================= SIDEBAR OVERLAY ================= -->
 
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <!-- Sidebar overlay was a <div onclick>, which is unreachable by keyboard.
+         It is now a real button so Escape and Tab work as expected. -->
+    <button type="button" class="sidebar-overlay" id="sidebarOverlay"
+            aria-label="Close navigation" tabindex="-1" onclick="toggleSidebar(false)"></button>
 
     <!-- ================= SIDEBAR ================= -->
 
@@ -415,7 +474,8 @@
 
             <div class="top-left">
 
-                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle navigation menu" onclick="toggleSidebar()">
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle navigation menu"
+        aria-controls="sidebar" aria-expanded="false" onclick="toggleSidebar()">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="3" y1="12" x2="21" y2="12"></line>
                         <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -433,6 +493,13 @@
 
                         AI Edge Surveillance Platform
 
+                    </span>
+
+                    <!-- Data freshness: an operator must be able to tell
+                         current figures from a frozen last-known-good set. -->
+                    <span class="data-freshness" aria-live="off">
+                        <span class="data-freshness-dot" aria-hidden="true"></span>
+                        <span id="dataFreshness">--:--:--</span>
                     </span>
 
                     </span>
@@ -609,7 +676,8 @@
 
 <!-- ================= ALERT POPUP ================= -->
 
-<div id="alertPopup">
+<div id="alertPopup" role="dialog" aria-modal="true" aria-labelledby="alertPopupTitle"
+     aria-describedby="alertPopupMessage" hidden>
 
     <div class="alert-popup">
 
@@ -637,9 +705,9 @@
 
         <div class="alert-popup-footer">
 
-            <button class="alert-popup-btn-view" onclick="window.location.href='/incidents'">View Details</button>
+            <button type="button" class="alert-popup-btn-view" onclick="window.location.href='/incidents'">View Details</button>
 
-            <button class="alert-popup-btn-ack" onclick="closeAlertPopup()">Acknowledge</button>
+            <button type="button" class="alert-popup-btn-ack" onclick="closeAlertPopup()">Acknowledge</button>
 
         </div>
 
@@ -648,20 +716,28 @@
 </div>
 
 <!-- ================= TOAST ================= -->
-
-<div id="toast-container"></div>
+<!-- Toasts are status messages: polite so a screen reader announces them
+     without interrupting, and additive so only new toasts are read out. -->
+<div id="toast-container" role="status" aria-live="polite" aria-atomic="false"
+     aria-relevant="additions"></div>
 
 <!-- ================= JS ================= -->
 
-<script src="{{ url_for('static', filename='js/loading.js') }}?v=20260829"></script>
+<script src="{{ url_for('static', filename='js/loading.js') }}?v=20261003"></script>
 
-<script src="{{ url_for('static', filename='js/app.js') }}?v=20260907"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}?v=20261003"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% if request.path in ('/dashboard', '/analytics', '/reports') %}
+<!-- Chart.js is vendored and version-pinned. It used to be pulled from an
+     unpinned CDN with no integrity check, which blocked rendering on every
+     page (including login and settings, which draw no charts), broke the app
+     entirely offline, and left a standing supply-chain risk. -->
+<script src="{{ url_for('static', filename='js/vendor/chart.umd.min.js') }}?v=4.4.4"
+        integrity="sha384-NrKB+u6Ts6AtkIhwPixiKTzgSKNblyhlk0Sohlgar9UHUBzai/sgnNNWWd291xqt"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{% endif %}
 
-<script src="{{ url_for('static', filename='js/dashboard.js') }}?v=20260829"></script>
-
-<script src="{{ url_for('static', filename='js/alerts.js') }}?v=20260829"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}?v=20261003"></script>
 
     {% if request.path == '/cameras' or request.path == '/camera_view' %}
 
@@ -743,7 +819,19 @@
 
     {% endif %}
 
-<script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+<!-- i18n.js is ~99 KB and only needed once a language is chosen, so it is
+     loaded on demand rather than blocking first paint on every page. -->
+<script>
+  (function () {
+    var lang = null;
+    try { lang = localStorage.getItem('sentinelx-lang'); } catch (e) {}
+    if (!lang) return;
+    var s = document.createElement('script');
+    s.src = "{{ url_for('static', filename='js/i18n.js') }}?v=20261003";
+    s.defer = true;
+    document.head.appendChild(s);
+  })();
+</script>
 
 </body>
 

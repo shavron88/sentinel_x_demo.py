@@ -1,0 +1,173 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   SENTINELX - PERFORMANCE LAYER
+   Loaded LAST, after theme-system.css and responsive.css, so these overrides
+   always win the cascade.
+
+   Why this file exists
+   --------------------
+   The stylesheets ship 54 `backdrop-filter` and 42 `filter: blur`
+   declarations. backdrop-filter forces the compositor to re-render whatever
+   sits *behind* an element every time that element repaints. The topbar and
+   panels are translucent overlays that sit directly above live MJPEG feeds,
+   so each of those feeds made the compositor re-blur the full backdrop on
+   every frame. There are also 41 infinite keyframe animations that repaint
+   forever, and 40 `transition: all` rules that animate layout-triggering
+   properties and keep work on the main thread.
+
+   `html.lite-off` is applied by the inline script in base.html when the
+   device reports 4 or fewer cores, 4 GB or less of memory, more than four
+   video feeds are streaming, or the operator asked the OS to reduce motion.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* --- Blur / glass: the dominant compositing cost ---------------------- */
+html.lite-off *,
+html.lite-off *::before,
+html.lite-off *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Opaque fallbacks keep contrast intact once the blur is gone. */
+html.lite-off .topbar,
+html.lite-off .sidebar,
+html.lite-off .panel,
+html.lite-off .glass,
+html.lite-off [class*="glass"],
+html.lite-off .modal-content,
+html.lite-off .dropdown {
+    background-color: #0b1220 !important;
+}
+
+/* --- Infinite animations --------------------------------------------- */
+html.lite-off *,
+html.lite-off *::before,
+html.lite-off *::after {
+    animation-duration: .2s !important;
+    animation-iteration-count: 1 !important;
+}
+
+html.lite-off .status-dot,
+html.lite-off [class*="pulse"],
+html.lite-off [class*="breath"] {
+    animation: none !important;
+}
+
+/* --- transition: all -> paint-only properties ------------------------- */
+html.lite-off *,
+html.lite-off *::before,
+html.lite-off *::after {
+    transition-property: transform, opacity, background-color,
+                         border-color, box-shadow, color !important;
+}
+
+/* --- Respect the OS motion preference regardless of hardware ---------- */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .status-dot { animation: none !important; }
+}
+
+/* --- Transparency preference ----------------------------------------- */
+@media (prefers-reduced-transparency: reduce) {
+    .topbar, .sidebar, .panel, .modal-content, .glass {
+        backdrop-filter: none !important;
+        background-color: #0b1220 !important;
+    }
+}
+
+/* --- Visible keyboard focus -------------------------------------------
+   Several stylesheets set `outline: none` on inputs and buttons (12
+   declarations). None of them use !important, so this rule in the final
+   layer restores a clearly visible focus ring for keyboard users, without
+   painting a ring on ordinary mouse clicks. */
+:focus-visible {
+    outline: 2px solid #60a5fa !important;
+    outline-offset: 2px !important;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid #60a5fa !important;
+    outline-offset: 2px !important;
+}
+
+/* --- Connection banner (injected by app.js ConnectionState) ----------- */
+.conn-banner {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9998;
+    padding: 10px 18px;
+    border-radius: 8px;
+    background: #7f1d1d;
+    color: #ffffff;
+    font-size: 13px;
+    line-height: 1.4;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .45);
+    max-width: min(92vw, 560px);
+}
+.conn-banner[hidden] { display: none; }
+
+/* --- Screen-reader-only utility --------------------------------------- */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ═══ Data freshness indicator ═══ */
+.data-freshness {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 12px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .02em;
+    color: var(--ev-muted, #94a3b8);
+    background: rgba(148, 163, 184, .10);
+    border: 1px solid rgba(148, 163, 184, .18);
+}
+
+.data-freshness-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 6px rgba(34, 197, 94, .8);
+}
+
+/* Stale: the poll is failing or has stopped. */
+.data-freshness.is-stale {
+    color: #fca5a5;
+    background: rgba(127, 29, 29, .25);
+    border-color: rgba(239, 68, 68, .45);
+}
+
+.data-freshness.is-stale .data-freshness-dot {
+    background: #ef4444;
+    box-shadow: 0 0 6px rgba(239, 68, 68, .9);
+    animation: none;
+}
+
+@media (max-width: 720px) {
+    .data-freshness { display: none; }
+}

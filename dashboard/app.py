@@ -1,5 +1,6 @@
 import os
 import cv2
+import gzip
 import time
 import json
 import logging
@@ -74,8 +75,62 @@ except Exception:
 
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
-app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
+# Static assets are versioned with ?v=<stamp>, so they can be cached hard.
+# 0 meant every stylesheet and script was re-downloaded on every page view.
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 31536000
 app.secret_key = os.getenv("FLASK_SECRET_KEY", secrets.token_hex(32))
+
+# --- Response compression -------------------------------------------------
+# The UI ships ~378 KB of CSS and ~350 KB of JS as separate render-blocking
+# files. Compressing them cuts that to roughly a tenth without touching the
+# cascade, which is far safer than hand-minifying the stylesheets.
+# Streaming media (MJPEG) is deliberately excluded: compressing it would
+# buffer an endless response and stall every feed.
+_COMPRESSIBLE = (
+    "text/html", "text/css", "text/javascript", "application/javascript",
+    "application/json", "image/svg+xml", "text/plain",
+)
+_COMPRESS_MIN_BYTES = 1024
+
+
+@app.after_request
+def compress_response(response):
+    try:
+        ctype = (response.headers.get("Content-Type") or "").split(";")[0].strip()
+        if ctype not in _COMPRESSIBLE:
+            return response
+        # Never re-encode a body a handler already compressed, and never touch
+        # a streamed response (no Content-Length and Transfer-Encoding chunked).
+        if response.headers.get("Content-Encoding"):
+            return response
+        if response.headers.get("Transfer-Encoding"):
+            return response
+        if "gzip" not in (request.headers.get("Accept-Encoding") or "").lower():
+            return response
+
+        data = response.get_data() if not response.direct_passthrough else None
+        if data is None:
+            # send_file() marks its response direct_passthrough, which means the
+            # body has not been read yet. Materialise it so the stylesheets and
+            # scripts actually get compressed.
+            response.direct_passthrough = False
+            data = response.get_data()
+        if len(data) < _COMPRESS_MIN_BYTES:
+            return response
+
+        compressed = gzip.compress(data, compresslevel=6)
+        # Only use it when it actually helps.
+        if len(compressed) >= len(data):
+            return response
+
+        response.set_data(compressed)
+        response.headers["Content-Encoding"] = "gzip"
+        response.headers["Content-Length"] = str(len(compressed))
+        response.headers.add("Vary", "Accept-Encoding")
+        return response
+    except Exception:  # pragma: no cover - never fail a response over encoding
+        return response
+
 
 # --- Production Security Headers & Cookies ---
 _is_production = os.getenv("FLASK_ENV", "development") == "production"
