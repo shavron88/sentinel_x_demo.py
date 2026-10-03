@@ -18,16 +18,10 @@ EVIDENCE_DIR = os.path.join(PROJECT_ROOT, "evidence", "screenshots")
 logger = logging.getLogger("SentinelX.EvidenceManager")
 
 try:
-    from database.db import init_db
+    from database.db import init_db, db_write_connection
     init_db()
 except Exception:
-    pass
-
-
-def get_connection():
-    conn = sqlite3.connect(DB_PATH, timeout=10)
-    conn.row_factory = sqlite3.Row
-    return conn
+    db_write_connection = None
 
 
 class EvidenceManager:
@@ -37,6 +31,53 @@ class EvidenceManager:
 
 def save(frame, event_type, track_id=-1, event_id=None, camera="Unknown", user_id=1):
     """Saves annotated frame as evidence image and records it in the database."""
+    # Evidence rows go through the same global write lock as events; bypassing
+    # it let this writer collide with the detection engine's own commits.
+    if db_write_connection is not None:
+        try:
+            return _save_locked(frame, event_type, track_id, event_id, camera, user_id)
+        except Exception as e:
+            logger.error(f"Error saving evidence: {e}")
+            return None
+    return _save_legacy(frame, event_type, track_id, event_id, camera, user_id)
+
+
+def _save_locked(frame, event_type, track_id, event_id, camera, user_id):
+    os.makedirs(EVIDENCE_DIR, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    filename = f"evidence_{timestamp}_track{track_id}.jpg"
+    filepath = os.path.join(EVIDENCE_DIR, filename)
+
+    if not cv2.imwrite(filepath, frame):
+        raise IOError(f"Failed to write evidence image: {filepath}")
+
+    # Store a project-relative, forward-slashed path for cross-platform reads
+    db_filepath = os.path.relpath(filepath, PROJECT_ROOT).replace("\\", "/")
+
+    with db_write_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO evidence (user_id, event_id, camera, image_path, metadata, timestamp)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            user_id,
+            event_id,
+            camera,
+            db_filepath,
+            json.dumps({
+                "event_type": event_type,
+                "tracking_id": track_id,
+                "saved_at": datetime.now().isoformat()
+            }),
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ))
+        return cursor.lastrowid
+
+
+def _save_legacy(frame, event_type, track_id, event_id, camera, user_id):
+    """Fallback used only when the shared database layer is unavailable."""
+    import sqlite3 as _sqlite3
     conn = None
     try:
         os.makedirs(EVIDENCE_DIR, exist_ok=True)
@@ -51,7 +92,7 @@ def save(frame, event_type, track_id=-1, event_id=None, camera="Unknown", user_i
         # Store a project-relative, forward-slashed path for cross-platform reads
         db_filepath = os.path.relpath(filepath, PROJECT_ROOT).replace("\\", "/")
 
-        conn = get_connection()
+        conn = _sqlite3.connect(DB_PATH, timeout=10)
         cursor = conn.cursor()
         cursor.execute("""
             INSERT INTO evidence (user_id, event_id, camera, image_path, metadata, timestamp)

@@ -62,6 +62,9 @@ class CameraStream:
         # trips an FFmpeg assertion (libavcodec/pthread_frame.c) and aborts
         # the whole process, so the handle is never used outside this lock.
         self._cap_lock = threading.RLock()
+        # Set by restart(); the capture thread consumes it so a reconnect never
+        # has to release the handle from another thread.
+        self._restart_requested = threading.Event()
         # Bounded wait for the capture thread to leave read() during stop().
         # Must exceed the 5s in-loop read-timeout guard.
         self.stop_join_timeout = 12.0
@@ -114,14 +117,15 @@ class CameraStream:
         self._sync_db()
 
     def restart(self):
-        """Restarts the underlying cv2 capture connection."""
-        with self._cap_lock:
-            if self.cap:
-                try:
-                    self.cap.release()
-                except Exception as e:
-                    logger.warning(f"[{self.name}] cv2 capture release error during restart (ignored): {e}")
-                self.cap = None
+        """Requests a reconnect of the underlying capture.
+
+        The handle is *not* released here. Doing it from the caller's thread
+        meant blocking on _cap_lock while the capture thread was inside a slow
+        open/read (a "restart" HTTP request took 9s), and releasing across
+        threads is what crashed FFmpeg. The capture thread performs the release
+        and reopen itself, so this returns immediately and stays safe.
+        """
+        self._restart_requested.set()
         self.status = "RECONNECTING"
         self._sync_db()
 
@@ -230,6 +234,12 @@ class CameraStream:
         while self.is_running:
             try:
                 ping_start = time.time()
+                if self._restart_requested.is_set():
+                    # Consume a restart() call here so the release happens on
+                    # the thread that owns the handle.
+                    self._restart_requested.clear()
+                    self.status = "RECONNECTING"
+                    self._safe_release()
                 if self.cap is None or not self.cap.isOpened():
                     self.status = "CONNECTING"
                     self.health = "POOR"

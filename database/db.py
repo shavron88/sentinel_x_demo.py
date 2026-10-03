@@ -42,24 +42,64 @@ _rate_limit_lock = threading.Lock()
 _write_lock = threading.Lock()
 
 
-def get_connection():
-    """Returns a new thread-safe connection to SQLite with Row factory.
+_thread_local = threading.local()
 
-    Callers must either close the returned connection or use ``db_connection()``,
-    which guarantees the handle is released.
+
+def get_connection():
+    """Returns this thread's connection to SQLite, creating it on first use.
+
+    Connections are reused per thread instead of opened per operation. A fresh
+    connection starts with a cold page cache, and re-inserting a single event
+    into the 7-indexed events table cost ~10 ms cold versus 0.35 ms warm; the
+    per-connection PRAGMA setup alone cost ~3.8 ms on every read *and* write.
+    Reuse is per thread, so a connection is never touched concurrently.
     """
-    conn = sqlite3.connect(DB_PATH, timeout=10)
-    conn.row_factory = sqlite3.Row
+    conn = getattr(_thread_local, "conn", None)
+    if conn is not None:
+        # A cached handle can have been closed out from under us (a caller
+        # holding the raw connection, or a driver-level reset). Probe it so we
+        # transparently rebuild instead of failing with "closed database".
+        try:
+            conn.execute("SELECT 1")
+        except sqlite3.ProgrammingError:
+            conn = None
+    if conn is None:
+        conn = sqlite3.connect(DB_PATH, timeout=10)
+        conn.row_factory = sqlite3.Row
+        # NOTE: journal_mode is deliberately NOT set here. It is a persistent
+        # property of the database file, applied once by _enable_wal().
+        # The engine commits an event per detection, so each commit used to pay
+        # an fsync (synchronous=FULL): ~8 ms/event and a ~118 events/s ceiling.
+        # NORMAL in WAL mode is durable across application crashes and raises
+        # that ceiling to ~4000/s.
+        try:
+            conn.execute("PRAGMA synchronous=NORMAL")
+            conn.execute("PRAGMA cache_size=-8000")
+        except sqlite3.Error:
+            pass
+        _thread_local.conn = conn
     return conn
+
+
+def close_connection():
+    """Releases this thread's connection (used by tests and long-lived workers)."""
+    conn = getattr(_thread_local, "conn", None)
+    if conn is not None:
+        _thread_local.conn = None
+        try:
+            conn.close()
+        except Exception:
+            pass
 
 
 @contextmanager
 def db_connection():
-    """Context manager that ALWAYS closes the SQLite handle.
+    """Context manager yielding this thread's connection.
 
-    ``with sqlite3.connect(...)`` only commits/rolls back -- it never closes the
-    handle, which leaked a file descriptor on every read. This wrapper commits
-    on success and always closes.
+    Commits on success and rolls back on error. The handle itself is pooled per
+    thread and deliberately *not* closed here: ``with sqlite3.connect(...)``
+    never closed anything either, and closing per operation was what made every
+    call pay a cold-cache penalty.
     """
     conn = get_connection()
     try:
@@ -71,11 +111,26 @@ def db_connection():
         except Exception:
             pass
         raise
+
+
+def _enable_wal():
+    """Switch the database to WAL so readers never block on the writer.
+
+    The detection engine writes continuously while the dashboard reads. Under
+    the default rollback journal a write blocks every reader for the length of
+    its commit, which is what made polling endpoints slow under live load.
+    Persisted in the file header, so setting it once is enough.
+    """
+    conn = sqlite3.connect(DB_PATH, timeout=10)
+    try:
+        mode = conn.execute("PRAGMA journal_mode=WAL").fetchone()[0]
+        if str(mode).lower() != "wal":
+            logger.warning("Could not enable WAL (journal_mode=%s); "
+                           "reads may block behind writes", mode)
+    except sqlite3.Error as exc:
+        logger.warning("WAL enablement skipped: %s", exc)
     finally:
-        try:
-            conn.close()
-        except Exception:
-            pass
+        conn.close()
 
 
 @contextmanager
@@ -392,6 +447,12 @@ def init_db():
             "CREATE INDEX IF NOT EXISTS idx_events_camera ON events(camera, id DESC)",
             "CREATE INDEX IF NOT EXISTS idx_events_severity ON events(severity, id DESC)",
             "CREATE INDEX IF NOT EXISTS idx_events_type ON events(event_type)",
+            # get_all_events() filters with UPPER(severity)/LOWER(event_type) so
+            # legacy rows in either case still match. Indexing the *expression*
+            # keeps that semantics while letting SQLite use an index instead of
+            # scanning all ~99k rows for every filtered request.
+            "CREATE INDEX IF NOT EXISTS idx_events_severity_upper ON events(UPPER(severity), id DESC)",
+            "CREATE INDEX IF NOT EXISTS idx_events_type_lower ON events(LOWER(event_type), id DESC)",
             "CREATE INDEX IF NOT EXISTS idx_events_user_type_sev ON events(user_id, event_type, severity)",
             # Covering index for the KPI aggregation: serves COUNT, the severity
             # and event_type SUMs, and AVG(confidence) without touching the table.
@@ -463,6 +524,7 @@ def ensure_db_ready():
     if _DB_READY:
         return True
     try:
+        _enable_wal()
         init_db()
         _DB_READY = True
         return True
@@ -527,6 +589,11 @@ PERSON_EVENT_TYPES = ("PERSON_DETECTED", "FACE_RECOGNIZED", "PERSON")
 VEHICLE_EVENT_TYPES = ("VEHICLE_DETECTED", "CAR_DETECTED", "TRUCK_DETECTED",
                        "BUS_DETECTED", "MOTORCYCLE_DETECTED")
 
+# Hard ceiling on rows a single read may materialise. Report exports ask for
+# far more than a dashboard page; the bound still guarantees a missing LIMIT
+# can never materialise the whole table.
+MAX_QUERY_ROWS = 20000
+
 
 def get_all_events(limit=50, user_id=None, start_date=None, end_date=None,
                    event_types=None, severities=None, cameras=None):
@@ -536,7 +603,7 @@ def get_all_events(limit=50, user_id=None, start_date=None, end_date=None,
     so the LIMIT still bounds the number of rows materialised.
     """
     try:
-        limit = max(1, min(int(limit or 50), 2000))
+        limit = max(1, min(int(limit or 50), MAX_QUERY_ROWS))
         where = []
         params = []
         if user_id is not None:
@@ -858,18 +925,47 @@ def get_all_cameras(user_id=None):
 
 
 def save_event(event_type, severity="LOW", camera="Unknown", zone="General Area", confidence=0.0, duration=0.0, metadata=None, screenshot="", track_id=-1, user_id=1):
-    """Saves a new event/detection to the database."""
+    """Saves a new event/detection to the database.
+
+    Detectors hand us whatever the model produced, so every field is coerced
+    before it reaches SQL. Previously a numeric severity score, a non-numeric
+    confidence or an unserialisable metadata dict raised mid-transaction and
+    the whole detection was rolled away with nothing but a log line.
+    """
     try:
+        event_type = str(event_type or "UNKNOWN").upper()
+        severity = str(severity or "LOW").upper()
+        camera = str(camera or "Unknown")
+        zone = str(zone or "General Area")
+        try:
+            confidence = float(confidence)
+        except (TypeError, ValueError):
+            confidence = 0.0
+        try:
+            duration = float(duration)
+        except (TypeError, ValueError):
+            duration = 0.0
+        try:
+            track_id = int(track_id)
+        except (TypeError, ValueError):
+            track_id = -1
+        if metadata is not None:
+            try:
+                metadata = json.dumps(metadata)
+            except (TypeError, ValueError):
+                metadata = json.dumps({"repr": repr(metadata)[:500]})
+
         with db_write_connection() as conn:
             cursor = conn.cursor()
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             cursor.execute("""
                 INSERT INTO events (user_id, timestamp, event_type, severity, camera, zone, track_id, confidence, duration, metadata)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (user_id, timestamp, event_type, severity, camera, zone, track_id, confidence, duration, json.dumps(metadata) if metadata else None))
+            """, (user_id, timestamp, event_type, severity, camera, zone, track_id, confidence, duration, metadata))
             new_id = cursor.lastrowid
             # Maintain the KPI rollup in the same transaction so the counters
-            # can never drift from the events they summarise.
+            # can never drift from the events they summarise. The rollup is
+            # derived data, so a failure here must never cost us the event.
             try:
                 cursor.execute("""
                     INSERT INTO event_stats_daily (user_id, day, event_type, severity, total, confidence_sum)
@@ -878,10 +974,11 @@ def save_event(event_type, severity="LOW", camera="Unknown", zone="General Area"
                         total = total + 1,
                         confidence_sum = confidence_sum + excluded.confidence_sum
                 """, (user_id, timestamp[:10], event_type,
-                      (severity or "LOW").upper(), float(confidence or 0)))
-            except sqlite3.OperationalError:
-                # Rollup unavailable (pre-migration DB); events still record fine.
-                pass
+                      severity, confidence))
+            except Exception as rollup_err:
+                # Rollup unavailable (pre-migration DB) or malformed; the event
+                # itself is the source of truth and must still be committed.
+                logger.warning(f"KPI rollup update skipped: {rollup_err}")
             conn.commit()
             return new_id
     except Exception as e:

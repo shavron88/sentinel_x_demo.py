@@ -24,7 +24,10 @@ def handle_snapshot():
 
     success, result = stream.take_snapshot()
     if not success:
-        return jsonify({"success": False, "error": result}), 500
+        # The camera exists but has not produced a frame yet (offline, still
+        # connecting, or a source that never opens). That is a state the caller
+        # can act on, not a server fault.
+        return jsonify({"success": False, "error": result}), 409
 
     # Register the snapshot in the evidence vault. Without this the file landed
     # on disk only, so operator snapshots never appeared in the evidence list.
